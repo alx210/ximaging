@@ -1,0 +1,36 @@
+/*
+ * Copyright (C) 2012-2017 alx@fastestcode.org
+ * This software is distributed under the terms of the MIT license.
+ * See the included LICENSE file for further information.
+ */
+
+#ifndef GUIUTIL_H
+#define GUIUTIL_H
+
+/* Set input focus to 'w' */
+void raise_and_focus(Widget w);
+
+/*
+ * Build and color a pixmap according to specified back/foreground colors
+ */
+Pixmap load_bitmap(const unsigned char *bits, unsigned int width,
+	unsigned int height, Pixel fg, Pixel bg);
+
+/* Build a masked icon pixmap from xbm data */
+void load_icon(const void *bits, const void *mask_bits,
+	unsigned int width, unsigned int height, Pixmap *icon, Pixmap *mask);
+
+/* 
+ * Build and color a pixmap according to widget's back/foreground colors
+ */
+Pixmap load_widget_bitmap(Widget w, const unsigned char *bits,
+	unsigned int width, unsigned int height);
+
+/* Returns size and x/y offsets of the screen the widget is located on */
+void get_screen_size(Widget w, int *pwidth,
+	int *pheight, int *px, int *py);
+
+/* Convert string to double (locale independent) */
+double str_to_double(const char *str);
+
+#endif /* GUIUTIL_H */

@@ -1,0 +1,42 @@
+CDE/ToolTalk Integration
+------------------------
+
+XImaging must be built with CDE/ToolTalk support. A separate makefile
+'Makefile.cde' is provided for this purpose. Change the working directory
+to 'src' and run 'make -f Makefile.cde', then 'make -f Makefile.cde install'
+as root.
+
+For other ToolTalk aware applications, like Dtfile, to be able to communicate
+with XImaging, the XImaging process type must be registered within the CDE ptype
+database. Currently this must be done manually.
+
+A Process Type script named XImaging.ptype is provided in the "share" directory.
+To register it, run: tt_type_comp XImaging.ptype
+
+The accompanying action and data type definition file named XImaging.dt, and
+icons it refers to, must be installed into the "types" and "icons" directories:
+
+	cp XImaging.dt ~/.dt/types
+	cp XImaging.?.pm ~/.dt/icons
+
+To add XImaging icon to the Application Manager, run:
+
+	touch ~/.dt/appmanager/XImaging
+	chmod +x ~/.dt/appmanager/XImaging
+
+When done, tell CDE to reread the configuration by issuing:
+
+	dtaction ReloadActions
+	dtappgather
+
+NOTES
+-----
+
+1.	If rpc.ttdbserver daemon is not running, tt_type_comp(1) will issue a
+	TT_ERR_FILE warning, which can be ignored, but means that ttsession(1)
+	needs to be manually notified about database changes. This is done by
+	signaling it with SIGUSR2, or logging out and in again.
+
+2.	The Process Type and data types may be installed system wide by running
+	tt_type_comp as root, and copying the type definition and icon files to
+	appropriate /etc/dt/appconfig sub-directories.

@@ -1,0 +1,352 @@
+################################################################################
+# Sample ToolTalk enabled actions and data types for XImaging
+# This file may be installed in ~/.dt/types or /etc/dt/appconfig/types/<locale>
+################################################################################
+
+################################################################################
+# Assuming XImaging was built with ToolTalk support and registered as a handler
+# (see XImaging.ptype) for data types specified in ARG_TYPE below, this action
+# allows dtfile to communicate with a running XImaging instance directly, rather
+# than launching it every time an Open request is invoked. If XImaging is not
+# running it will be launched by the ttsession(1) daemon.
+################################################################################
+ACTION Open
+{
+	LABEL			Open
+	
+	# The list of data types below must be in sync with data types
+	# specified in the PTYPE file.
+	
+	ARG_TYPE		SGI,Sun_Raster,TGA,PCX,PNG,JPEG,\
+				XPM,XBM,TIFF,MSBITMAP
+	TYPE			TT_MSG
+	TT_SCOPE		TT_SESSION
+	TT_CLASS		TT_REQUEST
+	TT_OPERATION		Display
+	TT_ARG0_MODE		TT_IN
+	TT_ARG0_REP_TYPE	TT_REP_STRING
+	TT_ARG0_VTYPE		%Arg_1%
+	TT_FILE			%Arg_1%
+}
+
+################################################################################
+# Action definition for the CDE Application Manager.
+# Accompanying this, a file named Ximaging with Executable bit set must be
+# placed in ~/.dt/appmanager/ or /etc/dt/appconfig/appmanager/<locale>/
+################################################################################
+ACTION XImaging
+{
+	TYPE			COMMAND
+	WINDOW_TYPE		NO_STDIO
+	EXEC_STRING		ximaging
+	LABEL			XImaging
+	ICON			XImaging
+	DESCRIPTION		Raster Graphics Browser and Viewer
+}
+
+ACTION XImaging_Browse
+{
+	TYPE			COMMAND
+	WINDOW_TYPE		NO_STDIO
+	EXEC_STRING		ximaging -browse
+	LABEL			XImaging (Browse)
+	ICON			XImaging
+	DESCRIPTION		Raster Graphics Browser and Viewer
+}
+
+################################################################################
+# Data type definitions below include Open and Edit actions. Open is invoked
+# by default, while one may select Edit from file drop-down menu to open file
+# for editing. Assuming XPaint is installed, this will open the image in it.
+################################################################################
+ACTION Edit
+{
+	TYPE		COMMAND
+	ARG_TYPE	SGI,Sun_Raster,TGA,PNG,JPEG,XPM,XBM,MSBITMAP
+	LABEL 		Edit
+	EXEC_STRING	xpaint "%Args%"
+	WINDOW_TYPE	NO_STDIO
+}
+
+################################################################################
+# Use dticon to edit XPM/XBM files.
+################################################################################
+ACTION Edit
+{
+	TYPE		COMMAND
+	ARG_TYPE	XPM,XBM
+	LABEL 		Edit
+	EXEC_STRING	dticon -f "%Args%"
+	WINDOW_TYPE	NO_STDIO
+}
+
+###############################################################################
+# X Pixmap
+###############################################################################
+DATA_ATTRIBUTES XPM
+{
+	ACTIONS		Open,Edit
+	IS_TEXT		False
+	MEDIA		XPM
+	MIME_TYPE	text/plain
+	ICON		Dtimage
+	DESCRIPTION	X Pixmap
+}
+
+DATA_CRITERIA XPM_A
+{
+	DATA_ATTRIBUTES_NAME XPM
+        MODE            f
+	NAME_PATTERN	*.xpm
+}
+
+DATA_CRITERIA XPM_B
+{
+	DATA_ATTRIBUTES_NAME XPM
+        MODE            f
+	NAME_PATTERN	*.pm
+}
+
+###############################################################################
+# X Bitmap
+###############################################################################
+DATA_ATTRIBUTES XBM
+{
+	ACTIONS		Open,Edit
+	IS_TEXT		False
+	MEDIA		XBM
+	MIME_TYPE	text/plain
+	ICON		Dtimage
+	DESCRIPTION	X Pixmap
+}
+
+DATA_CRITERIA XBM_A
+{
+	DATA_ATTRIBUTES_NAME XBM
+        MODE            f
+	NAME_PATTERN	*.xbm
+}
+
+DATA_CRITERIA XBM_B
+{
+	DATA_ATTRIBUTES_NAME XBM
+        MODE            f
+	NAME_PATTERN	*.bm
+}
+
+###############################################################################
+# PNG
+###############################################################################
+DATA_ATTRIBUTES PNG
+{
+	ACTIONS		Open,Edit
+	MIME_TYPE	image/png
+	ICON		Dtimage
+	DESCRIPTION	Portable Network Graphics
+}
+
+DATA_CRITERIA PNG_A
+{
+	DATA_ATTRIBUTES_NAME PNG
+        MODE            f
+	NAME_PATTERN	*.png
+}
+
+DATA_CRITERIA PNG_B
+{
+	DATA_ATTRIBUTES_NAME PNG
+        MODE            f
+	NAME_PATTERN	*.PNG
+}
+
+###############################################################################
+# JPEG
+###############################################################################
+DATA_ATTRIBUTES JPEG
+{
+	ACTIONS		Open,Edit
+	MIME_TYPE	image/jpeg
+	ICON		Dtimage
+	DESCRIPTION	Joint Photographic Experts Group Image
+}
+
+DATA_CRITERIA JPEG_A
+{
+	DATA_ATTRIBUTES_NAME JPEG
+        MODE            f
+	NAME_PATTERN	*.jpg
+}
+
+DATA_CRITERIA JPEG_B
+{
+	DATA_ATTRIBUTES_NAME JPEG
+        MODE            f
+	NAME_PATTERN	*.JPG
+}
+
+###############################################################################
+# TARGA
+###############################################################################
+DATA_ATTRIBUTES TGA
+{
+	ACTIONS		Open,Edit
+	IS_TEXT		False
+	MEDIA		TGA
+	MIME_TYPE	image/x-tga
+	ICON		Dtimage
+	DESCRIPTION	Truevision Targa Image
+}
+
+DATA_CRITERIA TARGA_A
+{
+	DATA_ATTRIBUTES_NAME TGA
+        MODE            f
+	NAME_PATTERN	*.tga
+}
+
+DATA_CRITERIA TARGA_B
+{
+	DATA_ATTRIBUTES_NAME TGA
+        MODE            f
+	NAME_PATTERN	*.TGA
+}
+
+###############################################################################
+# Paintbrush
+###############################################################################
+DATA_ATTRIBUTES PCX
+{
+	ACTIONS		Open,Edit
+        MIME_TYPE	image/pcx
+	ICON		Dtimage
+	DESCRIPTION	PC-Paintbrush Image
+}
+
+DATA_CRITERIA PBRUSH_A
+{
+	DATA_ATTRIBUTES_NAME PCX
+        MODE            f
+	NAME_PATTERN	*.pcx
+}
+
+DATA_CRITERIA PBRUSH_B
+{
+	DATA_ATTRIBUTES_NAME PCX
+        MODE            f
+	NAME_PATTERN	*.PCX
+}
+
+###############################################################################
+# SGI
+###############################################################################
+DATA_ATTRIBUTES SGI
+{
+	ACTIONS		Open,Edit
+	MIME_TYPE	image/x-rgb
+	ICON		Dtimage
+	DESCRIPTION	Silicon Graphics Raster Image
+}
+
+DATA_CRITERIA SGI_A
+{
+	DATA_ATTRIBUTES_NAME SGI
+        MODE            f
+	NAME_PATTERN	*.sgi
+}
+
+DATA_CRITERIA SGI_B
+{
+	DATA_ATTRIBUTES_NAME SGI
+        MODE            f
+	NAME_PATTERN	*.rgb
+}
+
+DATA_CRITERIA SGI_C
+{
+	DATA_ATTRIBUTES_NAME SGI
+        MODE            f
+	NAME_PATTERN	*.rgba
+}
+
+DATA_CRITERIA SGI_D
+{
+	DATA_ATTRIBUTES_NAME SGI
+        MODE            f
+	NAME_PATTERN	*.bw
+}
+
+###############################################################################
+# Sun
+###############################################################################
+DATA_ATTRIBUTES Sun_Raster
+{
+	ACTIONS		Open,Edit
+	MEDIA		Sun_Raster
+	MIME_TYPE	image/x-cmu-raster
+	ICON		Dtimage
+	DESCRIPTION	Sun Raster Image
+}
+
+DATA_CRITERIA SUN_RAS_A
+{
+	DATA_ATTRIBUTES_NAME Sun_Raster
+        MODE            f
+	NAME_PATTERN	*.ras
+}
+
+###############################################################################
+# MS-Bitmap
+###############################################################################
+DATA_ATTRIBUTES MSBITMAP
+{
+	ACTIONS		Open,Edit
+	MIME_TYPE	image/bmp
+	ICON		Dtimage
+	DESCRIPTION	MS-Bitmap
+}
+
+DATA_CRITERIA MSBITMAP_A
+{
+	DATA_ATTRIBUTES_NAME MSBITMAP
+        MODE            f
+	NAME_PATTERN	*.bmp
+}
+
+DATA_CRITERIA MSBITMAP_B
+{
+	DATA_ATTRIBUTES_NAME MSBITMAP
+        MODE            f
+	NAME_PATTERN	*.BMP
+}
+
+###############################################################################
+# Tagged Image File
+###############################################################################
+DATA_ATTRIBUTES TIFF
+{
+	ACTIONS		Open,Edit
+	MIME_TYPE	image/tiff
+	ICON		Dtimage
+	DESCRIPTION	Tagged Image File
+}
+
+DATA_CRITERIA TIFF_A
+{
+	DATA_ATTRIBUTES_NAME TIFF
+        MODE            f
+	NAME_PATTERN	*.tif
+}
+
+DATA_CRITERIA TIFF_B
+{
+	DATA_ATTRIBUTES_NAME TIFF
+        MODE            f
+	NAME_PATTERN	*.TIF
+}
+
+DATA_CRITERIA TIFF_C
+{
+	DATA_ATTRIBUTES_NAME TIFF
+        MODE            f
+	NAME_PATTERN	*.tiff
+}

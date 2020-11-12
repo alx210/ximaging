@@ -1,0 +1,38 @@
+/****************************************************************************** 
+ * This is a template static PTYPE definition file for XImaging.
+ * It describes which data types XImaging will handle trough ToolTalk requests.
+ * A static PTYPE must be registered so other ToolTalk aware applications like
+ * dtfile(1) can communicate with XImaging.
+ *
+ * Data types specified here must correspond with those in CDE's file type
+ * database. CDE's data type for a particular file can be determined using the
+ * dttypes(1) command: dttypes -type <file name>
+ *
+ * tt_type_comp(1) can be used to register this PTYPE definition within current
+ * user's or system wide PTYPE database.
+ * 
+ * If rpc.ttdbserver(1) is not running, ttsession(1) must be notified of changes
+ * by signaling it with SIGUSR2, or logging out and in again.
+ * 
+ * For further information on CDE data types see the "Advanced User's and
+ * System Administrator's Guide" in CDE documentation.
+ *
+ * For more information regarding ptype file syntax see the "ToolTalk Messaging
+ * Guide" in the CDE documentation.
+ ******************************************************************************/
+
+ptype XImaging
+{
+	start "ximaging -server";
+	handle:
+	session	Display(in XBM contents) => start opnum = 1;
+	session	Display(in XPM contents) => start opnum = 1;
+	session	Display(in JPEG contents) => start opnum = 1;
+	session	Display(in Sun_Raster contents) => start opnum = 1;
+	session	Display(in SGI contents) => start opnum = 1;	
+	session	Display(in TGA contents) => start opnum = 1;
+	session	Display(in PNG contents) => start opnum = 1;
+	session	Display(in PCX contents) => start opnum = 1;
+	session	Display(in MSBITMAP contents) => start opnum = 1;
+	session	Display(in TIFF contents) => start opnum = 1;
+};

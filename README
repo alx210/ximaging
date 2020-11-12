@@ -1,0 +1,27 @@
+1. PREREQUISITES
+-----------------------------
+
+Motif 2.3+
+OpenJPEG 2.1+
+LibPNG 1.6+
+LibTIFF 3.6+
+
+On some GNU/Linux distributions appropriate 'dev' packages need to be installed
+separately - e.g. xorg-dev, motif-dev, etc.
+
+2. BUILDING AND INSTALLING
+-----------------------------
+
+To build and install using default configuration options, change the working
+directory to 'src', run 'make', then 'make install' as root.
+
+For information on building with CDE/ToolTalk support see the CDEINTEG file.
+
+XImaging may be customized using X resources.  An example app-defaults file is
+provided in share/XImaging.defaults. See ximaging(1) for more information.
+
+3. COPYING
+-----------------------------
+This software is distributed under the terms of the MIT license. You may use,
+modify and redistribute the software under the terms of this license. See the
+included LICENSE file for details.

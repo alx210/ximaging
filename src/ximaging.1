@@ -1,0 +1,181 @@
+.\" Copyright (C) 2012-2017 alx@fastestcode.org
+.\" This software is distributed under the terms of the MIT license.
+.\" See the included LICENSE file for further information.
+.\"
+.TH XIMAGING 1
+.SH NAME
+ximaging \- raster graphics browser/viewer.
+.SH SYNOPSIS
+ximaging [options] [directory|file]
+.SH DESCRIPTION
+.PP
+\fIXImaging\fP is a graphics image browser and viewer for Unix operating systems
+running X11.  The application consists of a Browser window displaying
+miniature previews of image files found within a directory, and a Viewer window
+where single images can be viewed in full size.
+.SS Options
+.PP
+In addition to standard X toolkit options, following can be specified on the
+command line:
+.TP
+\fB\-browse\fP
+Open a browser rather than a viewer window when the application is launched
+without a file/directory argument.
+.TP
+\fB\-pin\fP
+Pin newly opened window so it won't be reused.
+.TP
+\fB\-server\fP
+Launch in the background and wait for IPC requests.
+(first instance in a session launches as a server by default).
+.TP
+\fB\-quiet\fP
+Don't write anything to stdout.
+.SS Operands
+.PP
+XImaging will launch a viewer window if a file name is specified on command
+line, or a browser window if a directory name is specified.
+.TP
+\fBdirectory\fP
+Directory containing images to browse.
+.TP
+\fBfile\fP
+Single image file name to be displayed.
+.SH GUI USAGE
+.TP
+\fBBrowser\fP
+The Browser window is used to display miniature previews of all raster images
+contained within a directory. The navigation bar displays the current location
+and may be used to input a desired path directly.
+.IP
+Items displayed in the view area can be selected and manipulated using
+either keyboard or mouse. MB1 click selects an item. The selection may be
+extended to another item by holding the Shift key, while clicking another item
+using MB1. Selection state of a single item may be toggled by clicking on it
+using MB1, while holding down the Control key. MB2 behaves the same way as MB1,
+except that it displays a popup menu with commonly used functions. Double\-
+clicking an image with MB1 opens the file in the Viewer. Double\-clicking the
+file name with MB1 posts the Rename dialog. Double\-clicking an image, or
+pressing enter when the view area is focused, will display the selected file
+in a Viewer window.
+.IP
+Navigation keys may be used to move the focus rectangle among the items.
+Pressing the \fISpace\fP key toggles the selection state of
+the focused item. Holding the\fIShift\fP key while moving the selection
+rectangle extends the selection. The \fITab\fP key may be used to switch
+keyboard focus between the view and the navigation bar.
+.TP
+\fBViewer\fP
+The Viewer window is used to display single images, and provides functionality
+to zoom in and out, rotate, flip the image, and display multi\-page images.
+Note that transformations applied to the image within the viewer are only
+temporary, since XImaging doesn't provide destructive image editing capabilities.
+The image, if larger than the view, may be panned either by holding MB1 pressed
+and dragging the image, or by pushing one of the direction keys on the keyboard.
+.TP
+\fBWindow Management\fP
+By default the last active browser or viewer window is reused when \fIXImaging\fP
+receives a file/directory open request, but every window can be configured
+to stay within its current state by choosing \fIPin Window\fP from its
+\fIView\fP menu. The initial value for this setting may also be specified as
+X resource (see \fBRESOURCES\fP) or using the \fB\-pin\fP command line switch.
+.SH RESOURCES
+.TP
+\fBbrowse\fP \fIBoolean\fP
+Open a browser window rather than a viewer window when the application is
+launched without a file/directory argument. Default is \fIFalse\fP.
+.TP
+\fBconfirmFileRemoval\fP \fIBoolean\fP
+Ask before deleting files. Default is \fITrue\fP.
+.TP
+\fBdownsamplingFilter\fP \fIBoolean\fP
+Apply filtering when down\-sampling (zooming out) images in the viewer window.
+Results in better image quality if enabled, but is computationally intensive,
+especially on large images. The default value is \fITrue\fP.
+\fBNOTE:\fP This option is only supported on true color visuals.
+.TP
+\fBeditCommand\fP \fIString\fP
+A command to be invoked when the \fIEdit\fP item is chosen from the \fIFile\fP
+menu. The list of currently selected files will be appended to the end of the
+command string specified.
+.TP
+\fBkeyPanAmount\fP \fIInteger\fP
+Amount of pixels by which the image in the Viewer is moved per key press.
+.TP
+\fBlargeToolbarIcons\fP \fIBoolean\fP
+Use large icons in toolbar buttons. Default is \fIFalse\fP.
+See also: \fBviewerToolbar\fP resource.
+.TP
+\fBlockRotation\fP \fIBoolean\fP
+Keep rotation settings across images. Default is \fIFalse\fP.
+.TP
+\fBpinWindow\fB \fIBoolean\fP
+Pin newly opened windows by default so that it won't be reused.
+Default is \fIFalse\fP.
+.TP
+\fBquiet\fP \fIBoolean\fP
+Don't write anything to stdout. Default is \fIFalse\fP
+.TP
+\fBrefreshInterval\fP \fIInteger\fP
+Time interval in seconds at which XImaging checks for file
+and directory content changes. Default is 4 seconds.
+.TP
+\fBtileAspectRatio\fP \fIInteger:Integer\fP
+Aspect ratio of preview tiles in browser window. Default is 4:3.
+.TP
+\fBtileSize\fP small|medium|large
+Default size of preview tiles in browser window. Must be either \fIsmall\fP,
+\fImedium\fP, or \fIlarge\fP.
+.TP
+\fBtileSizePresets\fP \fIInteger, Integer, Integer\fP
+Comma separated list of three (small, medium, large) tile size presets in
+pixels. The final size is calculated using the aspect ratio specified with
+the \fBtileAspectRatio\fP resource.
+.TP
+\fBupsamplingFilter\fP \fIBoolean\fP
+Apply filtering when up\-sampling (zooming in) images in the viewer window.
+Results in a smooth transition between zoomed\-in pixels. Default value is
+\fIFalse\fP. \fBNOTE:\fP This option is only supported on true color visuals.
+.TP
+\fBviewerToolbar\fP \fIBoolean\fP
+If set to \fITrue\fP, a toolbar containing some of the most frequently used
+commands will be shown in the viewer window. The default value is \fIFalse\fP.
+.TP
+\fBvisualProgress\fP \fIBoolean\fP
+Display the image in the viewer window as it is being loaded.
+Default is \fITrue\fP.
+.TP
+\fBzoomFit\fP \fIBoolean\fP
+Shrink the image to fit the viewer window. Default is \fITrue\fP.
+.TP
+\fBzoomIncrement\fP \fI<1.1 - 4.0>\fP
+Specifies the increment value for the zoom-in/out function. Must be in the
+1.1 - 4.0 range. Default is 1.6.
+.SH SUPPORTED FILE FORMATS
+.PP
+JPEG Image (jpg, jpeg, jpe, jif, jfif, jfi)
+.br
+MS-Windows Bitmap (bmp) - BMP V3+, uncompressed only
+.br
+PC-Paintbrush V5 (pcx)
+.br
+Portable Network Graphics (png)
+.br
+Silicon Graphics Image (sgi, rgb, rgba, int, inta, bw)
+.br
+Sun Microsystems Raster Image (ras, sun)
+.br
+Tagged Image File (tif, tiff)
+.br
+Truevision (tga, tpic)
+.br
+X/CDE Bitmap (xbm, bm)
+.br
+X/CDE Pixmap (xpm, pm) - XMP3 only
+.SH AUTHORS
+.PP
+XImaging was written and is maintained by alx@fastestcode.org
+.SH CAVEATS
+.PP
+XImaging doesn't provide file format conversion features. There are tools -
+e.g., ImageMagick (http://www.imagemagick.org) designed for this purpose.

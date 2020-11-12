@@ -1,0 +1,108 @@
+# -----------------------------------------------------------------------------
+# Copyright (C) 2012-2017 alx@fastestcode.org
+# This software is distributed under the terms of the MIT license.
+# See the included LICENSE file for further information.
+# -----------------------------------------------------------------------------
+
+# JPEG file support trough libjpeg
+CFLAGS += -DENABLE_JPEG
+JPEG_OBJS = jpeg.o
+JPEG_LIBS = -ljpeg
+
+# PNG file support trough libpng
+CFLAGS += -DENABLE_PNG
+PNG_OBJS = png.o
+PNG_LIBS = -lpng
+
+# TIFF file support trough libtiff
+CFLAGS += -DENABLE_TIFF
+TIFF_OBJS = tiff.o
+TIFF_LIBS = -ltiff
+
+# X Libraries
+X_LIBS = -lXm -lXt -lX11
+
+# X11 xinerama support
+CFLAGS += -DENABLE_XINERAMA
+X_LIBS += -lXinerama
+
+# System libraries
+SYS_LIBS = -lm -lc
+
+# etc location
+SYSCONFDIR := $(PREFIX)/etc
+
+# Location of manpages
+MANPATH := $(PREFIX)/man
+
+# Location of NLS files 
+NLSPATH := $(PREFIX)/share/nls
+
+# Native language support
+# CFLAGS += -DENABLE_NLS
+# INSTALL_RULES += install_nls
+
+# Loader bindings
+EXT_LIBS := $(JPEG_LIBS) $(PNG_LIBS) $(TIFF_LIBS)
+
+.SUFFIXES: .c .o .msg .cat
+.PHONY: all clean rebuild install uninstall
+
+# Default targets
+all: ximaging messages
+rebuild: clean depend all
+
+# Object files
+OBJS := main.o menu.o imgfile.o browser.o viewer.o cmap.o \
+	navbar.o cursor.o imgblt.o pixconv.o comdlgs.o filemgmt.o \
+	hashtbl.o defaults.o guiutil.o toolbar.o sgimage.o sunras.o \
+	pbrush.o targa.o msbitmap.o xbitmap.o xpixmap.o \
+	$(JPEG_OBJS) $(PNG_OBJS) $(TIFF_OBJS) $(IPC_OBJS)
+
+# Application
+ximaging: $(OBJS)
+	$(CC) -o $@ $(LIB_DIRS) $(LDFLAGS) $(SYS_LIBS) $(X_LIBS) \
+		$(EXT_LIBS) $(LD_RPATH) $(CDE_LIBS) $(OBJS)
+
+# Message catalogs
+messages: ximaging.cat
+
+# Cleanup
+clean:
+	-rm -f $(OBJS) ximaging ximaging.cat
+	-rm -f .depend
+
+distclean: clean
+	
+# Rules
+.c.o:
+	$(CC) -c $(CFLAGS) $(DEBUG_CFLAGS) $(INC_DIRS) -o $@ $<
+
+.msg.cat:
+	gencat $@ $<
+
+# Dependencies
+depend:
+	if [ -x /usr/bin/mkdep ]; then \
+		mkdep $(INC_DIRS) $(OBJS:.o=.c); \
+	else \
+		gccmakedep -f .depend $(INC_DIRS) $(OBJS:.o=.c); \
+	fi
+
+# Root installation
+install: $(INSTALL_RULES)
+	install -m755 -o0 -g0 ximaging $(PREFIX)/bin/ximaging
+	install -d -o0 -g0 $(MANPATH)/man1
+	install -m644 -o0 -g0 ximaging.1 $(MANPATH)/man1/ximaging.1
+	
+# Install message catalogs and localized share files
+install_nls: messages
+	install -d -o0 -g0 $(NLSPATH)/C
+	install -m644 -o0 -g0 ximaging.cat $(NLSPATH)/C/ximaging.cat
+	install -d -o0 -g0  $(NLSPATH)/en_US.ISO8859-1
+
+# Removal
+uninstall:
+	-rm -f $(PREFIX)/bin/ximaging
+	-rm -f $(MANPATH)/man1/ximaging.1
+	-rm -f $(NLSPATH)/C/ximaging.cat

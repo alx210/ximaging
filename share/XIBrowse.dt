@@ -1,0 +1,26 @@
+################################################################################
+# This action adds a "Browse for images" entry to the "Current Folder" pop-up
+# menu in dtfile, which is accessed by right-clicking the view area.
+################################################################################
+
+ACTION BrowseForImages
+{
+	TYPE			COMMAND
+	WINDOW_TYPE		NO_STDIO
+	EXEC_STRING		ximaging "%Args%"
+	LABEL			Browse For Images
+}
+
+
+DATA_ATTRIBUTES CURRENT_FOLDER
+{
+        ACTIONS         OpenInPlace,OpenNewView,BrowseForImages
+        ICON		DtdirB
+        MEDIA           FILE_NAME
+        MOVE_TO_ACTION	FILESYSTEM_MOVE
+        COPY_TO_ACTION	FILESYSTEM_COPY
+        LINK_TO_ACTION	FILESYSTEM_LINK
+	DESCRIPTION	The '.' icon represents the current folder. \
+                        Its data type is named CURRENT_FOLDER.
+        TYPE_LABEL      CURRENT_FOLDER
+}

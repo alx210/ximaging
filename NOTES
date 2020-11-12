@@ -1,0 +1,63 @@
+XImaging may be tweaked at compile time using following preprocessor switches:
+
+ENABLE_NLS
+	
+	If defined, enables native language support. Since Ximaging doesn't 
+	have any message catalogs other than US English yet, NLS is disabled
+	by default, so this option is provided for localization and testing
+	purposes.
+
+NO_DEFAULT_WM_ICON
+	
+	Define to disable default (black and white) window shell icons.
+	This allows for user defined pixmaps to be used for window manager
+	icons.
+
+RI_CHECK_FILE_MODTIME
+	
+	Define to enable file modification time checks.
+	By default, only the directory modification time is checked at the
+	specified refresh interval to determine if files were added, renamed
+	or deleted. If desired, this switch may be used to enable file
+	modification check so that edited images will be reloaded automatically.
+
+SUNRAS_ALPHA
+
+	If defined, the extra channel in Sun Raster images will be handled as
+	an alpha (translucency) channel.
+	The Sun Raster specification doesn't explicitly define the contents
+	of the extra channel in 32 bit images, but some RAS writers use it for
+	translucency. This option enables the handling of the extra channel as
+	an alpha channel, but may result in pixel artifacts if the extra channel
+	was used to store some obscure data.
+
+BFILTER_OPT_MAX_SIZE <integer>
+	
+	Define the maximum number of pixels to include in a box filter when down
+	-sampling images in the viewer (the browser is not affected). Larger
+	values reduce performance hit, sacrificing image quality. This value
+	must be larger than 2 to make sense. The default value is 4.
+	If VIEWER_NO_BOX_FILTER_LIMIT is defined, this value has no effect.
+	
+VIEWER_NO_BOX_FILTER_LIMIT
+	
+	If defined, box filter quality limit in the viewer will be disabled.
+	By default, if down-sampling filter is enabled, the viewer will limit
+	the box filter quality in order to reduce performance hit (this doesn't
+	affect the browser).
+	
+USE_XIMAGE_PIXFNC
+	
+	This instructs the XImaging blitter to use XLib's internal pixel reading
+	and writing routines (which may be a way slower) rather that its own.
+	Normally there is no reason to define this.
+
+ENABLE_XINERAMA
+	
+	This is defined by default. Enables the use of the X Xinerama extension,
+	if available.
+
+ENABLE_JPEG/PNG/TIFF
+
+	Build with 3rd party library bindings. These are defined by default.
+
