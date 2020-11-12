@@ -346,7 +346,7 @@ static struct browser_data* get_browser_inst_data(Widget wshell)
 }
 
 /*
- * Scaline read callback proc
+ * Scanline read callback proc
  */
 static int scanline_read_cb(unsigned long iscl,
 	const uint8_t *data, void *client)

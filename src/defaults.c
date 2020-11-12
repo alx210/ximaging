@@ -130,7 +130,11 @@ char *fallback_res[]={
 		"Ctrl<Key>e:end-of-line()\n "
 		"Ctrl<Key>b:backward-character()\n "
 		"Ctrl<Key>f:forward-character()",
+	"*renderTable: variable",
+	"*renderTable.variable.fontType: FONT_IS_XFT",
+	"*renderTable.variable.fontName: Sans",
+	"*renderTable.variable.fontSize: 10",
 	#endif /* ENABLE_CDE */
-		
+
 	NULL
 };

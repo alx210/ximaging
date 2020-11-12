@@ -32,6 +32,15 @@ viewer.width:550
 viewer.height:400
 
 !##############################################################################
+!# Fonts
+!##############################################################################
+
+XImaging*renderTable: variable
+XImaging*renderTable.variable.fontType: FONT_IS_XFT
+XImaging*renderTable.variable.fontName: Sans
+XImaging*renderTable.variable.fontSize: 10
+
+!##############################################################################
 !# Accelerators
 !##############################################################################
 

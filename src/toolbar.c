@@ -97,7 +97,7 @@ Widget create_toolbar(Widget parent,
 		}else{
 			XtSetArg(args[n],XmNfillOnSelect,True); n++;
 			XtSetArg(args[n],XmNshadowThickness,border_width); n++;
-			XtSetArg(args[n],XmNindicatorOn,False); n++;
+			XtSetArg(args[n],XmNindicatorOn,XmINDICATOR_NONE); n++;
 			XtSetArg(args[n],XmNselectPixmap,armed); n++;
 			w=XmCreateToggleButtonGadget(tbd->wrowcol,items[i].name,args,n);
 			XtAddCallback(w,XmNvalueChangedCallback,items[i].callback,cbdata);
