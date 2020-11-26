@@ -7,7 +7,8 @@
 # XImaging Makefile for CDE
 
 # Installation prefix
-PREFIX = /usr/local
+PREFIX = /usr
+MANPATH = /usr/share/man
 
 # Extra include and lib directories
 INC_DIRS = -I/usr/local/include -I/usr/dt/include
@@ -16,6 +17,7 @@ LIB_DIRS = -L/usr/local/lib -L/usr/dt/lib
 # Native language support
 # CFLAGS += -DENABLE_NLS
 # INSTALL_RULES += install_nls
+# NLSPATH = /usr/share/nls
 
 # Fix for CDE installs that don't have proper LD setup
 LD_RPATH = -Wl,-rpath /usr/dt/lib

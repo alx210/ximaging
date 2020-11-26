@@ -7,7 +7,8 @@
 # XImaging Makefile
 
 # Installation prefix
-PREFIX = /usr/local
+PREFIX = /usr
+MANPATH = /usr/share/man
 
 # Extra include and lib directories
 INC_DIRS = -I/usr/local/include
@@ -16,6 +17,7 @@ LIB_DIRS = -L/usr/local/lib
 # Native language support
 # CFLAGS += -DENABLE_NLS
 # INSTALL_RULES += install_nls
+# NLSPATH = $(PREFIX)/share/nls
 
 # C compiler flags
 CFLAGS += -O2

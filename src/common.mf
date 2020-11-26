@@ -29,15 +29,6 @@ X_LIBS += -lXinerama
 # System libraries
 SYS_LIBS = -lm -lc
 
-# etc location
-SYSCONFDIR := $(PREFIX)/etc
-
-# Location of manpages
-MANPATH := $(PREFIX)/man
-
-# Location of NLS files 
-NLSPATH := $(PREFIX)/share/nls
-
 # Native language support
 # CFLAGS += -DENABLE_NLS
 # INSTALL_RULES += install_nls
@@ -70,9 +61,7 @@ messages: ximaging.cat
 # Cleanup
 clean:
 	-rm -f $(OBJS) ximaging ximaging.cat
-	-rm -f .depend
-
-distclean: clean
+	-rm .depend
 	
 # Rules
 .c.o:
@@ -82,12 +71,8 @@ distclean: clean
 	gencat $@ $<
 
 # Dependencies
-depend:
-	if [ -x /usr/bin/mkdep ]; then \
-		mkdep $(INC_DIRS) $(OBJS:.o=.c); \
-	else \
-		gccmakedep -f .depend $(INC_DIRS) $(OBJS:.o=.c); \
-	fi
+.depend:
+	$(CC) -MM $(INC_DIRS) $(OBJS:.o=.c) > .depend
 
 # Root installation
 install: $(INSTALL_RULES)
@@ -106,3 +91,5 @@ uninstall:
 	-rm -f $(PREFIX)/bin/ximaging
 	-rm -f $(MANPATH)/man1/ximaging.1
 	-rm -f $(NLSPATH)/C/ximaging.cat
+
+include .depend
