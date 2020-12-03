@@ -56,6 +56,22 @@ void raise_and_focus(Widget w)
 	XFree((char*)state);
 }
 
+/* Remove PPosition hint and map a shell widget.
+ * The widget must be realized with mappedWhenManaged set to False */
+void map_shell_unpositioned(Widget wshell)
+{
+	XSizeHints size_hints;
+	long supplied_hints;
+
+	if(XGetWMNormalHints(XtDisplay(wshell),XtWindow(wshell),
+		&size_hints,&supplied_hints)){
+		
+		size_hints.flags &= ~PPosition;
+		XSetWMNormalHints(XtDisplay(wshell),XtWindow(wshell),&size_hints);
+	}
+	XtMapWidget(wshell);
+}
+
 /* Build a masked icon pixmap from the xbm data */
 void load_icon(const void *bits, const void *mask_bits,
 	unsigned int width, unsigned int height, Pixmap *icon, Pixmap *mask)

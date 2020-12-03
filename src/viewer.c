@@ -171,8 +171,8 @@ static struct viewer_data* create_viewer(const struct app_resources *res)
 		vd->key_pan_amount=res->key_pan_amount;
 	}
 	
-	vd->wshell=XtVaAppCreateShell("viewer",APP_CLASS,
-		topLevelShellWidgetClass,app_inst.display,
+	vd->wshell=XtVaAppCreateShell("ximagingViewer",APP_CLASS "Viewer",
+		applicationShellWidgetClass,app_inst.display,
 		XmNvisual,app_inst.visual_info.visual,
 		XmNcolormap,app_inst.colormap,
 		XmNmappedWhenManaged,False,
@@ -2086,7 +2086,7 @@ static void new_viewer_cb(Widget w, XtPointer client, XtPointer call)
 				"Not enough resources available for this task."));
 		return;
 	}
-	XtMapWidget(new_vd->wshell);
+	map_shell_unpositioned(new_vd->wshell);
 }
 
 /*
@@ -2516,7 +2516,7 @@ Widget get_viewer(const struct app_resources *res, Tt_message req_msg)
 	}else{
 		vd=create_viewer(res);
 		if(vd){
-			XtMapWidget(vd->wshell);
+			map_shell_unpositioned(vd->wshell);
 		}else{
 			message_box(app_inst.session_shell,MB_ERROR,BASE_NAME,
 				nlstr(APP_MSGSET,SID_ENORES,

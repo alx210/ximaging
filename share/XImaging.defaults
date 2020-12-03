@@ -8,12 +8,12 @@
 
 XImaging*editCommand: xpaint
 XImaging*visualProgress: True
-XImaging*viewerToolbar: False
+XImaging*XImagingViewerToolbar: False
 XImaging*largeToolbarIcons: False
 XImaging*downsamplingFilter: True
 XImaging*upsamplingFilter: False
 
-XImaging*tilePresets: 80,120,160
+XImaging*tileSizeList: 80,120,160
 XImaging*tileSize: small
 XImaging*tileAspectRatio: 4:3
 XImaging*refreshInterval: 3
@@ -21,15 +21,15 @@ XImaging*refreshInterval: 3
 XImaging*lockRotation: False
 XImaging*zoomFit: True
 
-browser.title:XImaging
-browser.iconName:XImaging
-browser.width:550
-browser.height:400
+XImagingBrowser.title:XImaging
+XImagingBrowser.iconName:XImaging
+XImagingBrowser.width:550
+XImagingBrowser.height:400
 
-viewer.title:XImaging
-viewer.iconName:XImaging
-viewer.width:550
-viewer.height:400
+XImagingViewer.title:XImaging
+XImagingViewer.iconName:XImaging
+XImagingViewer.width:550
+XImagingViewer.height:400
 
 *XmFileSelectionBox.pathMode: PATH_MODE_RELATIVE
 *XmFileSelectionBox.fileFilterStyle: FILTER_HIDDEN_FILES
@@ -60,17 +60,17 @@ XImaging*renderTable.variable.fontSize: 10
 *viewMenu.previousPage.accelerator: Ctrl<Key>osfPageUp
 *viewMenu.previousPage.acceleratorText: Ctrl+PgUp
 
-browser*fileMenu.browse.accelerator: Ctrl<Key>b
-browser*fileMenu.browse.acceleratorText: Ctrl+B
-browser*fileMenu.edit.accelerator: Ctrl<Key>e
-browser*fileMenu.edit.acceleratorText: Ctrl+E
+XImagingBrowser*fileMenu.browse.accelerator: Ctrl<Key>b
+XImagingBrowser*fileMenu.browse.acceleratorText: Ctrl+B
+XImagingBrowser*fileMenu.edit.accelerator: Ctrl<Key>e
+XImagingBrowser*fileMenu.edit.acceleratorText: Ctrl+E
 
-viewer*fileMenu.browseHere.accelerator: <Key>Return
-viewer*fileMenu.browseHere.acceleratorText: Enter
-viewer*fileMenu.edit.accelerator: Ctrl<Key>Return
-viewer*fileMenu.edit.acceleratorText: Ctrl+Enter
-viewer*fileMenu.browse.accelerator: Ctrl<Key>b
-viewer*fileMenu.browse.acceleratorText: Ctrl+B
+XImagingViewer*fileMenu.browseHere.accelerator: <Key>Return
+XImagingViewer*fileMenu.browseHere.acceleratorText: Enter
+XImagingViewer*fileMenu.edit.accelerator: Ctrl<Key>Return
+XImagingViewer*fileMenu.edit.acceleratorText: Ctrl+Enter
+XImagingViewer*fileMenu.browse.accelerator: Ctrl<Key>b
+XImagingViewer*fileMenu.browse.acceleratorText: Ctrl+B
 
 *viewMenu.refresh.accelerator: <Key>F5
 *viewMenu.refresh.acceleratorText: F5
@@ -79,12 +79,12 @@ viewer*fileMenu.browse.acceleratorText: Ctrl+B
 *viewMenu.pinWindow.accelerator: <Key>F2
 *viewMenu.pinWindow.acceleratorText: F2
 
-browser*viewMenu.smallTiles.accelerator: <Key>KP_Subtract
-browser*viewMenu.smallTiles.acceleratorText: Kp: -
-browser*viewMenu.largeTiles.accelerator: <Key>KP_Add
-browser*viewMenu.largeTiles.acceleratorText: Kp: +
-browser*viewMenu.mediumTiles.accelerator: <Key>KP_Enter
-browser*viewMenu.mediumTiles.acceleratorText: Kp: Enter
+XImagingBrowser*viewMenu.smallTiles.accelerator: <Key>KP_Subtract
+XImagingBrowser*viewMenu.smallTiles.acceleratorText: Kp: -
+XImagingBrowser*viewMenu.largeTiles.accelerator: <Key>KP_Add
+XImagingBrowser*viewMenu.largeTiles.acceleratorText: Kp: +
+XImagingBrowser*viewMenu.mediumTiles.accelerator: <Key>KP_Enter
+XImagingBrowser*viewMenu.mediumTiles.acceleratorText: Kp: Enter
 
 *zoomMenu.zoomIn.accelerator: <Key>KP_Add
 *zoomMenu.zoomIn.acceleratorText: Kp: Add

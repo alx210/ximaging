@@ -153,8 +153,8 @@ static struct browser_data* create_browser(const struct app_resources *res)
 
 	parse_res_strings(res,bd);
 	
-	bd->wshell=XtVaAppCreateShell("browser",APP_CLASS,
-		topLevelShellWidgetClass,app_inst.display,
+	bd->wshell=XtVaAppCreateShell("ximagingBrowser",APP_CLASS "Browser",
+		applicationShellWidgetClass,app_inst.display,
 		XmNvisual,app_inst.visual_info.visual,
 		XmNcolormap,app_inst.colormap,
 		XmNgeometry,res->geometry,
@@ -297,7 +297,7 @@ static struct browser_data* create_browser(const struct app_resources *res)
 	browsers=bd;
 	app_inst.active_shells++;
 
-	XtMapWidget(bd->wshell);
+	map_shell_unpositioned(bd->wshell);
 	return bd;
 }
 
@@ -1989,10 +1989,10 @@ static void parse_res_strings(const struct app_resources *res,
 			break;
 		}
 		i++;
-		if(i==_NUM_TS_PRESETS) break;
+		if(i == _NUM_TS_PRESETS) break;
 	}while((token=strtok(NULL,seps)));
 
-	if(i!=_NUM_TS_PRESETS){
+	if(i != _NUM_TS_PRESETS){
 		warning_msg("Illegal tile size preset string, using defaults.");
 		for(i=0; i<_NUM_TS_PRESETS; i++) size[i]=(MIN_TILE_SIZE*2)*(i+1);
 	}
@@ -2470,7 +2470,7 @@ static void new_window_cb(Widget w, XtPointer client, XtPointer call)
 	if(!bd) message_box(app_inst.session_shell,MB_ERROR,BASE_NAME,
 				nlstr(APP_MSGSET,SID_ENORES,
 				"Not enough resources available for this task."));
-	XtMapWidget(bd->wshell);
+	map_shell_unpositioned(bd->wshell);
 }
 
 static void small_tiles_cb(Widget w, XtPointer client, XtPointer call)

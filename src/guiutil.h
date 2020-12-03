@@ -16,6 +16,12 @@ void raise_and_focus(Widget w);
 Pixmap load_bitmap(const unsigned char *bits, unsigned int width,
 	unsigned int height, Pixel fg, Pixel bg);
 
+/* 
+ * Remove PPosition hint and map a shell widget.
+ * The widget must be realized with mappedWhenManaged set to False 
+ */
+void map_shell_unpositioned(Widget wshell);
+
 /* Build a masked icon pixmap from xbm data */
 void load_icon(const void *bits, const void *mask_bits,
 	unsigned int width, unsigned int height, Pixmap *icon, Pixmap *mask);

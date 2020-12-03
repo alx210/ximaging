@@ -48,7 +48,7 @@
 #define DEF_TILE_PRESETS "80,120,160"
 #define DEF_TILE_SIZE "small"
 #define MIN_TILE_SIZE 60
-#define MAX_TILE_SIZE 200
+#define MAX_TILE_SIZE 600
 #define DEF_ZOOM_INC "1.6"
 
 /* Directory refresh interval in seconds */

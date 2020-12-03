@@ -438,7 +438,7 @@ static void map_progress_widget_cb(XtPointer client, XtIntervalId *iid)
 {
 	struct proc_data *pd=(struct proc_data*)client;
 	if(pd->wshell==None) create_progress_widget(pd);
-	XtMapWidget(pd->wshell);
+	map_shell_unpositioned(pd->wshell);
 	pd->map_delay=None;
 	while(!pd->is_mapped) XtAppProcessEvent(app_inst.context,XtIMAll);
 }
@@ -491,8 +491,8 @@ static void create_progress_widget(struct proc_data *pd)
 	static Pixmap wmicon=0, wmicon_mask;
 	#endif /* NO_DEFAULT_WM_ICON */
 	
-	pd->wshell=XtVaAppCreateShell("fileProgress",APP_CLASS,
-		topLevelShellWidgetClass,app_inst.display,
+	pd->wshell=XtVaAppCreateShell("xiFileProgress",APP_CLASS,
+		applicationShellWidgetClass,app_inst.display,
 		XmNallowShellResize,True,XmNminWidth,320,
 		XmNmwmFunctions,MWM_FUNC_MOVE|MWM_FUNC_MINIMIZE,NULL);
 	XtAddEventHandler(pd->wshell,StructureNotifyMask,

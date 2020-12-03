@@ -14,15 +14,15 @@
 char *fallback_res[]={
 
 	/* window properties */
-	"browser.width:550",
-	"browser.height:400",
-	"viewer.width:550",
-	"viewer.height:400",
+	"ximagingBrowser.width:550",
+	"ximagingBrowser.height:400",
+	"ximagingViewer.width:550",
+	"ximagingViewer.height:400",
 
-	"browser.title:" BASE_TITLE,
-	"browser.iconName:" BASE_TITLE,
-	"viewer.title:" BASE_TITLE,
-	"viewer.iconName:" BASE_TITLE,
+	"ximagingBrowser.title:" BASE_TITLE,
+	"ximagingBrowser.iconName:" BASE_TITLE,
+	"ximagingViewer.title:" BASE_TITLE,
+	"ximagingViewer.iconName:" BASE_TITLE,
 	
 	/* dialogs */
 	"*XmFileSelectionBox.pathMode: PATH_MODE_RELATIVE",
