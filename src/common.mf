@@ -41,7 +41,7 @@ EXT_LIBS := $(JPEG_LIBS) $(PNG_LIBS) $(TIFF_LIBS)
 
 # Default targets
 all: ximaging messages
-rebuild: clean depend all
+rebuild: clean .depend all
 
 # Object files
 OBJS := main.o menu.o imgfile.o browser.o viewer.o cmap.o \
@@ -92,4 +92,4 @@ uninstall:
 	-rm -f $(MANPATH)/man1/ximaging.1
 	-rm -f $(NLSPATH)/C/ximaging.cat
 
-include .depend
+-include .depend
