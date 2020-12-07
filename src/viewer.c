@@ -2118,7 +2118,7 @@ static void open_cb(Widget w, XtPointer client, XtPointer call)
 	/* one time init */
 	if(!vd->wfile_dlg){
 		XtSetArg(arg[i],XmNfileTypeMask,XmFILE_REGULAR); i++;
-		XtSetArg(arg[i],XmNminWidth,280); i++;
+		XtSetArg(arg[i],XmNresizePolicy,XmRESIZE_GROW); i++;
 		XtSetArg(arg[i],XmNtitle,
 			nlstr(DLG_MSGSET,SID_OPENFILE,"Open File")); i++;
 		XtSetArg(arg[i],XmNdirectory,xm_path); i++;

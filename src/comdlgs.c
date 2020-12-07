@@ -299,7 +299,7 @@ char* dir_select_dlg(Widget parent, const char *title,
 
 	XtSetArg(arg[i],XmNfileTypeMask,XmFILE_DIRECTORY); i++;
 	XtSetArg(arg[i],XmNpathMode,XmPATH_MODE_FULL); i++;
-	XtSetArg(arg[i],XmNminWidth,280); i++;
+	XtSetArg(arg[i],XmNresizePolicy,XmRESIZE_GROW); i++;
 	XtSetArg(arg[i],XmNdirectory,xm_init_path); i++;
 	XtSetArg(arg[i],XmNtitle,title); i++;
 	XtSetArg(arg[i],XmNdialogStyle,XmDIALOG_PRIMARY_APPLICATION_MODAL); i++;

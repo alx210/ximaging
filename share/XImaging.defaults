@@ -31,6 +31,9 @@ viewer.iconName:XImaging
 viewer.width:550
 viewer.height:400
 
+*XmFileSelectionBox.pathMode: PATH_MODE_RELATIVE
+*XmFileSelectionBox.fileFilterStyle: FILTER_HIDDEN_FILES
+
 !##############################################################################
 !# Fonts
 !##############################################################################

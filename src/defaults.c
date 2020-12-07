@@ -24,6 +24,10 @@ char *fallback_res[]={
 	"viewer.title:" BASE_TITLE,
 	"viewer.iconName:" BASE_TITLE,
 	
+	/* dialogs */
+	"*XmFileSelectionBox.pathMode: PATH_MODE_RELATIVE",
+	"*XmFileSelectionBox.fileFilterStyle: FILTER_HIDDEN_FILES",
+
 	/* accelerators */
 	"*fileMenu.open.accelerator: Ctrl<Key>o",
 	"*fileMenu.open.acceleratorText: Ctrl+O",
