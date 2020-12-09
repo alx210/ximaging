@@ -23,6 +23,7 @@
 /* Set input focus to 'w' */
 void raise_and_focus(Widget w)
 {
+	static Atom XaNET_ACTIVE_WINDOW=None;
 	static Atom XaWM_STATE=None;
 	static Atom XaWM_CHANGE_STATE=None;
 	Atom ret_type;
@@ -30,17 +31,23 @@ void raise_and_focus(Widget w)
 	unsigned long ret_items;
 	unsigned long ret_bytes;
 	uint32_t *state=NULL;
-	
+	XClientMessageEvent evt;
+
 	if(XaWM_STATE==None){
-		XaWM_STATE=XInternAtom(app_inst.display,"WM_STATE",False);
-		XaWM_CHANGE_STATE=XInternAtom(app_inst.display,"WM_CHANGE_STATE",False);
+		XaWM_STATE=XInternAtom(app_inst.display,"WM_STATE",True);
+		XaWM_CHANGE_STATE=XInternAtom(app_inst.display,"WM_CHANGE_STATE",True);
+		XaNET_ACTIVE_WINDOW=XInternAtom(app_inst.display,
+			"_NET_ACTIVE_WINDOW",True);
 	}
+
+	if(XaWM_STATE==None) return;
+
 	if(XGetWindowProperty(app_inst.display,XtWindow(w),XaWM_STATE,0,1,
 		False,XaWM_STATE,&ret_type,&ret_fmt,&ret_items,
 		&ret_bytes,(unsigned char**)&state)!=Success) return;
 	if(ret_type==XaWM_STATE && ret_fmt && *state==IconicState){
-		XClientMessageEvent evt;
 		evt.type=ClientMessage;
+		evt.send_event=True;
 		evt.message_type=XaWM_CHANGE_STATE;
 		evt.window=XtWindow(w);
 		evt.format=32;
@@ -49,9 +56,24 @@ void raise_and_focus(Widget w)
 			SubstructureNotifyMask|SubstructureRedirectMask,
 			(XEvent*)&evt);
 	}else{
-		XRaiseWindow(app_inst.display,XtWindow(w));
-		XSync(app_inst.display,False);
-		XSetInputFocus(app_inst.display,XtWindow(w),RevertToParent,CurrentTime);
+		if(XaNET_ACTIVE_WINDOW){
+			evt.type=ClientMessage,
+			evt.send_event=True;
+			evt.serial=0;
+			evt.display=app_inst.display;
+			evt.window=XtWindow(w);
+			evt.message_type=XaNET_ACTIVE_WINDOW;
+			evt.format=32;
+
+			XSendEvent(app_inst.display,
+				XDefaultRootWindow(app_inst.display),False,
+				SubstructureNotifyMask|SubstructureRedirectMask,(XEvent*)&evt);
+		}else{
+			XRaiseWindow(app_inst.display,XtWindow(w));
+			XSync(app_inst.display,False);
+			XSetInputFocus(app_inst.display,XtWindow(w),
+				RevertToParent,CurrentTime);
+		}
 	}
 	XFree((char*)state);
 }
