@@ -32,6 +32,7 @@ struct app_resources {
 	Boolean keep_tform;	/* preserve transformation flags */
 	Boolean show_viewer_tbr; /* show toolbar in the viewer window */
 	Boolean large_tbr_icons; /* use large pixmaps in toolbar buttons */
+	Boolean large_cursors;	/* use large cursor pixmaps */
 	Boolean confirm_rm; /* display a confirmation dialog on file removal */
 	Boolean browse;	/* launch in browser mode */
 	char *edit_cmd; /* the command to invoke for File/Edit */

@@ -93,6 +93,9 @@ static XtResource xrdb_resources[]={
 	{ "largeToolbarIcons","LargeToolbarIcons",XmRBoolean,sizeof(Boolean),
 		RESFIELD(large_tbr_icons),XmRImmediate,(XtPointer)False
 	},
+	{ "largeCursors","LargeCursors",XmRBoolean,sizeof(Boolean),
+		RESFIELD(large_cursors),XmRImmediate,(XtPointer)False
+	},
 	{ "editCommand","EditCommand",XmRString,sizeof(char*),
 		RESFIELD(edit_cmd),XmRImmediate,(XtPointer)NULL
 	},

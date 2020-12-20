@@ -12,6 +12,7 @@
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
 #include <Xm/Xm.h>
+#include "common.h"
 #include "cursor.h"
 #include "debug.h"
 
@@ -22,6 +23,12 @@
 #include "bitmaps/grabptr_m.bm"
 #include "bitmaps/hgptr.bm"
 #include "bitmaps/hgptr_m.bm"
+#include "bitmaps/dragptr.l.bm"
+#include "bitmaps/dragptr_m.l.bm"
+#include "bitmaps/grabptr.l.bm"
+#include "bitmaps/grabptr_m.l.bm"
+#include "bitmaps/hgptr.l.bm"
+#include "bitmaps/hgptr_m.l.bm"
 
 static Cursor get_cursor(Display *dpy, int id);
 static Cursor build_cursor(Display *dpy, unsigned char *bits,
@@ -48,19 +55,37 @@ static Cursor get_cursor(Display *dpy, int id)
 	if(cache[id]==0){
 		switch(id){
 			case CUR_GRAB:
-			cache[CUR_GRAB]=build_cursor(dpy,grabptr_bits,grabptr_m_bits,
-				grabptr_width,grabptr_height,grabptr_x_hot,grabptr_y_hot);
+			if(init_app_res.large_cursors){
+				cache[CUR_GRAB]=build_cursor(dpy,grabptr_l_bits,
+					grabptr_l_m_bits,grabptr_l_width,grabptr_l_height,
+					grabptr_l_x_hot,grabptr_l_y_hot);
+			} else {
+				cache[CUR_GRAB]=build_cursor(dpy,grabptr_bits,grabptr_m_bits,
+					grabptr_width,grabptr_height,grabptr_x_hot,grabptr_y_hot);
+			}
 			break;
 			case CUR_DRAG:
-			cache[CUR_DRAG]=build_cursor(dpy,dragptr_bits,dragptr_m_bits,
-				dragptr_width,dragptr_height,dragptr_x_hot,dragptr_y_hot);
+			if(init_app_res.large_cursors){
+				cache[CUR_DRAG]=build_cursor(dpy,dragptr_l_bits,
+					dragptr_l_m_bits, dragptr_l_width,dragptr_l_height,
+					dragptr_l_x_hot,dragptr_l_y_hot);
+			} else {
+				cache[CUR_DRAG]=build_cursor(dpy,dragptr_bits,dragptr_m_bits,
+					dragptr_width,dragptr_height,dragptr_x_hot,dragptr_y_hot);
+			}
 			break;
 			case CUR_XARROWS:
 			cache[CUR_XARROWS]=XCreateFontCursor(dpy,XC_fleur);
 			break;
 			case CUR_HOURGLAS:
-			cache[CUR_HOURGLAS]=build_cursor(dpy,hgptr_bits,hgptr_m_bits,
-				hgptr_width,hgptr_height,hgptr_x_hot,hgptr_y_hot);
+			if(init_app_res.large_cursors){
+				cache[CUR_HOURGLAS]=build_cursor(dpy,hgptr_l_bits,
+					hgptr_l_m_bits,	hgptr_l_width,hgptr_l_height,
+					hgptr_l_x_hot,hgptr_l_y_hot);
+			} else {
+				cache[CUR_HOURGLAS]=build_cursor(dpy,hgptr_bits,hgptr_m_bits,
+					hgptr_width,hgptr_height,hgptr_x_hot,hgptr_y_hot);
+			}
 			break;
 		}
 	}
