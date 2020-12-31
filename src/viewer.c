@@ -511,9 +511,8 @@ static char* get_path(const char *file_name)
 {
 	char *token;
 	char *path;
-	char *resolved;
-	
-	path=strdup(file_name);
+
+	path=realpath(file_name,NULL);
 	token=strrchr(path,'/');
 	if(token){
 		if(token==path)
@@ -521,9 +520,7 @@ static char* get_path(const char *file_name)
 		else
 			token[0]='\0';
 	}
-	resolved=realpath(path,NULL);
-	free(path);
-	return resolved;
+	return path;
 }
 
 /*
