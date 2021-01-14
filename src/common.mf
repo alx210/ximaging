@@ -52,8 +52,8 @@ OBJS := main.o menu.o imgfile.o browser.o viewer.o cmap.o \
 
 # Application
 ximaging: $(OBJS)
-	$(CC) -o $@ $(LIB_DIRS) $(LDFLAGS) $(SYS_LIBS) $(X_LIBS) \
-		$(EXT_LIBS) $(LD_RPATH) $(CDE_LIBS) $(OBJS)
+	$(CC) -o $@ $(LIB_DIRS) $(LDFLAGS) $(OBJS) $(SYS_LIBS) $(X_LIBS) \
+		$(EXT_LIBS) $(LD_RPATH) $(CDE_LIBS)
 
 # Message catalogs
 messages: ximaging.cat

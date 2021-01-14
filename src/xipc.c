@@ -52,10 +52,6 @@ Boolean init_x_ipc(const char *open_spec)
 	char *xa_sreq_str;
 	Window xw_owner;
 	int retries = 3;
-	
-	if(open_spec){
-		open_file_name = realpath(open_spec,NULL);
-	}
 
 	login=getlogin();
 	if(!login) fatal_error(errno,NULL,NULL);

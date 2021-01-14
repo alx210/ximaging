@@ -289,7 +289,6 @@ int main(int argc, char **argv)
 				"Ignoring redundant arguments.\n"));
 	}
 	
-	#ifdef ENABLE_CDE
 	if(open_spec){
 		char *real_path;
 		/* we need full path, since the file name is
@@ -301,6 +300,8 @@ int main(int argc, char **argv)
 		}
 		open_spec=real_path;
 	}
+	
+	#ifdef ENABLE_CDE
 	if(!query_server(open_spec)){
 		init_tt_media_exchange(True);
 		if(!init_app_res.server){

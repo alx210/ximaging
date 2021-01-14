@@ -1083,7 +1083,9 @@ static void reset_browser(struct browser_data *bd)
 	update_shell_title(bd);
 	update_controls(bd);
 	update_status_msg(bd);
-		
+	update_scroll_bar(bd);
+	set_navbar_path(bd->wnavbar,NULL);
+
 	XmUpdateDisplay(bd->wshell);
 }
 
