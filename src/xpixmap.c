@@ -254,7 +254,7 @@ int init_clut(struct loader_data *ld, struct color *table,
 				return IMG_ENOMEM;
 			}
 			#ifdef DEBUG
-			else if(res==HV_EEXIST){
+			else if(res=EEXIST){
 				dbg_trace("%d: duplicate entry for %s\n",i,table[i].sym);
 			}
 			#endif

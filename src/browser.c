@@ -326,6 +326,7 @@ static void load_path(struct browser_data *bd, const char *path)
 	if(*ptr=='/' && bd->path!=ptr) *ptr='\0';
 	update_status_msg(bd);
 	update_shell_title(bd);
+	set_navbar_path(bd->wnavbar,path);
 	launch_reader_thread(bd);
 	XmProcessTraversal(bd->wview,XmTRAVERSE_CURRENT);
 }
@@ -2673,7 +2674,6 @@ Boolean browse_path(Widget wshell, const char *path, Tt_message req_msg)
 	if(req_msg) bd->tt_disp_req=req_msg;
 	#endif /* ENABLE_CDE */
 
-	set_navbar_path(bd->wnavbar,path);
 	load_path(bd,path);
 	
 	return True;
