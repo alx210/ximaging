@@ -151,16 +151,17 @@ static int parse_color(struct color *c, int ctype, char *cval)
 		strncpy(r,cval,csize); r[csize]='\0';
 		strncpy(g,&cval[csize],csize); g[csize]='\0';
 		strncpy(b,&cval[csize*2],csize); b[csize]='\0';
-		
+
 		if(csize==2){
 			c->r=strtol(r,NULL,16);
 			c->g=strtol(g,NULL,16);
 			c->b=strtol(b,NULL,16);
 		}else{
-			c->r=(strtol(r,NULL,16)/255);
-			c->g=(strtol(g,NULL,16)/255);
-			c->b=(strtol(b,NULL,16)/255);
+			c->r=(strtol(r,NULL,16) >> 8);
+			c->g=(strtol(g,NULL,16) >> 8);
+			c->b=(strtol(b,NULL,16) >> 8);
 		}
+
 	}else if(ctype=='c'){
 		res=get_named_rgb(c,cval);
 		if(res) return res;
