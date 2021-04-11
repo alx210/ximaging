@@ -35,7 +35,7 @@ static void ipsc_value_ready_cb(Widget,XtPointer,Atom*,Atom*,
 	XtPointer,unsigned long*,int*);
 static Boolean try_own_selection(void);
 
-static char *open_file_name = NULL;
+static const char *open_file_name = NULL;
 static char *msg_data = NULL;
 static Boolean is_server = False;
 
@@ -53,6 +53,7 @@ Boolean init_x_ipc(const char *open_spec)
 	Window xw_owner;
 	int retries = 3;
 
+	open_file_name = open_spec;
 	login=getlogin();
 	if(!login) fatal_error(errno,NULL,NULL);
 	gethostname(host,255);
