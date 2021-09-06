@@ -277,6 +277,10 @@ static void path_focus_cb(Widget w,
 		XtSetArg(args[n],XmNcursorPositionVisible,True); n++;
 		XtSetArg(args[n],XmNbackground,pbd->edit_bg); n++;
 	}else{
+		if(pbd->cur_path)
+			set_displayed_path(pbd, pbd->cur_path);
+		else
+			XmTextFieldSetString(pbd->wtext,"");
 		XtSetArg(args[n],XmNcursorPositionVisible,False); n++;
 		XtSetArg(args[n],XmNbackground,pbd->form_bg); n++;
 	}
