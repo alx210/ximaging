@@ -1110,9 +1110,9 @@ static void reset_viewer(struct viewer_data *vd)
 static float compute_fit_zoom(struct viewer_data *vd)
 {
 	Dimension vw=0, vh=0;
-	int img_width, img_height;
+	int img_width, img_height, img_min;
 	float xratio, yratio;
-	float zoom, min_zoom;
+	float zoom;
 	XtVaGetValues(vd->wview,XmNwidth,&vw,XmNheight,&vh,NULL);
 	
 	dbg_assert(vd->image->width && vd->image->height);
@@ -1125,11 +1125,12 @@ static float compute_fit_zoom(struct viewer_data *vd)
 	if(xratio<1.0 || yratio<1.0){
 		zoom=(xratio<yratio?xratio:yratio);
 		compute_image_dimensions(vd,zoom,vd->tform,&img_width,&img_height);
-		min_zoom=1/((img_width<img_height)?img_width:img_height);
-		if(vd->zoom<min_zoom) vd->zoom=min_zoom;
+		img_min = ((img_width<img_height)?img_width:img_height);
+		zoom = img_min ? zoom : 1;
 	}else{
 		zoom=1;
 	}
+
 	return zoom;
 }
 
