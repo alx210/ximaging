@@ -531,8 +531,10 @@ static void* loader_thread(void *data)
 		transform=cbd.img_file.tform;
 		
 		scale=compute_scaling_factor(cbd.buf_image,bd->files[i].image);
-		bd->files[i].image->width=cbd.img_file.width*scale;
-		bd->files[i].image->height=cbd.img_file.height*scale;
+		bd->files[i].image->width = cbd.img_file.width * scale;
+		bd->files[i].image->height = cbd.img_file.height * scale;
+		if(!bd->files[i].image->width) bd->files[i].image->width = 1;
+		if(!bd->files[i].image->height) bd->files[i].image->height = 1;
 		bd->files[i].image->bytes_per_line=0;
 		XInitImage(bd->files[i].image);
 		
