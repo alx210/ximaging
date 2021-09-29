@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2017 alx@fastestcode.org
+ * Copyright (C) 2012-2021 alx@fastestcode.org
  * This software is distributed under the terms of the MIT license.
  * See the included LICENSE file for further information.
  */
@@ -42,10 +42,10 @@ void img_blt(XImage *src, unsigned int sxc, unsigned int syc,
 	unsigned int sw, unsigned int sh, XImage *dest,
 	float scale, short transfm, short flags)
 {
-	float int_sx, sx=0, sy=0;
-	float inc=(1.0/scale);
-	int dx=0, dy=0;
-	int del_x, del_y;
+	float int_sx, sx = 0, sy = 0;
+	float inc = (1.0 / scale);
+	unsigned int dx = 0, dy = 0;
+	unsigned int del_x, del_y;
 	get_pixel_fnc_t get_pixel_fnc;
 	set_pixel_fnc_t set_pixel_fnc;
 	
@@ -57,115 +57,135 @@ void img_blt(XImage *src, unsigned int sxc, unsigned int syc,
 	#endif /* USE_XIMAGE_PIXFUNC */
 
 	/* Discard interpolation options for unsupported pixel formats */
-	if(app_inst.visual_info.class!=TrueColor)
-		flags&=(~BLTF_INTERPOLATE);
+	if(app_inst.visual_info.class != TrueColor)
+		flags &= ~BLTF_INTERPOLATE;
 	
 	/* figure out initial coordinates */
-	int_sx=(ceilf((float)sxc*scale)/scale);
-	sy=(ceilf((float)syc*scale)/scale);
-	del_x=(float)sw*scale;
-	del_y=(float)sh*scale;
+	int_sx = (ceilf((float)sxc * scale) / scale);
+	sy = (ceilf((float)syc * scale) / scale);
+	del_x = (float)sw * scale;
+	del_y = (float)sh * scale;
 	
 	/* clip source coordinates to the destination image */
-	if(transfm&IMGT_ROTATE){
-		if(del_x>dest->height) del_x=dest->height;
-		if(del_y>dest->width) del_y=dest->width;	
+	if(transfm & IMGT_ROTATE){
+		if(del_x > dest->height) del_x = dest->height;
+		if(del_y > dest->width) del_y=dest->width;	
 		/* rotation (as done below) causes vertical flip */
-		transfm^=IMGT_VFLIP;
+		transfm ^= IMGT_VFLIP;
 	}else{
-		if(del_x>dest->width) del_x=dest->width;
-		if(del_y>dest->height) del_y=dest->height;	
+		if(del_x > dest->width) del_x = dest->width;
+		if(del_y > dest->height) del_y = dest->height;	
 	}
-
+	
 	/*  bi-linear interpolation */
-	if((scale>0.5 && scale<1.0) || ((scale>1.0) && (flags&BLTF_INT_UP))){
-		for(dy=0, sx=int_sx; dy<del_y; dy++, sy+=inc, sx=int_sx){
-			for(dx=0; dx<del_x; dx++, sx+=inc){
-				float fx=sx-floorf(sx);
-				float fy=sy-floorf(sy);
-				int cx=(sx+1<src->width)?ceilf(sx):sx;
-				int cy=(sy+1<src->height)?ceilf(sy):sy;
-				uint32_t psrc[4];
-				uint32_t pixel=0;
-				int x,y;
+	if((scale >= 0.5 && scale < 1.0) ||
+		((scale > 1.0) && (flags & BLTF_INT_UP))){
+		for(dy = 0, sx = int_sx; dy < del_y; dy++){
+			#ifdef ENABLE_OMP
+			#pragma omp parallel for firstprivate(dy)
+			#endif
+			for(dx = 0; dx < del_x; dx++){
+				float fsx = sx + (dx * inc);
+				float fsy = sy + (dy * inc);
+				float fx = fsx - floorf(fsx);
+				float fy = fsy - floorf(fsy);
+				unsigned int csx = (fsx + 1 < src->width) ? ceilf(fsx):fsx;
+				unsigned int csy = (fsy + 1 < src->height) ? ceilf(fsy):fsy;
+				unsigned long psrc[4];
+				unsigned long pixel;
+				unsigned int x, y;
 				
-				psrc[0]=get_pixel_fnc(src,(int)sx,(int)sy);
-				psrc[1]=get_pixel_fnc(src,cx,(int)sy);
-				psrc[2]=get_pixel_fnc(src,cx,cy);
-				psrc[3]=get_pixel_fnc(src,(int)sx,cy);
+				psrc[0] = get_pixel_fnc(src, fsx, fsy);
+				psrc[1] = get_pixel_fnc(src, csx, fsy);
+				psrc[2] = get_pixel_fnc(src, csx, csy);
+				psrc[3] = get_pixel_fnc(src, fsx, csy);
 				
-				pixel=(uint32_t)((1-fx)*(1-fy)*(psrc[0]&src->red_mask)+
-					fx*(1-fy)*(psrc[1]&src->red_mask)+
-					fx*fy*(psrc[2]&src->red_mask)+
-					(1-fx)*fy*(psrc[3]&src->red_mask))&dest->red_mask;
+				pixel = (unsigned long)(
+					(1 - fx) * (1 - fy) * (psrc[0] & src->red_mask) +
+					fx * (1 - fy) * (psrc[1] & src->red_mask) +
+					fx * fy * (psrc[2] & src->red_mask) +
+					(1 - fx) * fy * (psrc[3] & src->red_mask)) &
+					dest->red_mask;
 				
-				pixel|=(uint32_t)((1-fx)*(1-fy)*(psrc[0]&src->green_mask)+
-					fx*(1-fy)*(psrc[1]&src->green_mask)+
-					fx*fy*(psrc[2]&src->green_mask)+
-					(1-fx)*fy*(psrc[3]&src->green_mask))&dest->green_mask;
+				pixel |= (unsigned long)
+					((1 - fx) * (1 - fy) * (psrc[0] & src->green_mask) +
+					fx * (1 - fy) * (psrc[1] & src->green_mask) +
+					fx * fy * (psrc[2] & src->green_mask) +
+					(1 - fx) * fy * (psrc[3] & src->green_mask)) &
+					dest->green_mask;
 				
-				pixel|=(uint32_t)((1-fx)*(1-fy)*(psrc[0]&src->blue_mask)+
-					fx*(1-fy)*(psrc[1]&src->blue_mask)+
-					fx*fy*(psrc[2]&src->blue_mask)+
-					(1-fx)*fy*(psrc[3]&src->blue_mask))&dest->blue_mask;
+				pixel |= (unsigned long)
+					(( 1 - fx) * (1 - fy) * (psrc[0] & src->blue_mask) +
+					fx * (1 - fy) * (psrc[1] & src->blue_mask) +
+					fx * fy * (psrc[2] & src->blue_mask) +
+					(1 - fx) * fy * (psrc[3] & src->blue_mask)) &
+					dest->blue_mask;
 				
 				if(transfm&IMGT_HFLIP) x=(del_x-1)-dx; else x=dx;
 				if(transfm&IMGT_VFLIP) y=(del_y-1)-dy; else y=dy;
-				if(transfm&IMGT_ROTATE){ int t=x; x=y; y=t; }
+				if(transfm&IMGT_ROTATE){ unsigned int t=x; x=y; y=t; }
 				set_pixel_fnc(dest,x,y,pixel);
 			}
 		}
-	}else if((flags&BLTF_INT_DOWN) && (scale<=0.5)){
+	}else if((flags & BLTF_INT_DOWN) && (scale < 0.5)){
 		/* decimation with sample averaging */
-		float box=pow(ceilf(inc),2);
-		float div=box;
-		int step=1;
-		
-		if((flags&BLTF_INT_OPT) && (inc>BFILTER_OPT_MAX_SIZE)){
-			step=BFILTER_OPT_MAX_SIZE;
-			div=pow(ceilf(inc/BFILTER_OPT_MAX_SIZE),2);
-		}else if(inc>BFILTER_MAX_SIZE){
-			step=BFILTER_MAX_SIZE;
-			div=pow(ceilf(inc/BFILTER_MAX_SIZE),2);
-		}
-		for(dy=0, sx=int_sx; dy<del_y; dy++, sy+=inc, sx=int_sx){
-			for(dx=0; dx<del_x; dx++, sx+=inc){
+		unsigned int bw = (0.5 + sw / (0.5 + sw * scale));
+		unsigned int bh = (0.5 + sh / (0.5 + sh * scale));
+		float box = bw * bh;
+
+		/* Round up if we're sub-pixel, so we can generate thumbnails for
+		 * 'thin' images, albeit with incorrect ratio */
+		del_x = (del_x) ? del_x : 1;
+		del_y = (del_y) ? del_y : 1;
+
+		for(dy = 0, sx = int_sx; dy < del_y; dy++){
+			#ifdef ENABLE_OMP
+			#pragma omp parallel for firstprivate(dy)
+			#endif
+			for(dx=0; dx < del_x; dx++){
 				float red=0;
 				float green=0;
 				float blue=0;
-				uint32_t pixel;
-				int x,y;
-				int bx, by;
+				unsigned long pixel;
+				unsigned int x, y;
+				unsigned int bx, by;
 				
-				for(by=0; by<inc; by+=step){
-					for(bx=0; bx<inc; bx+=step){
-						pixel=get_pixel_fnc(src,sx+bx,sy+by);
-						red+=(float)(pixel&src->red_mask)/div;
-						green+=(float)(pixel&src->green_mask)/div;
-						blue+=(float)(pixel&src->blue_mask)/div;
+				for(by = 0; by < bh; by++){
+					for(bx = 0; bx < bw; bx++){
+						pixel = get_pixel_fnc(src,
+							sx + (inc * dx) + bx,
+							sy + (inc * dy) + by);
+						red += (float)(pixel & src->red_mask) / box;
+						green += (float)(pixel & src->green_mask) / box;
+						blue += (float)(pixel & src->blue_mask) / box;
 					}
 				}
-				pixel=((uint32_t)red&src->red_mask)|
-					((uint32_t)green&src->green_mask)|
-					((uint32_t)blue&src->blue_mask);
+				pixel = ((unsigned long)red & src->red_mask)|
+					((unsigned long)green & src->green_mask)|
+					((unsigned long)blue & src->blue_mask);
 				
 				if(transfm&IMGT_HFLIP) x=(del_x-1)-dx; else x=dx;
 				if(transfm&IMGT_VFLIP) y=(del_y-1)-dy; else y=dy;
-				if(transfm&IMGT_ROTATE){ int t=x; x=y; y=t; }
-				set_pixel_fnc(dest,x,y,pixel);
+				if(transfm&IMGT_ROTATE){ unsigned int t=x; x=y; y=t; }
+				set_pixel_fnc(dest, x, y, pixel);
 			}
 		}
 	}else{
 		/* point sampling */
-		for(dy=0, sx=int_sx; dy<del_y; dy++, sy+=inc, sx=int_sx){
-			for(dx=0; dx<del_x; dx++, sx+=inc){
-				uint32_t pixel;
-				int x,y;
+		for(dy = 0, sx = int_sx; dy < del_y; dy++){
+			#ifdef ENABLE_OMP
+			#pragma omp parallel for firstprivate(dy)
+			#endif
+			for(dx = 0; dx < del_x; dx++){
+				unsigned long pixel;
+				unsigned int x, y;
 
-				pixel=get_pixel_fnc(src,(int)sx,(int)sy);
+				pixel = get_pixel_fnc(src,
+					(sx + inc * dx), (sy + inc * dy));
+
 				if(transfm&IMGT_HFLIP) x=(del_x-1)-dx; else x=dx;
 				if(transfm&IMGT_VFLIP) y=(del_y-1)-dy; else y=dy;
-				if(transfm&IMGT_ROTATE){ int t=x; x=y; y=t; }
+				if(transfm&IMGT_ROTATE){ unsigned int t=x; x=y; y=t; }
 				set_pixel_fnc(dest,x,y,pixel);
 			}
 		}

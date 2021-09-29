@@ -32,9 +32,7 @@
 
 /* Local prototypes */
 static Boolean init_instance(const char *open_spec);
-static void default_bg_color(Widget w, int offset, XrmValue *value);
 static void init_display_globals(void);
-static int sz_to_visual_class(char*);
 static void sig_handler(int);
 
 /* Application global variables */
@@ -84,6 +82,9 @@ static XtResource xrdb_resources[]={
 	{ "downsamplingFilter","DownsamplingFilter",XmRBoolean,sizeof(Boolean),
 		RESFIELD(int_down),XmRImmediate,(XtPointer)True
 	},
+	{ "fastPanning","FastPanning",XmRBoolean,sizeof(Boolean),
+		RESFIELD(fast_pan),XmRImmediate,(XtPointer)False
+	},
 	{ "confirmFileRemoval","ConfirmFileRemoval",XmRBoolean,sizeof(Boolean),
 		RESFIELD(confirm_rm),XmRImmediate,(XtPointer)True
 	},
@@ -124,17 +125,6 @@ static XrmOptionDescRec xrdb_options[]={
 };
 static const int num_xrdb_options=
 	(sizeof(xrdb_options)/sizeof(XrmOptionDescRec));
-
-/*
- * Retrieve the default background pixel.
- */
-static void default_bg_color(Widget w, int offset, XrmValue *value)
-{
-	XrmDatabase rdb;
-	char *type_ret;
-	rdb=XtScreenDatabase(XtScreen(w));
-	XrmGetResource(rdb,"XmText*background","Background",&type_ret,value);
-}
 
 /*
  * Launch a viewer or browser instance, depending on 'open_spec' contents.

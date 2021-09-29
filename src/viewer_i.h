@@ -41,6 +41,7 @@ struct viewer_data {
 	Boolean vprog;	/* visual progress */
 	Boolean vprog_zfit; /* fit zoom when loading */
 	int key_pan_amount; /* direction key pan amount */
+	Boolean panning;
 	Boolean show_tbr; /* toolbar visible */
 	Boolean large_tbr; /* use large pixmaps in toolbar buttons */
 	

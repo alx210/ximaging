@@ -47,10 +47,8 @@
 #include "browser.h"
 #include "bswap.h"
 #include "debug.h"
-#ifndef NO_DEFAULT_WM_ICON
 #include "bitmaps/wmiconv.bm"
 #include "bitmaps/wmiconv_m.bm"
-#endif /* SET_WM_ICON */
 
 /* Local prototypes */
 static struct viewer_data* create_viewer(const struct app_resources *res);
@@ -123,7 +121,9 @@ static void new_viewer_cb(Widget,XtPointer,XtPointer);
 static void about_cb(Widget,XtPointer,XtPointer);
 static void load_prog_handler(XtPointer client, XtIntervalId *iid);
 static void load_fb_update_handler(XtPointer client, XtIntervalId *iid);
+#ifdef ENABLE_CDE
 static void help_topics_cb(Widget w, XtPointer client, XtPointer call);
+#endif /* ENABLE_CDE */
 
 /* Linked list of viewer instances */
 struct viewer_data *viewers=NULL;
@@ -143,10 +143,8 @@ static struct viewer_data* create_viewer(const struct app_resources *res)
 	Colormap cmap;
 	Dimension line_width;
 	Pixel bg_pixel, tmp_pixel;
-	#ifndef NO_DEFAULT_WM_ICON
 	static Pixmap wmicon=0;
 	static Pixmap wmicon_mask=0;
-	#endif /* SET_WM_ICON */
 	
 	vd=calloc(1,sizeof(struct viewer_data));
 	if(!vd) return NULL;
@@ -253,14 +251,12 @@ static struct viewer_data* create_viewer(const struct app_resources *res)
 	XtAddCallback(vd->wview,XmNresizeCallback,resize_cb,(XtPointer)vd);
 	XtRealizeWidget(vd->wshell);
 	
-	#ifndef NO_DEFAULT_WM_ICON
 	if(!wmicon){
 		load_icon(wmiconv_bits,wmiconv_m_bits,
 		wmiconv_width,wmiconv_height,&wmicon,&wmicon_mask);
 	}
 	XtVaSetValues(vd->wshell,XmNiconPixmap,wmicon,
 		XmNiconMask,wmicon_mask,NULL);
-	#endif /* SET_WM_ICON */
 	
 	XtVaGetValues(vd->wshell,XmNtitle,&vd->title,NULL);
 	vd->title=strdup(vd->title);
@@ -1517,13 +1513,6 @@ static void scroll_view(struct viewer_data *vd, int x, int y)
 	float xoff=vd->xoff, yoff=vd->yoff;
 	unsigned short tform=vd->tform^vd->img_file.tform;
 	
-	#if DBG_TFORM
-	dbg_trace("TFORM: %s %s %s\n",
-		(tform&IMGT_HFLIP)?"HFLIP":"",
-		(tform&IMGT_VFLIP)?"VFLIP":"",
-		(tform&IMGT_ROTATE)?"ROTATE":"");
-	#endif
-	
 	if(tform&IMGT_ROTATE){
 		if(!(tform&IMGT_VFLIP)) x=(-x);
 		if(tform&IMGT_HFLIP) y=(-y);
@@ -1547,8 +1536,9 @@ static void scroll_view(struct viewer_data *vd, int x, int y)
 	if(!x && !y) return;
 
 	/* store the offsets and sync the image */
-	vd->xoff+=x;
-	vd->yoff+=y;
+	vd->xoff += x;
+	vd->yoff += y;
+
 	update_back_buffer(vd);
 	redraw_view(vd,False);
 }
@@ -1559,31 +1549,30 @@ static void scroll_view(struct viewer_data *vd, int x, int y)
 static void update_back_buffer(struct viewer_data *vd)
 {
 	int sx, sy, sw, sh;
-	unsigned short tform=vd->tform^vd->img_file.tform;
-	unsigned short intp=(init_app_res.int_up?BLTF_INT_UP:0)|
-		(init_app_res.int_down?BLTF_INT_DOWN:0);
-
-	#ifndef VIEWER_NO_BOX_FILTER_LIMIT
-	intp|=BLTF_INT_OPT;
-	#endif
-
-	sx=fabs((float)vd->xoff/vd->zoom);
-	sy=fabs((float)vd->yoff/vd->zoom);
-
-	if(tform&IMGT_ROTATE){
-		sw=vd->image->width-sy;
-		sh=vd->image->height-sx;
-		if(sw && sh){
-			img_blt(vd->image,sy,sx,sw,sh,vd->bkbuf,vd->zoom,tform,intp);
-		}
-	}else{
-		sw=vd->image->width-sx;
-		sh=vd->image->height-sy;
-		if(sw && sh){
-			img_blt(vd->image,sx,sy,sw,sh,vd->bkbuf,vd->zoom,tform,intp);
-		}
+	unsigned short tform = vd->tform ^ vd->img_file.tform;
+	unsigned short intp = (init_app_res.int_up ? BLTF_INT_UP : 0) |
+		(init_app_res.int_down ? BLTF_INT_DOWN : 0);
+	
+	if(init_app_res.fast_pan && vd->panning) {
+		intp &= ~(BLTF_INT_UP|BLTF_INT_DOWN);
 	}
+
+	/* Offsets are screen/window coordinates, so we need to flip them
+	 * according to the image rotation flag for blitting. */
+	if(tform & IMGT_ROTATE) {
+		sx = fabs((float)vd->yoff / vd->zoom);
+		sy = fabs((float)vd->xoff / vd->zoom);
+	} else {
+		sx = fabs((float)vd->xoff / vd->zoom);
+		sy = fabs((float)vd->yoff / vd->zoom);
+	}
+
+	sw = vd->image->width - sx;
+	sh = vd->image->height - sy;
+	if(sw && sh) img_blt(vd->image, sx, sy, sw, sh,
+		vd->bkbuf, vd->zoom, tform, intp);
 }
+
 
 /*
  * Redraw the view area. Clear it before drawing if necessary.
@@ -1753,6 +1742,7 @@ static void input_cb(Widget w, XtPointer client_data, XtPointer call_data)
 		if(cbs->event->xbutton.button==Button1){
 			if(img_width>view_width || img_height>view_height)
 				set_widget_cursor(w,CUR_DRAG);
+				vd->panning = True;
 		}
 		break;	/* ButtonPress */
 		
@@ -1762,6 +1752,12 @@ static void input_cb(Widget w, XtPointer client_data, XtPointer call_data)
 			set_widget_cursor(w,CUR_GRAB);
 		else
 			set_widget_cursor(w,CUR_POINTER);
+		
+		vd->panning = False;
+		if(init_app_res.fast_pan) {
+			update_back_buffer(vd);
+			redraw_view(vd,False);
+		}
 		break; /* ButtonRelease */
 		
 		/* Pan on MB1 */
@@ -2316,9 +2312,9 @@ static void delete_cb(Widget w, XtPointer client, XtPointer call)
 /*
  * Help/Topics menu callback. Currently it just shows the manpage.
  */
+#ifdef ENABLE_CDE
 static void help_topics_cb(Widget w, XtPointer client, XtPointer call)
 {
-	#ifdef ENABLE_CDE
 	struct viewer_data *vd=(struct viewer_data*)client;
 	DtActionArg args[1]={
 		DtACTION_FILE,
@@ -2326,8 +2322,8 @@ static void help_topics_cb(Widget w, XtPointer client, XtPointer call)
 	};
 	DtActionInvoke(vd->wshell,"Dtmanpageview",args,1,
 		NULL,NULL,NULL,False,NULL,NULL);
-	#endif
 }
+#endif /* ENABLE_CDE */
 
 /*
  * Creates the menu bar widget and the pulldowns. Assigns the handle to

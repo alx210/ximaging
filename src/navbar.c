@@ -35,7 +35,6 @@ struct navbar_data {
 	Pixel edit_bg;
 };
 
-static void subdir_select_cb(Widget,XtPointer,XtPointer);
 static void path_changed_cb(Widget,XtPointer,XtPointer);
 static void frame_destroy_cb(Widget,XtPointer,XtPointer);
 static void path_focus_cb(Widget,XtPointer,XtPointer);

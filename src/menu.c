@@ -82,7 +82,6 @@ static void create_buttons(Widget wparent, const struct menu_item *items,
 	int nitems, const void *cbc_data, int msg_set)
 {
 	int i, n;
-	Widget w;
 	XmString label_str=NULL;
 	Arg args[8];
 	KeySym mnemonic;
@@ -130,7 +129,7 @@ static void create_buttons(Widget wparent, const struct menu_item *items,
 			case IT_SEP: break;
 		}
 
-		w=XtCreateManagedWidget(items[i].name,
+		XtCreateManagedWidget(items[i].name,
 			wc[items[i].type],wparent,args,n);
 		
 		/* temporary label XmString */

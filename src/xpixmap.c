@@ -57,7 +57,6 @@ int init_clut(struct loader_data *ld, struct color *table,
 	int ncolors, int bpc);
 static int build_rgb_table(void);
 static int get_named_rgb(struct color *c, char *name);
-static int seek_to_data(FILE *file);
 static int parse_color(struct color *c, int ctype, char *cval);
 static void close(struct img_file *img);
 static int read_scanlines(struct img_file*,img_scanline_cbt,void*);
@@ -254,11 +253,6 @@ int init_clut(struct loader_data *ld, struct color *table,
 				ht_free(clv);
 				return IMG_ENOMEM;
 			}
-			#ifdef DEBUG
-			else if(res=EEXIST){
-				dbg_trace("%d: duplicate entry for %s\n",i,table[i].sym);
-			}
-			#endif
 		}
 		ld->hci=clv;
 		ld->ci=NULL;
@@ -268,7 +262,7 @@ int init_clut(struct loader_data *ld, struct color *table,
 		if(!indices) return IMG_ENOMEM;
 		
 		for(i=0; i<ncolors; i++){
-			indices[table[i].sym[0]]=i;
+			indices[(size_t)table[i].sym[0]]=i;
 		}
 		ld->hci=NULL;
 		ld->ci=indices;
@@ -285,7 +279,7 @@ static uint32_t lookup_pixel(struct loader_data *ld, const char *sym)
 	
 	if(ld->bpc==1){
 		struct color *c;
-		c=&ld->clut[ld->ci[sym[0]]];
+		c = &ld->clut[ld->ci[(size_t)sym[0]]];
 		pixel=c->r|((uint32_t)c->g<<8)|
 			((uint32_t)c->b<<16)|((uint32_t)c->a<<24);
 	}else{

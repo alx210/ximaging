@@ -51,10 +51,8 @@
 #include "navbar.h"
 #include "bswap.h"
 #include "debug.h"
-#ifndef NO_DEFAULT_WM_ICON
 #include "bitmaps/wmiconb.bm"
 #include "bitmaps/wmiconb_m.bm"
-#endif /* NO_DEFAULT_WM_ICON */
 
 /* Local prototypes */
 static struct browser_data* create_browser(const struct app_resources *res);
@@ -67,7 +65,6 @@ static void reset_browser(struct browser_data *bd);
 static void *loader_thread(void*);
 static void thread_callback_proc(XtPointer,int*,XtInputId*);
 static void update_status_msg(struct browser_data*);
-static void update_stats_msg(struct browser_data*);
 static void update_shell_title(struct browser_data*);
 static void update_scroll_bar(struct browser_data*);
 static void update_controls(struct browser_data *bd);
@@ -119,9 +116,11 @@ static void medium_tiles_cb(Widget,XtPointer,XtPointer);
 static void large_tiles_cb(Widget,XtPointer,XtPointer);
 static void pin_window_cb(Widget,XtPointer,XtPointer);
 static void new_window_cb(Widget,XtPointer,XtPointer);
-static void about_cb(Widget,XtPointer,XtPointer);
-static void help_topics_cb(Widget,XtPointer,XtPointer);
 static void navbar_change_cb(const char*, void*);
+static void about_cb(Widget,XtPointer,XtPointer);
+#ifdef ENABLE_CDE
+static void help_topics_cb(Widget,XtPointer,XtPointer);
+#endif /* ENABLE_CDE */
 
 /* Linked list of browser instances */
 struct browser_data *browsers=NULL;
@@ -137,10 +136,8 @@ static struct browser_data* create_browser(const struct app_resources *res)
 	struct browser_data *bd;
 	Dimension line_width=0;
 	XGCValues gc_values;
-	#ifndef NO_DEFAULT_WM_ICON
 	static Pixmap wmicon=0;
 	static Pixmap wmicon_mask=0;
-	#endif /* NO_DEFAULT_WM_ICON */
 
 	bd=calloc(1,sizeof(struct browser_data));
 	if(!bd) return NULL;
@@ -241,14 +238,12 @@ static struct browser_data* create_browser(const struct app_resources *res)
 	XtAddCallback(bd->wview,XmNexposeCallback,expose_cb,(XtPointer)bd);
 	XtAddCallback(bd->wview,XmNresizeCallback,resize_cb,(XtPointer)bd);
 
-	#ifndef NO_DEFAULT_WM_ICON	
 	if(!wmicon){
 		load_icon(wmiconb_bits,wmiconb_m_bits,
 			wmiconb_width,wmiconb_height,&wmicon,&wmicon_mask);
 	}
 	XtVaSetValues(bd->wshell,XmNiconPixmap,wmicon,
 		XmNiconMask,wmicon_mask,NULL);
-	#endif /* NO_DEFAULT_WM_ICON */
 
 	memset(&gc_values,0,sizeof(XGCValues));
 	gc_values.function=GXcopy;
@@ -2226,16 +2221,16 @@ static void update_interval_cb(XtPointer client, XtIntervalId *iid)
 			app_inst.context,bd->refresh_int,
 			update_interval_cb,(XtPointer)bd);
 	}else{
-		#ifdef RI_CHECK_FILE_MODTIME
-		launch_reader_thread(bd);
-		#else
 		struct stat st;
+
 		if(stat(bd->path,&st)){
 			errno_message_box(bd->wshell,errno,
 				nlstr(APP_MSGSET,SID_EREADDIR,
 				"Error reading directory."),False);
 			reset_browser(bd);
+			return;
 		}
+
 		if(difftime(st.st_mtime,bd->dir_modtime)){
 			launch_reader_thread(bd);
 		}else{
@@ -2243,7 +2238,6 @@ static void update_interval_cb(XtPointer client, XtIntervalId *iid)
 				app_inst.context,bd->refresh_int,
 				update_interval_cb,(XtPointer)bd);
 		}
-		#endif /* UI_CHECK_FILE_MODTIME */
 	}
 }
 
@@ -2505,9 +2499,9 @@ static void large_tiles_cb(Widget w, XtPointer client, XtPointer call)
 /*
  * Help/Topics menu callback. Currently it just shows the manpage.
  */
+#ifdef ENABLE_CDE
 static void help_topics_cb(Widget w, XtPointer client, XtPointer call)
 {
-	#ifdef ENABLE_CDE
 	struct browser_data *bd=(struct browser_data*)client;
 	DtActionArg args[1]={
 		DtACTION_FILE,
@@ -2515,8 +2509,8 @@ static void help_topics_cb(Widget w, XtPointer client, XtPointer call)
 	};
 	DtActionInvoke(bd->wshell,"Dtmanpageview",args,1,
 		NULL,NULL,NULL,False,NULL,NULL);
-	#endif
 }
+#endif /* ENABLE_CDE */
 
 static void about_cb(Widget w, XtPointer client, XtPointer call)
 {

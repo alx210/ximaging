@@ -25,6 +25,7 @@ struct app_resources {
 	Boolean pin_window;	/* pin the window (don't reuse for load requests) */
 	Boolean server;		/* launch as a ToolTalk message server */
 	int refresh_int;	/* browser refresh interval */
+	Boolean fast_pan; /* disable interpolation when panning */
 	Boolean vprog;	/* display the image while it's being loaded */
 	Boolean int_up;	/* interpolate when upsampling */
 	Boolean int_down;	/* interpolate on downsampling */

@@ -4,6 +4,10 @@
 # See the included LICENSE file for further information.
 # -----------------------------------------------------------------------------
 
+# OpenMP loop optimizations
+# CFLAGS += -fopenmp -DENABLE_OMP
+# LDFLAGS += -fopenmp
+
 # JPEG file support trough libjpeg
 CFLAGS += -DENABLE_JPEG
 JPEG_OBJS = jpeg.o
@@ -19,19 +23,18 @@ CFLAGS += -DENABLE_TIFF
 TIFF_OBJS = tiff.o
 TIFF_LIBS = -ltiff
 
-# X Libraries
-X_LIBS = -lXm -lXt -lX11
-
-# X11 xinerama support
-CFLAGS += -DENABLE_XINERAMA
-X_LIBS += -lXinerama
-
-# System libraries
-SYS_LIBS = -lm -lc
-
 # Native language support
 # CFLAGS += -DENABLE_NLS
 # INSTALL_RULES += install_nls
+
+# -----------------------------------------------------------------------------
+
+# X Libraries
+X_LIBS = -lXm -lXt -lXinerama -lX11
+CFLAGS += -DENABLE_XINERAMA
+
+# System libraries
+SYS_LIBS = -lm -lc
 
 # Loader bindings
 EXT_LIBS := $(JPEG_LIBS) $(PNG_LIBS) $(TIFF_LIBS)

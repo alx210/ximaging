@@ -9,10 +9,8 @@ ximaging \- raster graphics browser/viewer.
 ximaging [options] [directory|file]
 .SH DESCRIPTION
 .PP
-\fIXImaging\fP is a graphics image browser and viewer for Unix operating systems
-running X11.  The application consists of a Browser window displaying
-miniature previews of image files found within a directory, and a Viewer window
-where single images can be viewed in full size.
+XImaging is a graphics image browser and viewer for Unix operating systems
+running X11.
 .SS Options
 .PP
 In addition to standard X toolkit options, following can be specified on the
@@ -33,8 +31,6 @@ Launch in the background and wait for IPC requests.
 Don't write anything to stdout.
 .SS Operands
 .PP
-XImaging will launch a viewer window if a file name is specified on command
-line, or a browser window if a directory name is specified.
 .TP
 \fBdirectory\fP
 Directory containing images to browse.
@@ -44,9 +40,9 @@ Single image file name to be displayed.
 .SH GUI USAGE
 .TP
 \fBBrowser\fP
-The Browser window is used to display miniature previews of all raster images
-contained within a directory. The navigation bar displays the current location
-and may be used to input a desired path directly.
+The Browser window displays miniature previews of images contained within a
+directory. The navigation bar displays the current location and may be used to
+input a desired path directly.
 .IP
 Items displayed in the view area can be selected and manipulated using
 either keyboard or mouse. MB1 click selects an item. The selection may be
@@ -74,30 +70,36 @@ The image, if larger than the view, may be panned either by holding MB1 pressed
 and dragging the image, or by pushing one of the direction keys on the keyboard.
 .TP
 \fBWindow Management\fP
-By default the last active browser or viewer window is reused when \fIXImaging\fP
+By default the last active browser or viewer window is reused when IXImaging
 receives a file/directory open request, but every window can be configured
-to stay within its current state by choosing \fIPin Window\fP from its
-\fIView\fP menu. The initial value for this setting may also be specified as
+to stay within its current state by choosing \fBPin Window\fP from its
+\fBView\fP menu. The initial value for this setting may also be specified as
 X resource (see \fBRESOURCES\fP) or using the \fB\-pin\fP command line switch.
 .SH RESOURCES
 .TP
 \fBbrowse\fP \fIBoolean\fP
 Open a browser window rather than a viewer window when the application is
-launched without a file/directory argument. Default is \fIFalse\fP.
+launched without a file/directory argument. Default is False.
 .TP
 \fBconfirmFileRemoval\fP \fIBoolean\fP
-Ask before deleting files. Default is \fITrue\fP.
+Ask before deleting files. Default is True.
 .TP
 \fBdownsamplingFilter\fP \fIBoolean\fP
 Apply filtering when down\-sampling (zooming out) images in the viewer window.
 Results in better image quality if enabled, but is computationally intensive,
-especially on large images. The default value is \fITrue\fP.
+especially on large images. The default value is True.
 \fBNOTE:\fP This option is only supported on true color visuals.
 .TP
 \fBeditCommand\fP \fIString\fP
-A command to be invoked when the \fIEdit\fP item is chosen from the \fIFile\fP
+A command to be invoked when the \fBEdit\fP item is chosen from the \fBFile\fP
 menu. The list of currently selected files will be appended to the end of the
 command string specified.
+.TP
+\fBfastPanning\fP \fIBoolean\fP
+If set to True, up/down\-sampling filter in the viewer will be
+temporarily disabled when the image is being panned using the mouse.
+Only effective if \fBdownsamplingFilter\fP and/or \fBupsamplingFilter\fP
+resources are set to True. Default value is False.
 .TP
 \fBkeyPanAmount\fP \fIInteger\fP
 Amount of pixels by which the image in the Viewer is moved per key press.
@@ -106,18 +108,18 @@ Amount of pixels by which the image in the Viewer is moved per key press.
 Use large cursors. Default is \fIFalse\fP.
 .TP
 \fBlargeToolbarIcons\fP \fIBoolean\fP
-Use large icons in toolbar buttons. Default is \fIFalse\fP.
+Use large icons in toolbar buttons. Default is False.
 See also: \fBviewerToolbar\fP resource.
 .TP
 \fBlockRotation\fP \fIBoolean\fP
-Keep rotation settings across images. Default is \fIFalse\fP.
+Keep rotation settings across images. Default is False.
 .TP
 \fBpinWindow\fB \fIBoolean\fP
 Pin newly opened windows by default so that it won't be reused.
 Default is \fIFalse\fP.
 .TP
 \fBquiet\fP \fIBoolean\fP
-Don't write anything to stdout. Default is \fIFalse\fP
+Don't write anything to stdout. Default is False.
 .TP
 \fBrefreshInterval\fP \fIInteger\fP
 Time interval in seconds at which XImaging checks for file
@@ -127,8 +129,9 @@ and directory content changes. Default is 4 seconds.
 Aspect ratio of preview tiles in browser window. Default is 4:3.
 .TP
 \fBtileSize\fP small|medium|large
-Default size of preview tiles in browser window. Must be either \fIsmall\fP,
-\fImedium\fP, or \fIlarge\fP.
+Default size of preview tiles in browser window. Must be either "small",
+"medium", or "large". \fBNOTE:\fP Actual pixel values for these mnemonics
+are obtained from \fBtileSizeList\fP and \fBtileAspectRatio\fP resources.
 .TP
 \fBtileSizeList\fP \fIInteger, Integer, Integer\fP
 Comma separated list of three (small, medium, large) tile size values in
@@ -142,14 +145,14 @@ Results in a smooth transition between zoomed\-in pixels. Default value is
 .TP
 \fBviewerToolbar\fP \fIBoolean\fP
 If set to \fITrue\fP, a toolbar containing some of the most frequently used
-commands will be shown in the viewer window. The default value is \fIFalse\fP.
+commands will be shown in the viewer window. The default value is False.
 .TP
 \fBvisualProgress\fP \fIBoolean\fP
 Display the image in the viewer window as it is being loaded.
 Default is \fITrue\fP.
 .TP
 \fBzoomFit\fP \fIBoolean\fP
-Shrink the image to fit the viewer window. Default is \fITrue\fP.
+Shrink the image to fit the viewer window. Default is True.
 .TP
 \fBzoomIncrement\fP \fI<1.1 - 4.0>\fP
 Specifies the increment value for the zoom-in/out function. Must be in the

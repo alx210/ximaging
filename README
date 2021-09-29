@@ -1,13 +1,20 @@
 1. PREREQUISITES
 -----------------------------
 
-Motif 2.3+
-OpenJPEG 2.1+
-LibPNG 1.6+
-LibTIFF 3.6+
+C compiler and any SysV like Make.
 
-On some GNU/Linux distributions appropriate 'dev' packages need to be installed
-separately - e.g. xorg-dev, motif-dev, etc.
+Following libraries and headers are required by default:
+
+libX11    (xorg including extensions)
+libXm     (Motif)
+libjpeg   (OpenJPEG)
+libpng
+libtiff
+
+For configuration options and tweaks see comments in src/common.mf
+
+On some GNU/Linux distributions appropriate 'development' packages need to
+be installed also - e.g. xorg-dev, motif-dev, etc.
 
 2. BUILDING AND INSTALLING
 -----------------------------
