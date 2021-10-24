@@ -257,7 +257,8 @@ char* rename_file_dlg(Widget parent, char *file_title)
 	token=strrchr(file_title,'.');
 	if(token){
 		XmTextFieldSetSelection(wtext,0,
-			strlen(file_title)-strlen(token),CurrentTime);
+			strlen(file_title)-strlen(token),
+			XtLastTimestampProcessed(XtDisplay(wtext)));
 	}
 
 	while(!ret_string){
