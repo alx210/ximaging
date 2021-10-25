@@ -1,5 +1,5 @@
 !##############################################################################
-!# Sample app-defaults file for Ximaging
+!# Ximaging app-defaults
 !##############################################################################
 
 !##############################################################################
@@ -12,6 +12,7 @@ XImaging*XImagingViewerToolbar: False
 XImaging*largeToolbarIcons: False
 XImaging*downsamplingFilter: True
 XImaging*upsamplingFilter: False
+XImaging*fastPanning: False
 
 XImaging*tileSizeList: 80,120,160
 XImaging*tileSize: small

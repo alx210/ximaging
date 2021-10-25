@@ -1,0 +1,18 @@
+# -----------------------------------------------------------------------------
+# Copyright (C) 2012-2021 alx@fastestcode.org
+# This software is distributed under the terms of the MIT license.
+# See the included LICENSE file for further information.
+# -----------------------------------------------------------------------------
+# XImaging generic Makefile
+
+PREFIX = /usr
+MANDIR = $(PREFIX)/share/man
+APPLRESDIR = /etc/X11/app-defaults
+
+CFLAGS += -Wall $(INCDIRS)
+LDFLAGS += -pthread
+IPC_OBJS = xipc.o
+
+include common.mf
+
+install: common_install

@@ -34,20 +34,20 @@ X_LIBS = -lXm -lXt -lXinerama -lX11
 CFLAGS += -DENABLE_XINERAMA
 
 # System libraries
-SYS_LIBS = -lm -lc
+SYS_LIBS += -lm -lc
 
 # Loader bindings
-EXT_LIBS := $(JPEG_LIBS) $(PNG_LIBS) $(TIFF_LIBS)
+EXT_LIBS = $(JPEG_LIBS) $(PNG_LIBS) $(TIFF_LIBS)
 
 .SUFFIXES: .c .o .msg .cat
-.PHONY: all clean rebuild install uninstall
+.PHONY: all clean rebuild common_install uninstall
 
 # Default targets
-all: ximaging messages
+all: ximaging
 rebuild: clean .depend all
 
 # Object files
-OBJS := main.o menu.o imgfile.o browser.o viewer.o cmap.o \
+OBJS = main.o menu.o imgfile.o browser.o viewer.o cmap.o \
 	navbar.o cursor.o imgblt.o pixconv.o comdlgs.o filemgmt.o \
 	hashtbl.o defaults.o guiutil.o toolbar.o sgimage.o sunras.o \
 	pbrush.o targa.o msbitmap.o xbitmap.o xpixmap.o \
@@ -55,7 +55,7 @@ OBJS := main.o menu.o imgfile.o browser.o viewer.o cmap.o \
 
 # Application
 ximaging: $(OBJS)
-	$(CC) -o $@ $(LIB_DIRS) $(LDFLAGS) $(OBJS) $(SYS_LIBS) $(X_LIBS) \
+	$(CC) -o $@ $(LIBDIRS) $(LDFLAGS) $(OBJS) $(SYS_LIBS) $(X_LIBS) \
 		$(EXT_LIBS) $(LD_RPATH) $(CDE_LIBS)
 
 # Message catalogs
@@ -68,31 +68,31 @@ clean:
 	
 # Rules
 .c.o:
-	$(CC) -c $(CFLAGS) $(DEBUG_CFLAGS) $(INC_DIRS) -o $@ $<
+	$(CC) -c $(CFLAGS) $(DEBUG_CFLAGS) $(INCDIRS) -o $@ $<
 
 .msg.cat:
 	gencat $@ $<
 
 # Dependencies
 .depend:
-	$(CC) -MM $(INC_DIRS) $(OBJS:.o=.c) > .depend
+	$(CC) -MM $(INCDIRS) $(OBJS:.o=.c) > .depend
 
 # Root installation
-install: $(INSTALL_RULES)
+common_install: $(INSTALL_RULES)
 	install -m755 -o0 -g0 ximaging $(PREFIX)/bin/ximaging
-	install -d -o0 -g0 $(MANPATH)/man1
-	install -m644 -o0 -g0 ximaging.1 $(MANPATH)/man1/ximaging.1
+	install -d -o0 -g0 $(MANDIR)/man1
+	install -m644 -o0 -g0 ximaging.1 $(MANDIR)/man1/ximaging.1
+	install -m644 -o0 -g0 XImaging.ad $(APPLRESDIR)/XImaging
 	
 # Install message catalogs and localized share files
-install_nls: messages
-	install -d -o0 -g0 $(NLSPATH)/C
-	install -m644 -o0 -g0 ximaging.cat $(NLSPATH)/C/ximaging.cat
-	install -d -o0 -g0  $(NLSPATH)/en_US.ISO8859-1
+common_install_nls: messages
+	install -d -o0 -g0 $(NLSDIR)/C
+	install -m644 -o0 -g0 ximaging.cat $(NLSDIR)/C/ximaging.cat
+	install -d -o0 -g0  $(NLSDIR)/en_US.ISO8859-1
 
 # Removal
 uninstall:
 	-rm -f $(PREFIX)/bin/ximaging
-	-rm -f $(MANPATH)/man1/ximaging.1
-	-rm -f $(NLSPATH)/C/ximaging.cat
-
--include .depend
+	-rm -f $(MANDIR)/man1/ximaging.1
+	-rm -f $(APPLRESDIR)/XImaging
+	-rm -f $(NLSDIR)/C/ximaging.cat

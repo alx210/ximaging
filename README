@@ -1,9 +1,6 @@
 1. PREREQUISITES
 -----------------------------
-
-C compiler and any SysV like Make.
-
-Following libraries and headers are required by default:
+Following libraries and headers are required:
 
 libX11    (xorg including extensions)
 libXm     (Motif)
@@ -11,24 +8,10 @@ libjpeg   (OpenJPEG)
 libpng
 libtiff
 
-For configuration options and tweaks see comments in src/common.mf
-
-On some GNU/Linux distributions appropriate 'development' packages need to
+On most GNU/Linux distributions appropriate 'development' packages need to
 be installed also - e.g. xorg-dev, motif-dev, etc.
 
 2. BUILDING AND INSTALLING
 -----------------------------
-
-To build and install using default configuration options, change the working
-directory to 'src', run 'make', then 'make install' as root.
-
-For information on building with CDE/ToolTalk support see the CDEINTEG file.
-
-XImaging may be customized using X resources.  An example app-defaults file is
-provided in share/XImaging.defaults. See ximaging(1) for more information.
-
-3. COPYING
------------------------------
-This software is distributed under the terms of the MIT license. You may use,
-modify and redistribute the software under the terms of this license. See the
-included LICENSE file for details.
+Run 'make' in the top-level directory of the source distribution and follow
+instructions. When build process finishes, run 'make install' as root.

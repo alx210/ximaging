@@ -1,0 +1,38 @@
+# -----------------------------------------------------------------------------
+# Copyright (C) 2012-2021 alx@fastestcode.org
+# This software is distributed under the terms of the MIT license.
+# See the included LICENSE file for further information.
+# -----------------------------------------------------------------------------
+# XImaging Linux Makefile
+
+ENABLE_OMP = 1
+
+PREFIX = /usr
+MANDIR = $(PREFIX)/share/man
+APPLRESDIR = /etc/X11/app-defaults
+
+CFLAGS = -O2 -Wall $(INCDIRS)
+LDFLAGS = -pthread
+
+# OpenMP loop optimizations
+ifdef ENABLE_OMP
+CFLAGS += -fopenmp -DENABLE_OMP
+LDFLAGS += -fopenmp
+endif
+
+# Common Desktop Environment support
+ifdef ENABLE_CDE
+CFLAGS += -DENABLE_CDE
+IPC_OBJS = tooltalk.o
+CDE_LIBS = -lDtHelp -lDtSvc -ltt
+INCDIRS += -I/usr/dt/include
+LIBDIRS += -L/usr/dt/lib
+else
+IPC_OBJS = xipc.o
+endif
+
+include common.mf
+
+install: common_install
+
+-include .depend
