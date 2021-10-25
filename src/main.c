@@ -361,6 +361,11 @@ void warning_msg(const char *msg)
 void sig_handler(int sig)
 {
 	int status;
-	if(sig == SIGCHLD) wait(&status);
+	if(sig == SIGCHLD) {
+		wait(&status);
+		#ifdef __svr4__
+		signal(SIGCHLD, sig_handler);
+		#endif
+	}
 }
 
