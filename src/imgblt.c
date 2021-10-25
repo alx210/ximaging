@@ -225,8 +225,8 @@ void img_fill_rect(XImage *img, unsigned int x, unsigned int y,
 static void select_pixel_func(int bpp, set_pixel_fnc_t *set_fnc,
 	get_pixel_fnc_t *get_fnc)
 {
-	set_pixel_fnc_t set;
-	get_pixel_fnc_t get;
+	set_pixel_fnc_t set = NULL;
+	get_pixel_fnc_t get = NULL;
 	switch(bpp){
 		case 8:
 		get=get_pixel8;

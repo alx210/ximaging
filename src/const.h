@@ -20,7 +20,7 @@
 #define BASE_TITLE "XImaging"	/* base title for GUI elements */
 
 /* Copyright string */
-#define COPYRIGHT "Copyright (C) 2012-2019 alx@fastestcode.org" \
+#define COPYRIGHT "Copyright (C) 2012-2021 alx@fastestcode.org" \
 	"\nThis program is distributed under the terms of the MIT license." \
 	"\nSee the included LICENSE file for detailed information."
 

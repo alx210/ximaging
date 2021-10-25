@@ -1739,8 +1739,8 @@ static void input_cb(Widget w, XtPointer client_data, XtPointer call_data)
 		cx=cbs->event->xbutton.x;
 		cy=cbs->event->xbutton.y;
 		
-		if(cbs->event->xbutton.button==Button1){
-			if(img_width>view_width || img_height>view_height)
+		if((cbs->event->xbutton.button == Button1) &&
+			(img_width > view_width || img_height > view_height)) {
 				set_widget_cursor(w,CUR_DRAG);
 				vd->panning = True;
 		}

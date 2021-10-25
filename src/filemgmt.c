@@ -45,7 +45,6 @@ static struct proc_data* alloc_pdata(char **src,
 static void free_pdata(struct proc_data *pd);
 static void cancel_cb(Widget w, XtPointer call, XtPointer client);
 static void create_progress_widget(struct proc_data*);
-static void init_progress_widget(struct proc_data*);
 static int copy_file(struct proc_data*, const char *src, const char *dest);
 static int move_file(struct proc_data*, const char *src, const char *dest);
 static int launch_proc_thread(struct proc_data*);

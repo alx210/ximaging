@@ -2012,7 +2012,7 @@ static void parse_res_strings(const struct app_resources *res,
 	memcpy(bd->tile_asr,asr,sizeof(short)*2);
 	memcpy(bd->tile_size,size,sizeof(short)*_NUM_TS_PRESETS);
 	
-	if(res->refresh_int<3 && res->refresh_int>60){
+	if(res->refresh_int < 3 || res->refresh_int > 60){
 		warning_msg("Illegal refresh interval, using default.");
 		bd->refresh_int=DEF_REFRESH_INT*1000;
 	}else{

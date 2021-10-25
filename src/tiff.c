@@ -21,9 +21,9 @@
 
 struct tiff_ld {
 	TIFF *file;
-	uint32 rps;
-	uint32 tile_w;
-	uint32 tile_h;
+	uint32_t rps;
+	uint32_t tile_w;
+	uint32_t tile_h;
 };
 
 /* Local prototypes */
@@ -38,9 +38,9 @@ static int read_strips(struct img_file *img,
 	img_scanline_cbt cb, void *cdata)
 {
 	unsigned long iscl;
-	uint32 istr;
+	uint32_t istr;
 	struct tiff_ld *ld=(struct tiff_ld*)img->loader_data;
-	uint32 *buffer;
+	uint32_t *buffer;
 	int cont;
 	int img_errno=0;
 	
@@ -70,9 +70,9 @@ static int read_tiles(struct img_file *img,
 	struct tiff_ld *ld=(struct tiff_ld*)img->loader_data;
 	long iscl;
 	long irow;
-	uint32 xtiles, ytiles, ix, iy;
-	uint32 *tile_buffer;
-	uint32 *scl_buffer;
+	uint32_t xtiles, ytiles, ix, iy;
+	uint32_t *tile_buffer;
+	uint32_t *scl_buffer;
 	int cont=1;
 	int img_errno=0;
 	
@@ -116,8 +116,8 @@ int img_open_tiff(const char *file_name, struct img_file *img, int flags)
 	struct stat st;
 	struct tiff_ld *ld;
 	int npages=0;
-	uint32 width=0, height=0;
-	uint16 bps=0, orientation=0;
+	uint32_t width=0, height=0;
+	uint16_t bps=0, orientation=0;
 	
 	memset(img,0,sizeof(struct img_file));
 	if(stat(file_name,&st)) return IMG_EIO;

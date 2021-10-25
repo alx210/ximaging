@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <memory.h>
+#include <string.h>
 #include <inttypes.h>
 #include <sys/types.h>
 #include <sys/stat.h>

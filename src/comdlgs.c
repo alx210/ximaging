@@ -37,7 +37,7 @@ enum mb_result message_box(Widget parent, enum mb_type type,
 	const char *msg_title, const char *msg_str)
 {
 	Widget wbox=0;
-	XmString ok_text;
+	XmString ok_text = NULL;
 	XmString cancel_text=NULL;
 	XmString extra_text=NULL;
 	XmString msg_text;
