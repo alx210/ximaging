@@ -100,45 +100,6 @@ char *fallback_res[]={
 	"*editMenu.invertSelection.acceleratorText: Ctrl+I",
 	"*helpMenu.topics.accelerator: <Key>F1",
 	"*helpMenu.topics.acceleratorText: F1",
-	
-	/* If built without CDE support, set some Motif resources that
-	 * are set by default on CDE */
-	#ifndef ENABLE_CDE
-	"*XmFileSelectionBox.fileFilterStyle: XmFILTER_HIDDEN_FILES",
-	"*XmFileSelectionBox.pathMode: XmPATH_MODE_RELATIVE",
-	"*XmFileSelectionBox.resizePolicy: XmRESIZE_GROW",
-	"*enableThinThickness: True",
-	"*enableBtn1Transfer: button2_transfer",
-	"*enableButtonTab: True",
-	"*enableDefaultButton: True",
-	"*enableEtchedInMenu: True",
-	"*enableMenuInCascade: True",
-	"*enableMultiKeyBindings: True",
-	"*enableToggleColor: True",
-	"*enableToggleVisual: True",
-	"*enableDragIcon: True",
-	"*enableCDEColorFactors: True",
-	"*XmText*Translations:#override\n "
-		"Ctrl<Key>u:delete-to-start-of-line()\n "
-		"Ctrl<Key>k:delete-to-end-of-line()\n "
-		"Ctrl<Key>a:beginning-of-line()\n "
-		"Ctrl<Key>e:end-of-line()\n "
-		"Ctrl<Key>p:process-up()\n "
-		"Ctrl<Key>b:backward-character()\n "
-		"Ctrl<Key>n:process-down()\n "
-		"Ctrl<Key>f:forward-character()",
-	"*XmTextField*Translations:#override\n "
-		"Ctrl<Key>u:delete-to-start-of-line()\n "
-		"Ctrl<Key>k:delete-to-end-of-line()\n "
-		"Ctrl<Key>a:beginning-of-line()\n "
-		"Ctrl<Key>e:end-of-line()\n "
-		"Ctrl<Key>b:backward-character()\n "
-		"Ctrl<Key>f:forward-character()",
-	"*renderTable: variable",
-	"*renderTable.variable.fontType: FONT_IS_XFT",
-	"*renderTable.variable.fontName: Sans",
-	"*renderTable.variable.fontSize: 10",
-	#endif /* ENABLE_CDE */
 
 	NULL
 };
