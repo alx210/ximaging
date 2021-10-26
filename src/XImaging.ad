@@ -39,10 +39,10 @@ XImagingViewer.height:400
 !# Fonts
 !##############################################################################
 
-XImaging*renderTable: variable
-XImaging*renderTable.variable.fontType: FONT_IS_XFT
-XImaging*renderTable.variable.fontName: Sans
-XImaging*renderTable.variable.fontSize: 10
+*renderTable: variable
+*renderTable.variable.fontType: FONT_IS_XFT
+*renderTable.variable.fontName: Liberation Sans
+*renderTable.variable.fontSize: 10
 
 !##############################################################################
 !# Accelerators
