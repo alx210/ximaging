@@ -954,7 +954,10 @@ static void* dir_reader_thread(void *arg)
 	}
 	
 	while((dir_ent=readdir(dir))){
-		if(vd->state&DSF_CANCEL) goto exit_thread;
+		if(vd->state & DSF_CANCEL) {
+			closedir(dir);
+			goto exit_thread;
+		}
 		if(nfiles==buf_size){
 			char **new_buf;
 			buf_size+=DIR_CACHE_GROWBY;

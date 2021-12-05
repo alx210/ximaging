@@ -651,6 +651,7 @@ static int read_directory(struct browser_data *bd)
 
 		n_new_files++;
 	}
+	closedir(dir);
 	if(path_buf) free(path_buf);
 	
 	if(n_new_files){
