@@ -11,30 +11,10 @@
 #ifndef DEBUG_H
 #define DEBUG_H 
 
+void _dbg_trace(int trap, const char *file,
+	int line, const char *fmt, ...);
+
 #ifdef DEBUG
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include <signal.h>
-
-static void _dbg_trace(int trap, const char *file,
-	int line, const char *fmt, ...)
-{
-	FILE *out;
-	#ifdef DBG_TO_STDERR
-	out=stderr;
-	#else
-	out=stdout;
-	#endif /* DBG_TO_STDERR */
-	va_list vl;
-	va_start(vl,fmt);
-	fprintf(out,"%s (%u): ",file,line);	
-	vfprintf(out,fmt,vl);
-	va_end(vl);
-	fflush(out);
-	if(trap) raise(SIGTRAP);
-}
-
 #define dbg_trace(fmt,...) _dbg_trace(0,__FILE__,__LINE__,fmt,##__VA_ARGS__)
 #define dbg_trap(fmt,...) _dbg_trace(1,__FILE__,__LINE__,fmt,##__VA_ARGS__)
 #define dbg_assert(exp)((exp)?(void)0:\
