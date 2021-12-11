@@ -75,10 +75,11 @@ XImagingViewer*fileMenu.browse.acceleratorText: Ctrl+B
 
 *viewMenu.refresh.accelerator: <Key>F5
 *viewMenu.refresh.acceleratorText: F5
-*viewMenu.newWindow.accelerator: Ctrl<Key>n
-*viewMenu.newWindow.acceleratorText: Ctrl+N
-*viewMenu.pinWindow.accelerator: <Key>F2
-*viewMenu.pinWindow.acceleratorText: F2
+
+*windowMenu.openNew.accelerator: Ctrl<Key>n
+*windowMenu.openNew.acceleratorText: Ctrl+N
+*windowMenu.pinThis.accelerator: <Key>F2
+*windowMenu.pinThis.acceleratorText: F2
 
 XImagingBrowser*viewMenu.smallTiles.accelerator: <Key>KP_Subtract
 XImagingBrowser*viewMenu.smallTiles.acceleratorText: Kp: -
@@ -86,6 +87,11 @@ XImagingBrowser*viewMenu.largeTiles.accelerator: <Key>KP_Add
 XImagingBrowser*viewMenu.largeTiles.acceleratorText: Kp: +
 XImagingBrowser*viewMenu.mediumTiles.accelerator: <Key>KP_Enter
 XImagingBrowser*viewMenu.mediumTiles.acceleratorText: Kp: Enter
+XImagingBrowser*viewMenu.directories.accelerator: Ctrl<Key>d
+XImagingBrowser*viewMenu.directories.acceleratorText: Ctrl+D
+XImagingBrowser*viewMenu.dotFiles.accelerator: Ctrl<Key>h
+XImagingBrowser*viewMenu.dotFiles.acceleratorText: Ctrl+H
+
 
 *zoomMenu.zoomIn.accelerator: <Key>KP_Add
 *zoomMenu.zoomIn.acceleratorText: Kp: Add

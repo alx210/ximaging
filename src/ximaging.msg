@@ -25,8 +25,6 @@ $ -----------------------------------------------------------------------------
 22 _Properties
 23 _Next Page
 24 Pr_evious Page
-25 P_in Window
-26 Ne_w Window
 
 30 _Zoom
 31 Zoom _In
@@ -48,6 +46,10 @@ $ -----------------------------------------------------------------------------
 53 _Rename...
 54 _Delete
 
+60 _Window
+61 _Pin This
+62 _Open New
+
 100 _Help
 101 _Manual
 102 _About
@@ -67,8 +69,10 @@ $ -----------------------------------------------------------------------------
 24 _Small Tiles
 25 _Medium Tiles
 26 _Large Tiles
-27 _New Window
-28 P_in Window
+
+30 _Window
+31 _Pin This
+32 _Open New
 
 40 _Edit
 41 Select _All

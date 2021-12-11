@@ -22,7 +22,8 @@
 #include <Xm/DrawingA.h>
 #include <Xm/LabelG.h>
 #include <Xm/Form.h>
-#include <Xm/PanedW.h>
+#include <Xm/Paned.h>
+#include <Xm/List.h>
 #include <Xm/RowColumn.h>
 #include <Xm/Container.h>
 #include <Xm/ScrolledW.h>
@@ -93,6 +94,7 @@ static void compute_tile_position(struct browser_data*,
 	long,Position*,Position*,Dimension*,Dimension*,Boolean*);
 static long find_file_entry(const struct browser_data*,const char*);
 static int file_sort_compare(const void*, const void*);
+static int dir_sort_compare(const void*, const void*);
 static Pixmap get_state_pixmap(struct browser_data *bd, enum file_state state,
 	Boolean selected,Dimension *width, Dimension *height);
 static void invoke_default_action(struct browser_data*, long);
@@ -114,10 +116,13 @@ static void delete_cb(Widget,XtPointer,XtPointer);
 static void small_tiles_cb(Widget,XtPointer,XtPointer);
 static void medium_tiles_cb(Widget,XtPointer,XtPointer);
 static void large_tiles_cb(Widget,XtPointer,XtPointer);
+static void show_subdirs_cb(Widget,XtPointer,XtPointer);
+static void show_dotfiles_cb(Widget,XtPointer,XtPointer);
 static void pin_window_cb(Widget,XtPointer,XtPointer);
 static void new_window_cb(Widget,XtPointer,XtPointer);
 static void navbar_change_cb(const char*, void*);
 static void about_cb(Widget,XtPointer,XtPointer);
+static void dirlist_cb(Widget,XtPointer,XtPointer);
 #ifdef ENABLE_CDE
 static void help_topics_cb(Widget,XtPointer,XtPointer);
 #endif /* ENABLE_CDE */
@@ -176,11 +181,30 @@ static struct browser_data* create_browser(const struct app_resources *res)
 	line_width=(line_width ? 1:2);
 	bd->border_width=line_width;
 	
-	wframe=XmVaCreateManagedFrame(bd->wmain,"frame",
-		XmNmarginWidth,2,XmNmarginHeight,2,
-		XmNshadowType,XmSHADOW_OUT,XmNshadowThickness,line_width,NULL);
-		
-	wview_scrl=XmVaCreateManagedScrolledWindow(wframe,"viewScrolled",
+	wframe = XmVaCreateManagedFrame(bd->wmain, "frame",
+		XmNmarginWidth, 0, XmNmarginHeight, 0,
+		XmNshadowType, XmSHADOW_OUT,
+		XmNshadowThickness, line_width, NULL);
+
+	bd->wpaned = XtVaCreateManagedWidget("paned",
+		xmPanedWidgetClass, wframe,
+		XmNorientation, XmHORIZONTAL,
+		XmNmarginWidth, 2, XmNmarginHeight, 2,
+		XmNshadowThickness, line_width, NULL);
+	
+	bd->wdlscroll = XmVaCreateScrolledWindow(bd->wpaned,
+		"listScrolled", XmNshadowThickness, 0,
+		XmNallowResize, True, NULL);
+	bd->wdirlist = XmVaCreateManagedList(bd->wdlscroll, "list",
+		XmNprimaryOwnership, XmOWN_NEVER,
+		XmNselectionPolicy, XmSINGLE_SELECT,
+		XmNautomaticSelection, XmNO_AUTO_SELECT, NULL);
+	XtAddCallback(bd->wdirlist,
+		XmNdefaultActionCallback, dirlist_cb, (XtPointer)bd);
+	
+	if(res->show_dirs) XtManageChild(bd->wdlscroll);
+	
+	wview_scrl = XmVaCreateManagedScrolledWindow(bd->wpaned, "viewScrolled",
 		XmNshadowType,XmSHADOW_IN,XmNshadowThickness,line_width,
 		XmNscrollingPolicy,XmAPPLICATION_DEFINED,
 		XmNvisualPolicy,XmVARIABLE,NULL);
@@ -281,7 +305,15 @@ static struct browser_data* create_browser(const struct app_resources *res)
 		thread_callback_proc,(XtPointer)bd);
 
 	XmToggleButtonGadgetSetState(
-		get_menu_item(bd,"*pinWindow"),res->pin_window,True);
+		get_menu_item(bd,"*dotFiles"), res->show_dot_files, False);
+	XmToggleButtonGadgetSetState(
+		get_menu_item(bd,"*directories"), res->show_dirs, False);
+	XmToggleButtonGadgetSetState(
+		get_menu_item(bd,"*pinThis"), res->pin_window, False);
+	
+	bd->pinned = res->pin_window;
+	bd->show_dot_files = res->show_dot_files;
+	
 	set_tile_size(bd,bd->itile_size);
 	update_shell_title(bd);
 	update_status_msg(bd);
@@ -389,7 +421,7 @@ static float compute_scaling_factor(XImage *src, XImage *dest)
 
 /*
  * Image loader thread entry point.
- * Load images for tiles that have FS_PENDING state is true.
+ * Load images for tiles whose FS_PENDING state is true.
  * No GUI related routines should be ever invoked from here.
  */
 static void* loader_thread(void *data)
@@ -604,64 +636,119 @@ static int read_directory(struct browser_data *bd)
 	char **new_files=NULL;
 	long new_files_size=0;
 	long n_new_files=0;
+	char **new_dirs = NULL;
+	long new_dirs_size = 0;
+	long n_new_dirs = 0;
 	struct stat st;
 	struct thread_msg tmsg;
 	time_t latest_mt=bd->latest_file_mt;
+	int res = 0;
 		
 	dir=opendir(bd->path);
 	if(!dir) return errno;
 
-	while((dir_ent=readdir(dir)) && !(bd->state&BSF_RCANCEL)){
+	while((dir_ent = readdir(dir)) && !(bd->state & BSF_RCANCEL)){
+		
+		if(!strcmp(dir_ent->d_name, ".")) continue;
+		
 		path_len=strlen(bd->path)+strlen(dir_ent->d_name)+2;
-		if(path_len>path_buf_size){
+
+		if(path_len > path_buf_size){
 			char *new_ptr;
 			new_ptr=realloc(path_buf,path_len);
 			if(!new_ptr){
-				free(path_buf);
-				closedir(dir);
-				return ENOMEM;
+				res = ENOMEM;
+				break;
 			}
 			path_buf=new_ptr;
 			path_buf_size=path_len;
 		}
+		
 		sprintf(path_buf,"%s/%s",bd->path,dir_ent->d_name);
-		if(!img_get_format_info(path_buf) || stat(path_buf,&st) ||
-			(bd->nfiles && (find_file_entry(bd,dir_ent->d_name)>=0)))
-			continue;
-
-		if(difftime(st.st_mtime,latest_mt)>0) latest_mt=st.st_mtime;
-
-		if(n_new_files+1>new_files_size){
-			char **new_ptr;
-			new_ptr=realloc(new_files,
-				sizeof(char*)*(n_new_files+FILE_LIST_GROWBY));
-			if(!new_ptr){
-				closedir(dir);
-				free(path_buf);
-				if(n_new_files){
-					while(n_new_files--) free(new_files[n_new_files]);
-					free(new_files);
-				}
-				return ENOMEM;
+		
+		if(stat(path_buf, &st)) continue;
+		
+		if(S_ISDIR(st.st_mode)) {
+			long i;
+			
+			if(!bd->show_dot_files && dir_ent->d_name[0] == '.' &&
+				strcmp(dir_ent->d_name, "..")) continue;
+			
+			for(i = 0; i < bd->nsubdirs; i++) {
+				if(!strcmp(bd->subdirs[i], dir_ent->d_name)) break;
 			}
-			new_files=new_ptr;
-			new_files_size=n_new_files+FILE_LIST_GROWBY;
-		}
-		new_files[n_new_files]=strdup(dir_ent->d_name);
+			if(i < bd->nsubdirs) continue;
+			
+			if((n_new_dirs + 1) > new_dirs_size) {
+				char **ptr;
+				
+				ptr = realloc(new_dirs, sizeof(char*) *
+					(n_new_dirs + FILE_LIST_GROWBY));
+				if(!ptr) {
+					res = ENOMEM;
+					break;
+				}
+				new_dirs = ptr;
+				new_dirs_size += FILE_LIST_GROWBY;
+			}
+			new_dirs[n_new_dirs] = strdup(dir_ent->d_name);
+			if(!new_dirs[n_new_dirs]) {
+				res = ENOMEM;
+				break;
+			}
+			n_new_dirs++;
+			
+		} else if(S_ISREG(st.st_mode)) {
+			if(!bd->show_dot_files && dir_ent->d_name[0] == '.') continue;
+			if(!img_get_format_info(path_buf) ||
+				(bd->nfiles && (find_file_entry(bd,dir_ent->d_name)>=0)))
+				continue;
 
-		n_new_files++;
+			if(difftime(st.st_mtime,latest_mt)>0) latest_mt=st.st_mtime;
+
+			if(n_new_files+1>new_files_size){
+				char **new_ptr;
+				new_ptr=realloc(new_files,
+					sizeof(char*)*(n_new_files+FILE_LIST_GROWBY));
+				if(!new_ptr){
+					res = ENOMEM;
+					break;
+				}
+				new_files=new_ptr;
+				new_files_size=n_new_files+FILE_LIST_GROWBY;
+			}
+			new_files[n_new_files] = strdup(dir_ent->d_name);
+			if(!new_files[n_new_files]) {
+				res = ENOMEM;
+				break;
+			}
+			n_new_files++;
+		}
 	}
+	
 	closedir(dir);
 	if(path_buf) free(path_buf);
 	
-	if(n_new_files){
-		tmsg.code=TMSG_ADD;
-		tmsg.change_data.files=new_files;
-		tmsg.change_data.nfiles=n_new_files;
+	if(res || (bd->state&BSF_RCANCEL)) {
+		if(n_new_files){
+			while(n_new_files--) free(new_files[n_new_files]);
+			free(new_files);
+		}
+		if(n_new_dirs) {
+			while(n_new_dirs--) free(new_dirs[n_new_dirs]);
+			free(new_dirs);
+		}
+		return res;
+	} else if(n_new_files || n_new_dirs){
+		tmsg.code = TMSG_ADD;
+		tmsg.change_data.files = new_files;
+		tmsg.change_data.nfiles = n_new_files;
+		tmsg.change_data.dirs = new_dirs;
+		tmsg.change_data.ndirs = n_new_dirs;
 		
 		pthread_mutex_lock(&bd->data_mutex);
-		bd->path_max=path_buf_size;
-		bd->latest_file_mt=latest_mt;
+		bd->path_max = path_buf_size;
+		bd->latest_file_mt = latest_mt;
 		pthread_mutex_unlock(&bd->data_mutex);
 
 		/* message data is freed by the handler */
@@ -692,6 +779,9 @@ static void *reader_thread(void *data)
 		char **rem_files=NULL;
 		long rem_files_size=0;
 		long nrem_files=0;
+		char **rem_dirs = NULL;
+		long nrem_dirs = 0;
+		long rem_dirs_size = 0;
 		Boolean modified=False;
 		path_buf=malloc(bd->path_max+1);
 
@@ -705,14 +795,17 @@ static void *reader_thread(void *data)
 					char **new_ptr;
 					new_ptr=realloc(rem_files,rem_files_size+FILE_LIST_GROWBY);
 					if(!new_ptr){
-						result=errno;
-						pthread_mutex_unlock(&bd->data_mutex);
-						goto exit_thread;
+						result = ENOMEM;
+						break;
 					}
 					rem_files=new_ptr;
 					rem_files_size+=FILE_LIST_GROWBY;
 				}
-				rem_files[nrem_files]=strdup(bd->files[i].name);
+				rem_files[nrem_files] = strdup(bd->files[i].name);
+				if(!rem_files[nrem_files]) {
+					result = ENOMEM;
+					break;
+				}
 				nrem_files++;
 			}else if(st.st_mtime>bd->latest_file_mt){
 				bd->latest_file_mt=st.st_mtime;
@@ -724,28 +817,69 @@ static void *reader_thread(void *data)
 				modified=True;
 			}
 		}
-		pthread_mutex_unlock(&bd->data_mutex);
+		
+		for(i = 0; (i < bd->nsubdirs) &&
+			!result && !(bd->state&BSF_RCANCEL); i++) {
+			
+			snprintf(path_buf, bd->path_max, "%s/%s", bd->path, bd->subdirs[i]);
+			if(stat(path_buf, &st) != 0){
+				if((nrem_dirs + 1) > rem_dirs_size){
+					char **new_ptr;
+					new_ptr = realloc(rem_dirs,
+						rem_dirs_size + FILE_LIST_GROWBY);
+					if(!new_ptr){
+						result = ENOMEM;
+						break;
+					}
+					rem_dirs = new_ptr;
+					rem_dirs_size += FILE_LIST_GROWBY;
+				}
+				rem_dirs[nrem_dirs] = strdup(bd->subdirs[i]);
+				if(!rem_dirs[nrem_dirs]) {
+					result = ENOMEM;
+					break;
+				}
+				nrem_dirs++;
+			}
+		}
+
 		free(path_buf);
-		if(nrem_files){
-			tmsg.code=TMSG_REMOVE;
-			tmsg.change_data.files=rem_files;
-			tmsg.change_data.nfiles=nrem_files;
-			/* message data storage is freed by the handler */
-			write(bd->tnfd[TNFD_OUT],&tmsg,sizeof(struct thread_msg));
+		pthread_mutex_unlock(&bd->data_mutex);
+
+		if(!result && !(bd->state & BSF_RCANCEL)) {		
+			if(nrem_files || nrem_dirs){
+				tmsg.code = TMSG_REMOVE;
+				tmsg.change_data.files = rem_files;
+				tmsg.change_data.nfiles = nrem_files;
+				tmsg.change_data.dirs = rem_dirs;
+				tmsg.change_data.ndirs = nrem_dirs;
+				/* message data storage is freed by the handler */
+				write(bd->tnfd[TNFD_OUT],&tmsg,sizeof(struct thread_msg));
+			}
+			if(!stat(bd->path,&st) && difftime(st.st_mtime,bd->dir_modtime)){
+				result = read_directory(bd);
+				bd->dir_modtime=st.st_mtime;
+			}
+			if(modified) {
+				tmsg.code = TMSG_RELOAD;
+				tmsg.notify_data.reason = 0;
+				tmsg.notify_data.status = 0;
+				write(bd->tnfd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
+			}
+		} else {
+			if(rem_files) {
+				while(nrem_files--) free(rem_files[nrem_files]);
+				free(rem_files);
+			}
+			if(rem_dirs) {
+				while(nrem_dirs--) free(rem_dirs[nrem_dirs]);
+				free(rem_dirs);
+			}
 		}
-		if(!stat(bd->path,&st) && difftime(st.st_mtime,bd->dir_modtime)){
-			errno=read_directory(bd);
-			bd->dir_modtime=st.st_mtime;
-		}
-		if(modified && !(bd->state&BSF_RCANCEL)){
-			tmsg.code=TMSG_RELOAD;
-			tmsg.notify_data.reason=0;
-			tmsg.notify_data.status=0;
-			write(bd->tnfd[TNFD_OUT],&tmsg,sizeof(struct thread_msg));
-		}
+
 	}else{
-		result=read_directory(bd);
-		bd->dir_modtime=st.st_mtime;
+		result = read_directory(bd);
+		bd->dir_modtime = st.st_mtime;
 	}
 	
 	/* always go there to finish the thread */
@@ -782,6 +916,9 @@ static void thread_callback_proc(XtPointer data, int *pfd, XtInputId *iid)
 			while(msg.change_data.nfiles--)
 				free(msg.change_data.files[msg.change_data.nfiles]);
 			free(msg.change_data.files);
+			while(msg.change_data.ndirs--)
+				free(msg.change_data.dirs[msg.change_data.ndirs]);
+			free(msg.change_data.dirs);
 		}
 		return;
 	}
@@ -790,40 +927,86 @@ static void thread_callback_proc(XtPointer data, int *pfd, XtInputId *iid)
 	switch(msg.code){
 		case TMSG_ADD:{
 			struct browser_file *new_files;
+			char **new_dirs;
 			long i;
 			
 			pthread_mutex_lock(&bd->data_mutex);
-			new_files=realloc(bd->files,sizeof(struct browser_file)*
-				(bd->nfiles+msg.change_data.nfiles));
-			if(!new_files){
+			
+			if(msg.change_data.nfiles) {
+				new_files = realloc(bd->files, sizeof(struct browser_file) *
+					(bd->nfiles + msg.change_data.nfiles));
+			}
+			if(msg.change_data.ndirs) {
+				new_dirs = realloc(bd->subdirs, sizeof(char*) *
+					(bd->nsubdirs + msg.change_data.ndirs));
+			}
+
+			if((msg.change_data.nfiles && !new_files) ||
+				(msg.change_data.ndirs && !new_dirs)){
 				pthread_mutex_unlock(&bd->data_mutex);
-				i=msg.change_data.nfiles;
+
 				errno_message_box(bd->wshell,ENOMEM,
 					nlstr(APP_MSGSET,SID_EREADDIR,
 					"Error reading directory."),False);
-				while(i--)free(msg.change_data.files[i]);
-				free(msg.change_data.files);
+
+				if(msg.change_data.nfiles) {
+					i = msg.change_data.nfiles;
+					while(i--) free(msg.change_data.files[i]);
+					free(msg.change_data.files);
+				}
+
+				if(msg.change_data.ndirs) {
+					i = msg.change_data.ndirs;
+					while(i--) free(msg.change_data.dirs[i]);
+					free(msg.change_data.dirs);
+				}
+
 				reset_browser(bd);
 				return;
 			}
-			for(i=0; i<msg.change_data.nfiles; i++){
-				XmString label;
-				long di=i+bd->nfiles;
-				
-				new_files[di].selected=False;
-				new_files[di].image=NULL;
-				new_files[di].state=FS_PENDING;
-				new_files[di].name=strdup(msg.change_data.files[i]);
-				label=create_file_label(bd,new_files[di].name);
-				new_files[di].label_width=XmStringWidth(bd->render_table,label);
-				new_files[di].label=label;			
-				free(msg.change_data.files[i]);
+
+			if(msg.change_data.nfiles) {
+				for(i=0; i<msg.change_data.nfiles; i++){
+					XmString label;
+					long di=i+bd->nfiles;
+
+					new_files[di].selected=False;
+					new_files[di].image=NULL;
+					new_files[di].state=FS_PENDING;
+					new_files[di].name=strdup(msg.change_data.files[i]);
+					label=create_file_label(bd,new_files[di].name);
+					new_files[di].label_width=XmStringWidth(
+						bd->render_table,label);
+					new_files[di].label=label;			
+					free(msg.change_data.files[i]);
+				}
+				free(msg.change_data.files);
+				bd->nfiles+=msg.change_data.nfiles;
+				bd->files=new_files;
+				qsort(bd->files,bd->nfiles,sizeof(struct browser_file),
+					file_sort_compare);
 			}
-			free(msg.change_data.files);
-			bd->nfiles+=msg.change_data.nfiles;
-			bd->files=new_files;
-			qsort(bd->files,bd->nfiles,sizeof(struct browser_file),
-				file_sort_compare);
+			
+			if(msg.change_data.ndirs) {
+				for(i = 0; i < msg.change_data.ndirs; i++) {
+					long di = i + bd->nsubdirs;
+					new_dirs[di] = msg.change_data.dirs[i];
+				}
+				free(msg.change_data.dirs);
+			
+				bd->nsubdirs += msg.change_data.ndirs;
+				bd->subdirs = new_dirs;
+				qsort(bd->subdirs, bd->nsubdirs,
+					sizeof(char*), dir_sort_compare);
+			
+				XmListDeleteAllItems(bd->wdirlist);
+				for(i = 0; i < bd->nsubdirs; i++) {
+					XmString str = XmStringCreateLocalized(bd->subdirs[i]);
+					XmListAddItem(bd->wdirlist, str, i + 1);
+					XmStringFree(str);
+				}
+			}
+			
 			pthread_mutex_unlock(&bd->data_mutex);
 			
 			update_scroll_bar(bd);
@@ -834,8 +1017,10 @@ static void thread_callback_proc(XtPointer data, int *pfd, XtInputId *iid)
 		}break;
 		
 		case TMSG_REMOVE:{
-			long i,j;
+			long i, j;
+			
 			pthread_mutex_lock(&bd->data_mutex);
+			
 			for(i=0; i<msg.change_data.nfiles; i++){
 				dbg_assert(bd->nfiles);
 				j=find_file_entry(bd,msg.change_data.files[i]);
@@ -860,11 +1045,32 @@ static void thread_callback_proc(XtPointer data, int *pfd, XtInputId *iid)
 					update_controls(bd);
 				}
 			}
+			
+			for(i = 0; i < msg.change_data.ndirs; i++) {
+				for(j = 0; j < bd->nsubdirs; j++) {
+					if(!strcmp(bd->subdirs[j], msg.change_data.dirs[i])) {
+						free(bd->subdirs[j]);
+						memmove(&bd->subdirs[j], &bd->subdirs[j + 1],
+							(bd->nsubdirs - j) * sizeof(char*));
+
+						bd->nsubdirs--;
+						
+						XmListDeletePos(bd->wdirlist, j + 1);
+						
+						break;
+					}
+				}
+			}
+			
 			pthread_mutex_unlock(&bd->data_mutex);
 			
 			for(i=0; i<msg.change_data.nfiles; i++)
 				free(msg.change_data.files[i]);
 			free(msg.change_data.files);
+			
+			for(i = 0; i < msg.change_data.ndirs; i++)
+				free(msg.change_data.dirs[i]);
+			free(msg.change_data.dirs);
 			
 			update_scroll_bar(bd);
 			update_status_msg(bd);
@@ -921,6 +1127,7 @@ static void thread_callback_proc(XtPointer data, int *pfd, XtInputId *iid)
 		update_status_msg(bd);
 		break;
 	}
+	
 	if(bd->ifocus<0) set_focus(bd,-1);
 }
 
@@ -933,6 +1140,14 @@ static int file_sort_compare(const void *pa, const void *pb)
 	struct browser_file *b=(struct browser_file*)pb;
 	return strcmp(a->name,b->name);
 }
+
+static int dir_sort_compare(const void *pa, const void *pb)
+{
+	char **a = ((char**)pa);
+	char **b = ((char**)pb);
+	return strcmp(*a, *b);
+}
+
 
 /*
  * Create a file label string; clip the name if necessary.
@@ -1049,6 +1264,7 @@ static void reset_browser(struct browser_data *bd)
 		XtAppProcessEvent(app_inst.context,XtIMAlternateInput);
 	
 	XClearArea(app_inst.display,XtWindow(bd->wview),0,0,0,0,False);	
+	XmListDeleteAllItems(bd->wdirlist);
 	
 	if(bd->path) free(bd->path);
 	bd->path=NULL;
@@ -1063,6 +1279,13 @@ static void reset_browser(struct browser_data *bd)
 		free(bd->files);
 	}
 
+	if(bd->nsubdirs) {
+		while(bd->nsubdirs--) free(bd->subdirs[bd->nsubdirs]);
+		free(bd->subdirs);
+	}
+
+	bd->subdirs = NULL;
+	bd->nsubdirs = 0;
 	bd->files=NULL;
 	bd->nfiles=0;
 	bd->nsel_files=0;		
@@ -2497,6 +2720,52 @@ static void large_tiles_cb(Widget w, XtPointer client, XtPointer call)
 	XmToggleButtonGadgetSetState(w,True,False);
 }
 
+
+static void show_subdirs_cb(Widget w, XtPointer client, XtPointer call)
+{
+	struct browser_data *bd=(struct browser_data*)client;
+	if(((XmToggleButtonCallbackStruct*)call)->set)
+		XtManageChild(bd->wdlscroll);
+	else
+		XtUnmanageChild(bd->wdlscroll);
+}
+
+static void dirlist_cb(Widget w, XtPointer client, XtPointer call)
+{
+	XmListCallbackStruct *cbs = (XmListCallbackStruct*)call;
+	struct browser_data *bd=(struct browser_data*)client;
+	unsigned int pos = cbs->item_position - 1;
+	char *new_path;
+	
+	if(cbs->reason != XmCR_DEFAULT_ACTION) return;
+	
+	new_path = malloc(strlen(bd->path) +
+		strlen(bd->subdirs[pos]) + 2);
+	if(!new_path) {
+		message_box(app_inst.session_shell, MB_ERROR, BASE_NAME,
+				nlstr(APP_MSGSET,SID_ENORES,
+				"Not enough resources available for this task."));
+		return;
+	}
+	sprintf(new_path, "%s/%s", bd->path, bd->subdirs[pos]);
+	load_path(bd, new_path);
+	free(new_path);
+}
+
+static void show_dotfiles_cb(Widget w, XtPointer client, XtPointer call)
+{
+	struct browser_data *bd=(struct browser_data*)client;
+	bd->show_dot_files = (((XmToggleButtonCallbackStruct*)call)->set);
+
+	if(bd->show_dot_files && bd->path) {
+		launch_reader_thread(bd);
+	} else if(bd->path) {
+		char *tmp = strdup(bd->path);
+		load_path(bd, tmp);
+		free(tmp);
+	}
+}
+
 /*
  * Help/Topics menu callback. Currently it just shows the manpage.
  */
@@ -2556,8 +2825,14 @@ static void create_browser_menubar(struct browser_data *bd)
 		{IT_RADIO,"mediumTiles","_Medium Tiles",SID_BMMEDIUM,medium_tiles_cb},
 		{IT_RADIO,"largeTiles","_Large Tiles",SID_BMLARGE,large_tiles_cb},
 		{IT_SEP},
-		{IT_TOGGLE,"pinWindow","P_in Window",SID_BMPIN,pin_window_cb},
-		{IT_PUSH,"newWindow","New _Window",SID_BMNEWWINDOW,new_window_cb}
+		{IT_TOGGLE,"directories","_Directories",SID_BMPIN,show_subdirs_cb},
+		{IT_TOGGLE,"dotFiles","Dot _Files",SID_BMDOTFILES,show_dotfiles_cb}
+	};
+	
+	static struct menu_item window_menu[] = {
+		{IT_PUSH,"windowMenu","_Window",SID_BMWINDOW},
+		{IT_TOGGLE,"pinThis","_Pin This",SID_BMPIN,pin_window_cb},
+		{IT_PUSH,"openNew","_Open New",SID_BMNEWWINDOW,new_window_cb}
 	};
 
 	static struct menu_item help_menu[]={
@@ -2578,6 +2853,9 @@ static void create_browser_menubar(struct browser_data *bd)
 		bd,BROWSER_MENU_MSGSET,False);
 	create_pulldown(bd->wmenubar,view_menu,
 		(sizeof(view_menu)/sizeof(struct menu_item)),
+		bd,BROWSER_MENU_MSGSET,False);
+	create_pulldown(bd->wmenubar,window_menu,
+		(sizeof(window_menu)/sizeof(struct menu_item)),
 		bd,BROWSER_MENU_MSGSET,False);
 	create_pulldown(bd->wmenubar,help_menu,
 		(sizeof(help_menu)/sizeof(struct menu_item)),

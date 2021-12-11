@@ -111,7 +111,14 @@ static XtResource xrdb_resources[]={
 	},
 	{ "browse","Browse",XmRBoolean,sizeof(Boolean),
 		RESFIELD(browse),XmRImmediate,(XtPointer)False
+	},
+	{ "showDirectories","ShowDirectories",XmRBoolean,sizeof(Boolean),
+		RESFIELD(show_dirs),XmRImmediate,(XtPointer)True
+	},
+	{ "showDotFiles","ShowDotFiles",XmRBoolean,sizeof(Boolean),
+		RESFIELD(show_dot_files),XmRImmediate,(XtPointer)True
 	}
+
 };
 #undef RESFIELD
 

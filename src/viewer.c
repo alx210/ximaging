@@ -336,10 +336,10 @@ static struct viewer_data* create_viewer(const struct app_resources *res)
 	vd->load_prog=0;
 
 	XmToggleButtonGadgetSetState(
-		get_menu_item(vd,"*pinWindow"),res->pin_window,True);
+		get_menu_item(vd,"*pinThis"),res->pin_window,True);
 	if(vd->show_tbr){
 		XmToggleButtonGadgetSetState(
-			get_toolbar_item(vd->wtoolbar,"*pinWindow"),
+			get_toolbar_item(vd->wtoolbar,"*pinThis"),
 			res->pin_window,False);
 	}
 
@@ -1874,12 +1874,12 @@ static void pin_window_cb(Widget w, XtPointer client, XtPointer call)
 	
 	if(vd->show_tbr){
 		/* figure out which of menu/toolbar button we need to sync */
-		wbutton=get_menu_item(vd,"*pinWindow");
+		wbutton=get_menu_item(vd,"*pinThis");
 		if(w!=wbutton){
 			XmToggleButtonGadgetSetState(wbutton,vd->pinned,False);
 		}else{
 			XmToggleButtonGadgetSetState(
-				get_toolbar_item(vd->wtoolbar,"*pinWindow"),
+				get_toolbar_item(vd->wtoolbar,"*pinThis"),
 				vd->pinned,False);
 		}
 	}
@@ -2363,9 +2363,6 @@ static void create_viewer_menubar(struct viewer_data *vd)
 		{IT_SEP},
 		{IT_PUSH,"nextPage","_Next Page",SID_VMNEXTPAGE,next_page_cb},
 		{IT_PUSH,"previousPage","Pr_evious Page",SID_VMPREVPAGE,prev_page_cb},
-		{IT_SEP},
-		{IT_TOGGLE,"pinWindow","P_in Window",SID_VMPIN,pin_window_cb},
-		{IT_PUSH,"newWindow","New _Window",SID_VMNEW,new_viewer_cb}
 	};
 	
 	const struct menu_item zoom_menu[]={
@@ -2388,6 +2385,13 @@ static void create_viewer_menubar(struct viewer_data *vd)
 		{IT_TOGGLE,"rotateLock","L_ock",SID_VMLOCK,rotate_lock_cb},
 		{IT_PUSH,"rotateReset","R_eset",SID_VMRESET,rotate_reset_cb}
 	};
+
+	const struct menu_item window_menu[]={
+		{IT_PUSH,"windowMenu","_Window",SID_VMWINDOW},
+		{IT_TOGGLE,"pinThis","_Pin This",SID_VMPIN,pin_window_cb},
+		{IT_PUSH,"openNew","_Open New",SID_VMNEW,new_viewer_cb}
+	};
+
 
 	const struct menu_item help_menu[]={
 		{IT_PUSH,"helpMenu","_Help",SID_VMHELP,NULL},
@@ -2413,6 +2417,9 @@ static void create_viewer_menubar(struct viewer_data *vd)
 		vd,VIEWER_MENU_MSGSET,False);
 	create_pulldown(vd->wmenubar,rotate_menu,
 		(sizeof(rotate_menu)/sizeof(struct menu_item)),
+		vd,VIEWER_MENU_MSGSET,False);
+	create_pulldown(vd->wmenubar,window_menu,
+		(sizeof(window_menu)/sizeof(struct menu_item)),
 		vd,VIEWER_MENU_MSGSET,False);
 	create_pulldown(vd->wmenubar,help_menu,
 		(sizeof(help_menu)/sizeof(struct menu_item)),

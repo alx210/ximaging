@@ -31,8 +31,6 @@
 #define SID_VMPROPS		22	/* Properties */
 #define SID_VMNEXTPAGE	23	/* Next Page */
 #define SID_VMPREVPAGE	24	/* Previous Page */
-#define SID_VMPIN		25	/* Pin Window */
-#define SID_VMNEW		26	/* New Window */
 
 #define SID_VMZOOM		30	/* Zoom (cascade) */
 #define SID_VMZOOMIN	31	/* Zoom In */
@@ -53,6 +51,10 @@
 #define SID_VMMOVETO	52	/* Move to... */
 #define SID_VMRENAME	53	/* Rename... */
 #define SID_VMDEL		54	/* Delete */
+
+#define SID_VMWINDOW	60	/* Window */
+#define SID_VMPIN		61	/* Pin This*/
+#define SID_VMNEW		62	/* Open New */
 
 #define SID_VMHELP		100	/* Help (cascade) */
 #define SID_VMTOPICS	101	/* Manual */
@@ -77,8 +79,13 @@
 #define SID_BMSMALL			24	/* Small Tiles */
 #define SID_BMMEDIUM		25	/* Medium Tiles */
 #define SID_BMLARGE			26	/* Large Tiles */
-#define SID_BMNEWWINDOW		27	/* New Window */
-#define SID_BMPIN			28	/* Pin Window */
+#define SID_BMSUBDIRS		27	/* Directories */
+#define SID_BMDOTFILES		28	/* Dot Files */
+
+#define SID_BMWINDOW		30	/* Window */
+#define SID_BMPIN			31	/* Pin This */
+#define SID_BMNEWWINDOW		32	/* Open New */
+
 
 #define SID_BMEDIT			40	/* Edit (cascade) */
 #define SID_BMSELECTALL		41	/* Select All */

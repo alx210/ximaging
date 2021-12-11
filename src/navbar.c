@@ -28,7 +28,6 @@ struct navbar_data {
 	Widget wform;
 	Widget wtext;
 	Widget wdirup;
-	Widget wbrowse;
 	navbar_cb callback;
 	void *cb_data;
 	Pixel form_bg;
@@ -39,7 +38,6 @@ static void path_changed_cb(Widget,XtPointer,XtPointer);
 static void frame_destroy_cb(Widget,XtPointer,XtPointer);
 static void path_focus_cb(Widget,XtPointer,XtPointer);
 static void dir_up_cb(Widget,XtPointer,XtPointer);
-static void browse_cb(Widget,XtPointer,XtPointer);
 static char* get_displayed_path(struct navbar_data *pbd);
 static void set_displayed_path(struct navbar_data *pbd, const char *path);
 
@@ -81,17 +79,6 @@ Widget create_navbar(Widget parent, navbar_cb callback, void *cb_data )
 	XtSetArg(args[n],XmNtopAttachment,XmATTACH_FORM); n++;
 	XtSetArg(args[n],XmNbottomAttachment,XmATTACH_FORM); n++;
 	XtSetArg(args[n],XmNrightAttachment,XmATTACH_FORM); n++;
-	XtSetArg(args[n],XmNarrowDirection,XmARROW_RIGHT); n++;
-	XtSetArg(args[n],XmNdetailShadowThickness,border_width); n++;
-	/* XtSetArg(args[n],XmNforeground,data->form_bg); n++; */
-	data->wbrowse=XmCreateArrowButton(data->wform,"navigateTo",args,n);
-	XtAddCallback(data->wbrowse,XmNactivateCallback,browse_cb,data);
-	
-	n=0;
-	XtSetArg(args[n],XmNtopAttachment,XmATTACH_FORM); n++;
-	XtSetArg(args[n],XmNbottomAttachment,XmATTACH_FORM); n++;
-	XtSetArg(args[n],XmNrightAttachment,XmATTACH_WIDGET); n++;
-	XtSetArg(args[n],XmNrightWidget,data->wbrowse); n++;
 	XtSetArg(args[n],XmNarrowDirection,XmARROW_UP); n++;
 	XtSetArg(args[n],XmNdetailShadowThickness,border_width); n++;
 	/* XtSetArg(args[n],XmNforeground,data->form_bg); n++; */
@@ -119,7 +106,6 @@ Widget create_navbar(Widget parent, navbar_cb callback, void *cb_data )
 	XtSetValues(data->wtext,args,1);
 	
 	XtManageChild(data->wdirup);
-	XtManageChild(data->wbrowse);
 	XtManageChild(data->wtext);
 	XtManageChild(data->wform);
 
@@ -239,23 +225,6 @@ static void dir_up_cb(Widget w,
 	if(!set_navbar_path(pbd->wform,new_path))
 			pbd->callback(pbd->cur_path,pbd->cb_data);
 	free(new_path);
-}
-
-/*
- * Browse button callback
- */
-static void browse_cb(Widget w,
-	XtPointer client_data, XtPointer call_data)
-{
-	struct navbar_data *pbd=(struct navbar_data*)client_data;
-	char *new_path;
-	
-	new_path=dir_select_dlg(pbd->wparent,
-		nlstr(DLG_MSGSET,SID_OPENDIR,"Open Directory"),pbd->cur_path);
-	if(!new_path) return;
-	if(!set_navbar_path(pbd->wform,new_path))
-			pbd->callback(pbd->cur_path,pbd->cb_data);
-	free(new_path);	
 }
 
 /*

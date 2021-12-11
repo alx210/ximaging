@@ -36,6 +36,8 @@ struct app_resources {
 	Boolean large_cursors;	/* use large cursor pixmaps */
 	Boolean confirm_rm; /* display a confirmation dialog on file removal */
 	Boolean browse;	/* launch in browser mode */
+	Boolean show_dirs; /* show subdirectories in the browser */
+	Boolean show_dot_files; /* show files/dirs starting with . */
 	char *edit_cmd; /* the command to invoke for File/Edit */
 };
 

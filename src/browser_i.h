@@ -66,6 +66,9 @@ struct browser_data {
 	Widget wmsg;
 	Widget wpopup;
 	Widget wnavbar;
+	Widget wdlscroll;
+	Widget wdirlist;
+	Widget wpaned;
 	
 	/* Motif colors */
 	Pixel fg_pixel;	/* foreground (text) */
@@ -94,6 +97,8 @@ struct browser_data {
 	int border_width; /* tile border width in pixels */
 	struct browser_file *files;
 	long nfiles; /* number of entries in 'files' */
+	char **subdirs; /* subdirectories */
+	long nsubdirs;
 	long nsel_files; /* number of selected files */
 	long ifocus; /* focused tile */
 	char *path;	/* current path */
@@ -110,6 +115,7 @@ struct browser_data {
 	int refresh_int; /* refresh interval */
 	XtIntervalId update_timer; /* modification check timer */
 	char *last_dest_dir; /* last move/copy to directory */
+	Boolean show_dot_files;
 	
 	/* tile aspect ratio and size */
 	short tile_asr[2];
@@ -174,7 +180,9 @@ enum tmsg_code {
 /* TMSG_ADD/REMOVE */
 struct tmsg_change_data {
 	char **files;
+	char **dirs;
 	long nfiles;
+	long ndirs;
 };
 
 /* TMSG_UPDATE */
