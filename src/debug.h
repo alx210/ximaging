@@ -23,10 +23,6 @@ void _dbg_trace(int trap, const char *file,
 	_dbg_trace(1,__FILE__,__LINE__,msgfmt,##__VA_ARGS__));
 #define dbg_printf printf
 
-#ifdef ENABLE_MEMDB
-#include "memdb.h"
-#endif
-
 #else /* NON DEBUG */
 
 #define dbg_trace(...) ((void)0)
