@@ -906,7 +906,7 @@ static void *reader_thread(void *data)
 static void thread_callback_proc(XtPointer data, int *pfd, XtInputId *iid)
 {
 	struct browser_data *bd=(struct browser_data*)data;
-	struct thread_msg msg;
+	struct thread_msg msg = {0};
 
 	if(read(bd->tnfd[TNFD_IN],&msg,sizeof(struct thread_msg))<1) return;
 
@@ -926,8 +926,8 @@ static void thread_callback_proc(XtPointer data, int *pfd, XtInputId *iid)
 	/* process message */
 	switch(msg.code){
 		case TMSG_ADD:{
-			struct browser_file *new_files;
-			char **new_dirs;
+			struct browser_file *new_files = NULL;
+			char **new_dirs = NULL;
 			long i;
 			
 			pthread_mutex_lock(&bd->data_mutex);
