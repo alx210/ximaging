@@ -50,6 +50,7 @@
 #define MIN_TILE_SIZE 60
 #define MAX_TILE_SIZE 600
 #define DEF_ZOOM_INC "1.6"
+#define MIN_ZOOMED_SIZE 32
 
 /* Directory refresh interval in seconds */
 #define DEF_REFRESH_INT 3

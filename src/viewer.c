@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2017 alx@fastestcode.org
+ * Copyright (C) 2012-2021 alx@fastestcode.org
  * This software is distributed under the terms of the MIT license.
  * See the included LICENSE file for further information.
  */
@@ -1376,10 +1376,12 @@ static void zoom_view(struct viewer_data *vd, float zoom)
 	int xoff=vd->xoff, yoff=vd->yoff;
 	float min_zoom;
 	float nx, ny;
-	
+
 	/* compute the minimum zoom value */
-	min_zoom=1.0/((vd->image->width<vd->image->height)?
-		vd->image->width:vd->image->height);
+	min_zoom = ((vd->image->width > vd->image->height) ?
+		((float)MIN_ZOOMED_SIZE / vd->image->width) :
+		((float)MIN_ZOOMED_SIZE / vd->image->height));
+	if(min_zoom > 1.0) min_zoom = 1.0;
 
 	/* reenable controls if we're out of the min/max zone */
 	if(vd->zoom==MAX_ZOOM){
