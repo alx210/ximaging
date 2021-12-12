@@ -143,11 +143,13 @@ static Boolean init_instance(const char *open_spec)
 	struct stat st;
 	
 	if(!open_spec){
-		if(init_app_res.browse)
-			get_browser(&init_app_res,NULL);
-		else
+		if(init_app_res.browse) {
+			char *path = realpath(".", NULL);
+			wshell = get_browser(&init_app_res,NULL);
+			if(wshell && path) browse_path(wshell, path,NULL);
+		} else {
 			get_viewer(&init_app_res,NULL);
-		return True;
+		}
 	}else{
 		if(stat(open_spec,&st)==(-1)){
 			errno_message_box(None,errno,open_spec,True);
