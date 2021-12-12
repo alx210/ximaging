@@ -101,6 +101,7 @@ struct browser_data {
 	long nsubdirs;
 	long nsel_files; /* number of selected files */
 	long ifocus; /* focused tile */
+	Boolean owns_primary;
 	char *path;	/* current path */
 	time_t dir_modtime; /* modification time of the current directory */
 	time_t latest_file_mt; /* latest file modification time */

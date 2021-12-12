@@ -265,6 +265,7 @@ int main(int argc, char **argv)
 	
 	app_inst.XaWM_DELETE_WINDOW=XInternAtom(app_inst.display,
 		"WM_DELETE_WINDOW",False);
+	app_inst.XaTEXT = XInternAtom(app_inst.display, "TEXT", False);
 	
 	#ifdef ENABLE_CDE
 	if(!DtAppInitialize(app_inst.context,app_inst.display,

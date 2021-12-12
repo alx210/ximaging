@@ -32,6 +32,7 @@
 #include <Xm/Protocols.h>
 #include <Xm/XmP.h>
 #include <X11/ImUtil.h>
+#include <X11/Xatom.h>
 #ifdef ENABLE_CDE
 #include <Tt/tt_c.h>
 #include <Tt/tttk.h>
@@ -123,6 +124,10 @@ static void new_window_cb(Widget,XtPointer,XtPointer);
 static void navbar_change_cb(const char*, void*);
 static void about_cb(Widget,XtPointer,XtPointer);
 static void dirlist_cb(Widget,XtPointer,XtPointer);
+static Boolean convert_selection_proc(Widget w,
+	Atom*, Atom*, Atom*, XtPointer*, unsigned long*, int*);
+static void lose_selection_proc(Widget, Atom*);
+static void redraw_tile(struct browser_data*, long);
 #ifdef ENABLE_CDE
 static void help_topics_cb(Widget,XtPointer,XtPointer);
 #endif /* ENABLE_CDE */
@@ -1082,13 +1087,7 @@ static void thread_callback_proc(XtPointer data, int *pfd, XtInputId *iid)
 		/* NOTE: the loader thread keeps data_mutex locked while
 		 *       posting TMSG_UPDATE messages */
 		if(msg.update_data.index>=0){
-			Position x,y;
-			Dimension w,h;
-			Boolean viewable;
-			compute_tile_position(bd,msg.update_data.index,
-				&x,&y,&w,&h,&viewable);
-			if(viewable) XClearArea(app_inst.display,
-				XtWindow(bd->wview),x,y,w,h,True);
+			redraw_tile(bd, msg.update_data.index);
 		}else{
 			XClearArea(app_inst.display,XtWindow(bd->wview),0,0,0,0,True);
 			update_scroll_bar(bd);
@@ -1513,17 +1512,14 @@ static void input_cb(Widget w, XtPointer client_data, XtPointer call_data)
 static void set_selection(struct browser_data *bd,
 	long i, long l, Boolean clear)
 {
-	Position x,y;
-	Dimension w,h;
-	Boolean vi;
 	long j,k;
 	
 	if(clear && bd->nsel_files>0){
 		for(j=0; j<bd->nfiles; j++){
-			compute_tile_position(bd,j,&x,&y,&w,&h,&vi);
-			if(bd->files[j].selected && vi)
-				XClearArea(app_inst.display,XtWindow(bd->wview),x,y,w,h,True);
-			bd->files[j].selected=False;
+			if(bd->files[j].selected) {
+				bd->files[j].selected=False;
+				redraw_tile(bd, j);
+			}
 		}
 		bd->nsel_files=0;
 	}
@@ -1533,8 +1529,7 @@ static void set_selection(struct browser_data *bd,
 	for(j=labs(l-i); j>=0; j--, i+=k){
 		bd->files[i].selected=True;
 		bd->nsel_files++;
-		compute_tile_position(bd,i,&x,&y,&w,&h,&vi);
-		if(vi) XClearArea(app_inst.display,XtWindow(bd->wview),x,y,w,h,True);
+		redraw_tile(bd, i);
 	}
 	update_controls(bd);
 }
@@ -1544,10 +1539,6 @@ static void set_selection(struct browser_data *bd,
  */
 static void toggle_selection(struct browser_data *bd, long i)
 {
-	Position x,y;
-	Dimension w,h;
-	Boolean vi;
-	
 	if(bd->files[i].selected){
 		bd->files[i].selected=False;
 		bd->nsel_files--;
@@ -1555,8 +1546,7 @@ static void toggle_selection(struct browser_data *bd, long i)
 		bd->files[i].selected=True;
 		bd->nsel_files++;
 	}
-	compute_tile_position(bd,i,&x,&y,&w,&h,&vi);
-	if(vi) XClearArea(app_inst.display,XtWindow(bd->wview),x,y,w,h,True);
+	redraw_tile(bd, i);
 	update_controls(bd);
 }
 
@@ -1565,17 +1555,14 @@ static void toggle_selection(struct browser_data *bd, long i)
  */
 static void clear_selection(struct browser_data *bd)
 {
-	Position x, y;
-	Dimension w,h;
-	Boolean visible;
 	long i;
 	
 	if(bd->nsel_files>0){
 		for(i=0; i<bd->nfiles; i++){
-			compute_tile_position(bd,i,&x,&y,&w,&h,&visible);
-			if(bd->files[i].selected && visible)
-				XClearArea(app_inst.display,XtWindow(bd->wview),x,y,w,h,True);
-			bd->files[i].selected=False;
+			if(bd->files[i].selected) {
+				bd->files[i].selected = False;
+				redraw_tile(bd, i);
+			}
 		}
 	}
 	bd->nsel_files=0;
@@ -1587,25 +1574,23 @@ static void clear_selection(struct browser_data *bd)
  */
 static void set_focus(struct browser_data *bd, long i)
 {
-	Position x,y;
-	Dimension w,h;
-	Boolean vi;
 	long prev_focus=bd->ifocus;
+	
+	bd->owns_primary = XtOwnSelection(bd->wshell, XA_PRIMARY,
+		XtLastTimestampProcessed(app_inst.display),
+		convert_selection_proc, lose_selection_proc, NULL);
 	
 	bd->ifocus=i;
 	if(!bd->nfiles) return;
 	
-	if(prev_focus>=0){
-		compute_tile_position(bd,prev_focus,&x,&y,&w,&h,&vi);
-		if(vi) XClearArea(app_inst.display,XtWindow(bd->wview),x,y,w,h,True);
-	}
+	if(prev_focus>=0) redraw_tile(bd, prev_focus);
 
 	if(i<0){
+		Dimension h;
 		compute_tile_dimensions(bd,NULL,NULL,NULL,NULL,NULL,&h);
 		bd->ifocus=(bd->yoffset/h);
 	}
-	compute_tile_position(bd,bd->ifocus,&x,&y,&w,&h,&vi);
-	if(vi) XClearArea(app_inst.display,XtWindow(bd->wview),x,y,w,h,True);
+	redraw_tile(bd, bd->ifocus);
 	update_status_msg(bd);
 }
 
@@ -1819,15 +1804,20 @@ static void expose_cb(Widget w, XtPointer client, XtPointer call)
 				XSetForeground(app_inst.display,bd->draw_gc,bd->sbg_pixel);
 				XFillRectangle(app_inst.display,wview,bd->draw_gc,
 					xpos,ypos,tile_width,tile_height);
+				
+				XSetForeground(app_inst.display, bd->text_gc, bd->bg_pixel);
+				XSetForeground(app_inst.display,bd->draw_gc,bd->fg_pixel);
 				XFillRectangle(app_inst.display,wview,bd->draw_gc,
 					xpos,ypos+tile_height+LABEL_MARGIN,
 					tile_width,bd->max_label_height);
 			}else{
+				XSetForeground(app_inst.display, bd->text_gc, bd->fg_pixel);
 				XSetForeground(app_inst.display,bd->draw_gc,bd->bg_pixel);
 				XFillRectangle(app_inst.display,wview,bd->draw_gc,
 					xpos,ypos+tile_height+LABEL_MARGIN,
 					tile_width,bd->max_label_height);
 			}
+			
 			XSetLineAttributes(app_inst.display,bd->draw_gc,bd->border_width,
 				LineSolid,CapButt,JoinMiter);
 			fpts[0].x=xpos; fpts[0].y=ypos+tile_height;
@@ -1878,10 +1868,31 @@ static void expose_cb(Widget w, XtPointer client, XtPointer call)
 				XDrawRectangle(app_inst.display,wview,
 					bd->draw_gc,xpos+2,ypos+2,
 					tile_width-5,tile_height-5);
+				if(bd->owns_primary)
+					XDrawRectangle(app_inst.display,wview,bd->draw_gc,
+						xpos,ypos+tile_height+LABEL_MARGIN,
+						tile_width - 1, bd->max_label_height - 1);
 			}
 		}
 		cy+=tile_outer_height;
 		XFlush(app_inst.display);
+	}
+}
+
+/*
+ * Erases a tile and generates exposure event if it's visible
+ */
+static void redraw_tile(struct browser_data *bd, long i)
+{
+	Position x, y;
+	Dimension w, h;
+	Boolean visible;
+
+	compute_tile_position(bd, i, &x, &y, &w, &h, &visible);
+	if(visible) {
+		XClearArea(app_inst.display, XtWindow(bd->wview),
+			x - TILE_XMARGIN, y - TILE_YMARGIN,
+			w + TILE_XMARGIN * 2, h + TILE_YMARGIN * 2, True);
 	}
 }
 
@@ -2899,6 +2910,63 @@ static void navbar_change_cb(const char *path, void *cb_data)
 							 * to keep a local copy of the path string */
 	load_path(bd,tmp);
 	free(tmp);
+}
+
+/*
+ * Primary selection converter.
+ * Returns full path to the focused file, if any, to the requestor.
+ */
+static Boolean convert_selection_proc(Widget w,
+	Atom *sel, Atom *tgt, Atom *type_ret, XtPointer *val_ret,
+	unsigned long *len_ret, int *fmt_ret)
+{
+	struct browser_data *bd = browsers;
+	
+	while(bd) {
+		if(bd->wshell == w) break;
+		bd = bd->next;
+	}
+	if(!bd || !bd->nfiles || (bd->ifocus < 0)) return False;
+	
+	if(*tgt == app_inst.XaTEXT || *tgt == XA_STRING) {
+		unsigned long len;
+		char *data;
+		
+		len = strlen(bd->path) + strlen(bd->files[bd->ifocus].name) + 2;
+		
+		data = XtMalloc(len); /* Xt will XtFree it when done */
+		if(!data) {
+			warning_msg("Failed to allocate selection data buffer");
+			return False;
+		}
+
+		sprintf(data, "%s/%s", bd->path, bd->files[bd->ifocus].name);
+		
+		*type_ret = *tgt;
+		*fmt_ret = 8;
+		*len_ret = len - 1;
+		*val_ret = data;
+		return True;		
+	}
+	return False;
+}
+
+/*
+ * Called on selection ownership change.
+ * Redraws selected tile, if any, and resets PRIMARY ownership state.
+ */
+static void lose_selection_proc(Widget wshell, Atom *sel)
+{
+	struct browser_data *bd = browsers;
+
+	while(bd) {
+		if(bd->wshell == wshell) break;
+		bd = bd->next;
+	}
+	if(!bd || !bd->nfiles || (bd->ifocus < 0)) return;
+
+	bd->owns_primary = False;
+	redraw_tile(bd, bd->ifocus);
 }
 
 /*

@@ -55,6 +55,7 @@ struct app_inst_data {
 	Colormap colormap; /* common colormap */
 	int pixel_size; /* padded pixel size in bits */
 	Atom XaWM_DELETE_WINDOW;
+	Atom XaTEXT;
 	#ifndef ENABLE_CDE
 	Atom XaSERVER;
 	Atom XaSERVER_REQ;
