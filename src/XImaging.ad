@@ -8,11 +8,13 @@
 
 XImaging*editCommand: xpaint
 XImaging*visualProgress: True
-XImaging*XImagingViewerToolbar: False
+XImaging*viewerToolbar: False
 XImaging*largeToolbarIcons: False
 XImaging*downsamplingFilter: True
 XImaging*upsamplingFilter: False
 XImaging*fastPanning: False
+XImaging*showDotFiles: True
+XImaging*showDirectories: True
 
 XImaging*tileSizeList: 80,120,160
 XImaging*tileSize: small
@@ -34,6 +36,11 @@ XImagingViewer.height:400
 
 *XmFileSelectionBox.pathMode: PATH_MODE_RELATIVE
 *XmFileSelectionBox.fileFilterStyle: FILTER_HIDDEN_FILES
+
+! By default, the directories pane will resize itself according to contents.
+! Following resources may be set to specify constant width in pixels:
+! XImagingBrowser*directoriesList.listSizePolicy: CONSTANT
+! XImagingBrowser*directoriesList.width: 100
 
 !##############################################################################
 !# Fonts

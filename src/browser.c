@@ -200,7 +200,7 @@ static struct browser_data* create_browser(const struct app_resources *res)
 	bd->wdlscroll = XmVaCreateScrolledWindow(bd->wpaned,
 		"listScrolled", XmNshadowThickness, 0,
 		XmNallowResize, True, NULL);
-	bd->wdirlist = XmVaCreateManagedList(bd->wdlscroll, "list",
+	bd->wdirlist = XmVaCreateManagedList(bd->wdlscroll, "directoriesList",
 		XmNprimaryOwnership, XmOWN_NEVER,
 		XmNselectionPolicy, XmSINGLE_SELECT,
 		XmNautomaticSelection, XmNO_AUTO_SELECT, NULL);
