@@ -2006,6 +2006,8 @@ static void toolbar_cb(Widget w, XtPointer client, XtPointer call)
 		XtManageChild(vd->wtoolbar);
 	else
 		XtUnmanageChild(vd->wtoolbar);
+
+	update_controls(vd);
 }
 
 static void next_file_cb(Widget w, XtPointer client, XtPointer call)
