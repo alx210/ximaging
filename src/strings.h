@@ -31,6 +31,7 @@
 #define SID_VMPROPS		22	/* Properties */
 #define SID_VMNEXTPAGE	23	/* Next Page */
 #define SID_VMPREVPAGE	24	/* Previous Page */
+#define SID_VMTOOLBAR	25	/* Toolbar */
 
 #define SID_VMZOOM		30	/* Zoom (cascade) */
 #define SID_VMZOOMIN	31	/* Zoom In */

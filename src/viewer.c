@@ -119,6 +119,7 @@ static void next_file_cb(Widget,XtPointer,XtPointer);
 static void prev_file_cb(Widget,XtPointer,XtPointer);
 static void new_viewer_cb(Widget,XtPointer,XtPointer);
 static void about_cb(Widget,XtPointer,XtPointer);
+static void toolbar_cb(Widget,XtPointer,XtPointer);
 static void load_prog_handler(XtPointer client, XtIntervalId *iid);
 static void load_fb_update_handler(XtPointer client, XtIntervalId *iid);
 #ifdef ENABLE_CDE
@@ -182,7 +183,7 @@ static struct viewer_data* create_viewer(const struct app_resources *res)
 
 	vd->wmain=XmVaCreateMainWindow(vd->wshell,"main",NULL);
 	create_viewer_menubar(vd);
-	if(vd->show_tbr) create_viewer_toolbar(vd);
+	create_viewer_toolbar(vd);
 
 	XtVaGetValues(vd->wmain,XmNcolormap,&cmap,XmNbackground,&tmp_pixel,NULL);
 	XmGetColors(XtScreen(vd->wshell),cmap,
@@ -336,12 +337,12 @@ static struct viewer_data* create_viewer(const struct app_resources *res)
 	vd->load_prog=0;
 
 	XmToggleButtonGadgetSetState(
+		get_menu_item(vd, "*toolbar"), res->show_viewer_tbr, False);
+	XmToggleButtonGadgetSetState(
 		get_menu_item(vd,"*pinThis"),res->pin_window,True);
-	if(vd->show_tbr){
-		XmToggleButtonGadgetSetState(
+	XmToggleButtonGadgetSetState(
 			get_toolbar_item(vd->wtoolbar,"*pinThis"),
 			res->pin_window,False);
-	}
 
 	XmToggleButtonGadgetSetState(
 		get_menu_item(vd,"*zoomFit"),res->zoom_fit,True);
@@ -1874,17 +1875,16 @@ static void pin_window_cb(Widget w, XtPointer client, XtPointer call)
 	struct viewer_data *vd=(struct viewer_data*)client;
 	vd->pinned=((XmToggleButtonCallbackStruct*)call)->set;
 	
-	if(vd->show_tbr){
-		/* figure out which of menu/toolbar button we need to sync */
-		wbutton=get_menu_item(vd,"*pinThis");
-		if(w!=wbutton){
-			XmToggleButtonGadgetSetState(wbutton,vd->pinned,False);
-		}else{
-			XmToggleButtonGadgetSetState(
-				get_toolbar_item(vd->wtoolbar,"*pinThis"),
-				vd->pinned,False);
-		}
+	/* figure out which of menu/toolbar button we need to sync */
+	wbutton=get_menu_item(vd,"*pinThis");
+	if(w!=wbutton){
+		XmToggleButtonGadgetSetState(wbutton,vd->pinned,False);
+	}else{
+		XmToggleButtonGadgetSetState(
+			get_toolbar_item(vd->wtoolbar,"*pinThis"),
+			vd->pinned,False);
 	}
+
 }
 
 static void zoom_fit_cb(Widget w, XtPointer client, XtPointer call)
@@ -1996,6 +1996,16 @@ static void about_cb(Widget w, XtPointer client, XtPointer call)
 {
 	struct viewer_data *vd=(struct viewer_data*)client;
 	display_about_dlgbox(vd->wshell);
+}
+
+static void toolbar_cb(Widget w, XtPointer client, XtPointer call)
+{
+	struct viewer_data *vd=(struct viewer_data*)client;
+	vd->show_tbr = ((XmToggleButtonCallbackStruct*)call)->set;
+	if(vd->show_tbr)
+		XtManageChild(vd->wtoolbar);
+	else
+		XtUnmanageChild(vd->wtoolbar);
 }
 
 static void next_file_cb(Widget w, XtPointer client, XtPointer call)
@@ -2365,6 +2375,8 @@ static void create_viewer_menubar(struct viewer_data *vd)
 		{IT_SEP},
 		{IT_PUSH,"nextPage","_Next Page",SID_VMNEXTPAGE,next_page_cb},
 		{IT_PUSH,"previousPage","Pr_evious Page",SID_VMPREVPAGE,prev_page_cb},
+		{IT_SEP},
+		{IT_TOGGLE,"toolbar","_Toolbar", SID_VMTOOLBAR, toolbar_cb}
 	};
 	
 	const struct menu_item zoom_menu[]={
@@ -2481,7 +2493,7 @@ static void create_viewer_toolbar(struct viewer_data *vd)
 		{TB_PUSH,"flipVertically",BMDATA(tbvflip),vflip_cb},
 		{TB_PUSH,"flipHorizontally",BMDATA(tbhflip),hflip_cb},
 		{TB_SEP,NULL,NULL,0,0,NULL},
-		{TB_TOGGLE,"pinWindow",BMDATA(tbpin),pin_window_cb}
+		{TB_TOGGLE,"pinThis",BMDATA(tbpin),pin_window_cb}
 	};
 
 	#undef BMDATA
