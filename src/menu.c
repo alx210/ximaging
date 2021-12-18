@@ -51,7 +51,10 @@ Widget create_pulldown(Widget wmbar, const struct menu_item *items,
 	n=0;
 	XtSetArg(args[n],XmNlabelString,label_str); n++;
 	XtSetArg(args[n],XmNsubMenuId,wpulldown); n++;
-	if(mnemonic) XtSetArg(args[n],XmNmnemonic,mnemonic); n++;
+	if(mnemonic) {
+		XtSetArg(args[n],XmNmnemonic,mnemonic);
+		n++;
+	}
 	wcascade=XmCreateCascadeButton(wmbar,items[0].name,args,n);
 	XmStringFree(label_str);
 	create_buttons(wpulldown,&items[1],nitems-1,cbc_data,msg_set);
