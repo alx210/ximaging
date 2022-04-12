@@ -202,7 +202,7 @@ static struct browser_data* create_browser(const struct app_resources *res)
 		XmNallowResize, True, NULL);
 	bd->wdirlist = XmVaCreateManagedList(bd->wdlscroll, "directoriesList",
 		XmNprimaryOwnership, XmOWN_NEVER,
-		XmNselectionPolicy, XmSINGLE_SELECT,
+		XmNselectionPolicy, XmBROWSE_SELECT,
 		XmNautomaticSelection, XmNO_AUTO_SELECT, NULL);
 	XtAddCallback(bd->wdirlist,
 		XmNdefaultActionCallback, dirlist_cb, (XtPointer)bd);
@@ -1011,6 +1011,8 @@ static void thread_callback_proc(XtPointer data, int *pfd, XtInputId *iid)
 					XmListAddItem(bd->wdirlist, str, i + 1);
 					XmStringFree(str);
 				}
+				XClearArea(XtDisplay(bd->wdirlist),
+					XtWindow(bd->wdirlist),	0, 0, 0, 0, True);
 			}
 			
 			pthread_mutex_unlock(&bd->data_mutex);
@@ -2765,6 +2767,8 @@ static void dirlist_cb(Widget w, XtPointer client, XtPointer call)
 	sprintf(new_path, "%s/%s", bd->path, bd->subdirs[pos]);
 	load_path(bd, new_path);
 	free(new_path);
+	
+	XmProcessTraversal(bd->wdirlist, XmTRAVERSE_CURRENT);
 }
 
 static void show_dotfiles_cb(Widget w, XtPointer client, XtPointer call)
