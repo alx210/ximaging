@@ -210,9 +210,10 @@ static struct browser_data* create_browser(const struct app_resources *res)
 	if(res->show_dirs) XtManageChild(bd->wdlscroll);
 	
 	wview_scrl = XmVaCreateManagedScrolledWindow(bd->wpaned, "viewScrolled",
-		XmNshadowType,XmSHADOW_IN,XmNshadowThickness,line_width,
-		XmNscrollingPolicy,XmAPPLICATION_DEFINED,
-		XmNvisualPolicy,XmVARIABLE,NULL);
+		XmNshadowType, XmSHADOW_IN, XmNshadowThickness, line_width,
+		XmNscrollingPolicy, XmAPPLICATION_DEFINED,
+		XmNvisualPolicy, XmVARIABLE,
+		XmNpaneMaximum, 65535, NULL);
 	bd->wvscroll=XmVaCreateManagedScrollBar(wview_scrl,"vscroll",
 		XmNminimum,0,XmNmaximum,1,XmNincrement,8,XmNpageIncrement,32,NULL);
 	XtAddCallback(bd->wvscroll,XmNdragCallback,scroll_cb,(XtPointer)bd);
