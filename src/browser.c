@@ -2689,7 +2689,10 @@ static void delete_cb(Widget w, XtPointer client, XtPointer call)
 static void refresh_cb(Widget w, XtPointer client, XtPointer call)
 {
 	struct browser_data *bd=(struct browser_data*)client;
-	launch_reader_thread(bd);
+	char *path = strdup(bd->path);
+	
+	load_path(bd, path);
+	free(path);
 }
 
 static void pin_window_cb(Widget w, XtPointer client, XtPointer call)
