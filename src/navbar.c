@@ -50,7 +50,6 @@ Widget create_navbar(Widget parent, navbar_cb callback, void *cb_data )
 	Cardinal n=0;
 	Arg args[10];
 	struct navbar_data *data;
-	Dimension border_width=0;
 	
 	data=calloc(1,sizeof(struct navbar_data));
 	if(!data) return None;
@@ -59,13 +58,9 @@ Widget create_navbar(Widget parent, navbar_cb callback, void *cb_data )
 	data->callback=callback;
 	data->cb_data=cb_data;
 
-	XtVaGetValues(XmGetXmDisplay(app_inst.display),
-		XmNenableThinThickness,&border_width,NULL);
-	border_width=border_width?1:2;
-	
 	XtSetArg(args[n],XmNhorizontalSpacing,2); n++;
 	XtSetArg(args[n],XmNuserData,(XtPointer)data); n++;
-	XtSetArg(args[n],XmNshadowThickness,border_width); n++;
+	XtSetArg(args[n],XmNshadowThickness, 1); n++;
 	XtSetArg(args[n],XmNshadowType,XmSHADOW_OUT); n++;
 	XtSetArg(args[n],XmNhorizontalSpacing,2); n++;
 	XtSetArg(args[n],XmNverticalSpacing,2); n++;
@@ -80,7 +75,7 @@ Widget create_navbar(Widget parent, navbar_cb callback, void *cb_data )
 	XtSetArg(args[n],XmNbottomAttachment,XmATTACH_FORM); n++;
 	XtSetArg(args[n],XmNrightAttachment,XmATTACH_FORM); n++;
 	XtSetArg(args[n],XmNarrowDirection,XmARROW_UP); n++;
-	XtSetArg(args[n],XmNdetailShadowThickness,border_width); n++;
+	XtSetArg(args[n],XmNdetailShadowThickness, 1); n++;
 	/* XtSetArg(args[n],XmNforeground,data->form_bg); n++; */
 	XtSetArg(args[n],XmNsensitive,False); n++;
 	data->wdirup=XmCreateArrowButton(data->wform,"navigateUp",args,n);

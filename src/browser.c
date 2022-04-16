@@ -189,13 +189,13 @@ static struct browser_data* create_browser(const struct app_resources *res)
 	wframe = XmVaCreateManagedFrame(bd->wmain, "frame",
 		XmNmarginWidth, 0, XmNmarginHeight, 0,
 		XmNshadowType, XmSHADOW_OUT,
-		XmNshadowThickness, line_width, NULL);
+		XmNshadowThickness, 1, NULL);
 
 	bd->wpaned = XtVaCreateManagedWidget("paned",
 		xmPanedWidgetClass, wframe,
 		XmNorientation, XmHORIZONTAL,
 		XmNmarginWidth, 2, XmNmarginHeight, 2,
-		XmNshadowThickness, line_width, NULL);
+		XmNshadowThickness, 1, NULL);
 	
 	bd->wdlscroll = XmVaCreateScrolledWindow(bd->wpaned,
 		"listScrolled", XmNshadowThickness, 0,
@@ -210,7 +210,7 @@ static struct browser_data* create_browser(const struct app_resources *res)
 	if(res->show_dirs) XtManageChild(bd->wdlscroll);
 	
 	wview_scrl = XmVaCreateManagedScrolledWindow(bd->wpaned, "viewScrolled",
-		XmNshadowType, XmSHADOW_IN, XmNshadowThickness, line_width,
+		XmNshadowType, XmSHADOW_IN, XmNshadowThickness, 1,
 		XmNscrollingPolicy, XmAPPLICATION_DEFINED,
 		XmNvisualPolicy, XmVARIABLE,
 		XmNpaneMaximum, 65535, NULL);
@@ -243,7 +243,7 @@ static struct browser_data* create_browser(const struct app_resources *res)
 		
 	wmsgbar=XmVaCreateManagedFrame(bd->wmain,"messageArea",
 		XmNshadowType,XmSHADOW_OUT,
-		XmNshadowThickness,line_width,NULL);
+		XmNshadowThickness, 1,NULL);
 	
 	bd->wmsg=XmVaCreateManagedLabelGadget(wmsgbar,"status",
 		XmNmarginHeight,4,XmNalignment,XmALIGNMENT_BEGINNING,NULL);
@@ -2812,6 +2812,8 @@ static void about_cb(Widget w, XtPointer client, XtPointer call)
  */
 static void create_browser_menubar(struct browser_data *bd)
 {
+	Arg args[2];
+	
 	static struct menu_item file_menu[]={
 		{IT_PUSH,"fileMenu","_File",SID_BMFILE},
 		{IT_PUSH,"browse","_Browse...",SID_BMBROWSE,browse_cb},
@@ -2861,8 +2863,9 @@ static void create_browser_menubar(struct browser_data *bd)
 		#endif /* ENABLE_CDE */
 		{IT_PUSH,"about","_About",SID_BMABOUT,about_cb}
 	};
-		
-	bd->wmenubar=XmCreateMenuBar(bd->wmain,"menuBar",NULL,0);
+	
+	XtSetArg(args[0], XmNshadowThickness, 1);
+	bd->wmenubar=XmCreateMenuBar(bd->wmain, "menuBar", args, 1);
 	
 	create_pulldown(bd->wmenubar,file_menu,
 		(sizeof(file_menu)/sizeof(struct menu_item)),

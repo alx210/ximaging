@@ -142,7 +142,6 @@ static struct viewer_data* create_viewer(const struct app_resources *res)
 	XGCValues gc_values;
 	struct viewer_data *vd=viewers;
 	Colormap cmap;
-	Dimension line_width;
 	Pixel bg_pixel, tmp_pixel;
 	static Pixmap wmicon=0;
 	static Pixmap wmicon_mask=0;
@@ -205,14 +204,9 @@ static struct viewer_data* create_viewer(const struct app_resources *res)
 	}
 	XtOverrideTranslations(vd->wview,view_tt);
 
-	/* build the message bar */
-	XtVaGetValues(XmGetXmDisplay(app_inst.display),
-		XmNenableThinThickness,&line_width,NULL);
-	line_width=(line_width ? 1:2);
-	
 	wmsgbar=XmVaCreateForm(vd->wmain,"messageArea",
-		XmNmarginWidth,2,XmNshadowType,XmSHADOW_OUT,
-		XmNshadowThickness,line_width,NULL);
+		XmNmarginWidth, 2, XmNshadowType, XmSHADOW_OUT,
+		XmNshadowThickness, 1,NULL);
 	
 	vd->wzoom=XmVaCreateManagedLabelGadget(wmsgbar,"zoom",
 		XmNmarginHeight,4,XmNrightAttachment,XmATTACH_FORM,NULL);
@@ -2348,6 +2342,8 @@ static void help_topics_cb(Widget w, XtPointer client, XtPointer call)
  */
 static void create_viewer_menubar(struct viewer_data *vd)
 {
+	Arg args[2];
+	
 	const struct menu_item file_menu[]={
 		{IT_PUSH,"fileMenu","_File",SID_VMFILE,NULL},
 		{IT_PUSH,"open","_Open...",SID_VMOPEN,open_cb},
@@ -2416,8 +2412,9 @@ static void create_viewer_menubar(struct viewer_data *vd)
 		#endif /* ENABLE_CDE */
 		{IT_PUSH,"about","_About",SID_VMABOUT,about_cb}
 	};
-	
-	vd->wmenubar=XmCreateMenuBar(vd->wmain,"menuBar",NULL,0);
+
+	XtSetArg(args[0], XmNshadowThickness, 1);	
+	vd->wmenubar=XmCreateMenuBar(vd->wmain, "menuBar", args, 1);
 	
 	create_pulldown(vd->wmenubar,file_menu,
 		(sizeof(file_menu)/sizeof(struct menu_item)),
