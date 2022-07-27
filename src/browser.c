@@ -1942,7 +1942,16 @@ static void set_vscroll(struct browser_data *bd, int new_offset)
 
 	XtSetValues(bd->wvscroll,args,1);
 
-	delta=new_offset-bd->yoffset;
+	delta = new_offset - bd->yoffset;
+
+	bd->yoffset = new_offset;
+	
+	if(abs(delta) >= bd->view_height) {
+		XClearArea(app_inst.display, view, 0, 0,
+			bd->view_width, bd->view_height, True);
+		return;
+	}
+	
 	if(delta>0){
 		XCopyArea(app_inst.display,view,view,bd->draw_gc,0,delta,
 			bd->view_width,bd->view_height-delta,0,0);
@@ -1954,8 +1963,6 @@ static void set_vscroll(struct browser_data *bd, int new_offset)
 			bd->view_width,bd->view_height-delta,0,delta);
 		XClearArea(app_inst.display,view,0,0,bd->view_width,delta,True);
 	}
-	bd->yoffset=new_offset;
-	
 }
 
 /*
