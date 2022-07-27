@@ -111,7 +111,7 @@ struct browser_data {
 	GC draw_gc;
 	GC text_gc;
 	XtIntervalId dblclk_timer; /* doubleclick timer */
-	Dimension yoffset; /* vertical scroll offset */
+	int yoffset; /* vertical scroll offset */
 	long sel_start; /* selection start index */
 	int refresh_int; /* refresh interval */
 	XtIntervalId update_timer; /* modification check timer */

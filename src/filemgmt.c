@@ -33,10 +33,8 @@
 #include "filemgmt_i.h"
 #include "debug.h"
 
-#ifndef NO_DEFAULT_WM_ICON
 #include "bitmaps/wmfmgmt.bm"
 #include "bitmaps/wmfmgmt_m.bm"
-#endif /* NO_DEFAULT_WM_ICON */
 
 /* Local prototypes */
 static void* proc_thread_entry(void *arg);
@@ -486,9 +484,7 @@ static void create_progress_widget(struct proc_data *pd)
 	Widget wform, wsrc_frm;
 	char *title=NULL;
 	XmString title_str, str_cancel;
-	#ifndef NO_DEFAULT_WM_ICON
-	static Pixmap wmicon=0, wmicon_mask;
-	#endif /* NO_DEFAULT_WM_ICON */
+	static Pixmap wmicon = 0, wmicon_mask;
 	
 	pd->wshell=XtVaAppCreateShell("xiFileProgress",APP_CLASS,
 		applicationShellWidgetClass,app_inst.display,

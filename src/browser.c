@@ -83,16 +83,14 @@ static void clear_selection(struct browser_data *bd);
 static void set_selection(struct browser_data*,long,long,Boolean);
 static void toggle_selection(struct browser_data*,long);
 static void set_focus(struct browser_data*,long);
-static Boolean select_tile_at(struct browser_data*,Position,Position,int);
+static Boolean select_tile_at(struct browser_data*,int,int,int);
 static void scroll_to(struct browser_data*,long);
 static void dblclk_timer_cb(XtPointer,XtIntervalId*);
 static void set_vscroll(struct browser_data*,int);
-static Boolean rect_hittest(Position,Position,Dimension,
-	Dimension,Position,Position,Dimension,Dimension);
 static void compute_tile_dimensions(struct browser_data*,
-	long*,long*,Dimension*,Dimension*,Dimension*,Dimension*);
+	long*,long*,unsigned int*,unsigned int*,unsigned int*,unsigned int*);
 static void compute_tile_position(struct browser_data*,
-	long,Position*,Position*,Dimension*,Dimension*,Boolean*);
+	long,int*,int*,unsigned int*,unsigned int*,Boolean*);
 static long find_file_entry(const struct browser_data*,const char*);
 static int file_sort_compare(const void*, const void*);
 static int dir_sort_compare(const void*, const void*);
@@ -1589,7 +1587,7 @@ static void set_focus(struct browser_data *bd, long i)
 	if(prev_focus>=0) redraw_tile(bd, prev_focus);
 
 	if(i<0){
-		Dimension h;
+		unsigned int h;
 		compute_tile_dimensions(bd,NULL,NULL,NULL,NULL,NULL,&h);
 		bd->ifocus=(bd->yoffset/h);
 	}
@@ -1604,10 +1602,10 @@ static void set_focus(struct browser_data *bd, long i)
  * Returns true if a tile exists at the given position, False otherwise.
  */
 static Boolean select_tile_at(struct browser_data *bd,
-	Position x, Position y, int mode)
+	int x, int y, int mode)
 {
-	Position tx, ty;
-	Dimension tw, th, tih;
+	int tx, ty;
+	unsigned int tw, th, tih;
 	long tiles_per_row;
 	long i;
 	Boolean hit=False;
@@ -1680,8 +1678,8 @@ static void dblclk_timer_cb(XtPointer data, XtIntervalId *id)
  */
 static void compute_tile_dimensions(struct browser_data *bd,
 	long *tiles_per_row, long *tiles_per_col,
-	Dimension *tile_iwidth, Dimension *tile_iheight,
-	Dimension *tile_owidth, Dimension *tile_oheight)
+	unsigned int *tile_iwidth, unsigned int *tile_iheight,
+	unsigned int *tile_owidth, unsigned int *tile_oheight)
 {
 	if(tiles_per_row || tiles_per_col){
 		long tpr;
@@ -1695,7 +1693,7 @@ static void compute_tile_dimensions(struct browser_data *bd,
 	if(tile_iwidth) *tile_iwidth=bd->tile_size[bd->itile_size];
 	if(tile_owidth)	*tile_owidth=bd->tile_size[bd->itile_size]+TILE_XMARGIN;
 	if(tile_iheight || tile_oheight){
-		Dimension ih;
+		unsigned int ih;
 		ih=((bd->tile_size[bd->itile_size]/bd->tile_asr[0])*bd->tile_asr[1]);
 		if(tile_iheight) *tile_iheight=ih;
 		if(tile_oheight)
@@ -1709,12 +1707,12 @@ static void compute_tile_dimensions(struct browser_data *bd,
  * NULL may be passed for undesired parameters.
  */
 static void compute_tile_position(struct browser_data *bd,
-	long itile, Position *tx, Position *ty,
-	Dimension *tw, Dimension *th, Boolean *viewable)
+	long itile, int *tx, int *ty,
+	unsigned int *tw, unsigned int *th, Boolean *viewable)
 {
-	Dimension tile_width, tile_height;
-	Dimension tile_outer_height;
-	Position xpos, ypos;
+	unsigned int tile_width, tile_height;
+	unsigned int tile_outer_height;
+	int xpos, ypos;
 	long tiles_per_row;
 	long yoff, xoff;
 	
@@ -1742,8 +1740,8 @@ static void compute_tile_position(struct browser_data *bd,
  */
 static void scroll_to(struct browser_data *bd, long i)
 {
-	Position y;
-	Dimension h;
+	int y;
+	unsigned int h;
 	int offset=bd->yoffset;
 	
 	compute_tile_position(bd,i,NULL,&y,NULL,&h,NULL);
@@ -1757,16 +1755,6 @@ static void scroll_to(struct browser_data *bd, long i)
 }
 
 /*
- * Returns true if r1 lays inside r2.
- */
-static Boolean rect_hittest(Position x1, Position y1, Dimension w1,
-	Dimension h1, Position x2, Position y2, Dimension w2, Dimension h2)
-{
-	if(x1>=x2+w2 || y1>=y2+h2 || x1+w1<=x2 || y1+h1<=y2) return False;
-	return True;
-}
-
-/*
  * View area exposure handler
  */
 static void expose_cb(Widget w, XtPointer client, XtPointer call)
@@ -1775,9 +1763,11 @@ static void expose_cb(Widget w, XtPointer client, XtPointer call)
 	XmDrawingAreaCallbackStruct *cbs=
 		(XmDrawingAreaCallbackStruct*)call;
 	XExposeEvent *evt=(XExposeEvent*)cbs->event;
-	Dimension tile_width, tile_height;
-	Dimension tile_outer_height;
-	Position cx, cy;
+	Region reg;
+	XRectangle rc = { evt->x, evt->y, evt->width, evt->height };
+	unsigned int tile_width, tile_height;
+	unsigned int tile_outer_height;
+	int cx, cy;
 	int offset_ntiles;
 	Window wview;
 	long i;
@@ -1788,21 +1778,27 @@ static void expose_cb(Widget w, XtPointer client, XtPointer call)
 	compute_tile_dimensions(bd,&tiles_per_row,NULL,
 		&tile_width,&tile_height,NULL,&tile_outer_height);
 	wview=XtWindow(bd->wview);
+	
+	reg = XCreateRegion();
+	XUnionRectWithRegion(&rc, reg, reg);
 
 	offset_ntiles=(bd->yoffset/tile_outer_height);
-	for(i=offset_ntiles*tiles_per_row,
-		cy= -(bd->yoffset-offset_ntiles*tile_outer_height);
-		i<bd->nfiles && (cy-bd->yoffset)<bd->view_height; ){
+
+	for(i = offset_ntiles * tiles_per_row,
+		cy = -(bd->yoffset - offset_ntiles * tile_outer_height);
+		(i < bd->nfiles) && ((cy - bd->yoffset) < bd->view_height); ){
+
 		unsigned long j;
 		for(j=0, cx=0; j<tiles_per_row && i<bd->nfiles; j++, i++){
-			Position xpos, ypos;
 			XPoint fpts[4];
-			xpos=cx+j*(tile_width+TILE_XMARGIN)+TILE_XMARGIN;
-			ypos=cy+TILE_YMARGIN;
-
-			if(!rect_hittest(xpos,ypos,tile_width,tile_outer_height,
-				evt->x,evt->y,evt->width,evt->height)) continue;
-
+			int xpos = cx + j * (tile_width+TILE_XMARGIN) + TILE_XMARGIN;
+			int ypos = cy + TILE_YMARGIN;
+			
+			if(! (XRectInRegion(reg, xpos, ypos, tile_width, tile_outer_height) 
+				& (RectangleIn | RectangleOut | RectanglePart)) ) {
+					continue;
+			}
+			
 			if(bd->files[i].selected){
 				XSetForeground(app_inst.display,bd->draw_gc,bd->sbg_pixel);
 				XFillRectangle(app_inst.display,wview,bd->draw_gc,
@@ -1878,8 +1874,9 @@ static void expose_cb(Widget w, XtPointer client, XtPointer call)
 			}
 		}
 		cy+=tile_outer_height;
-		XFlush(app_inst.display);
 	}
+	XDestroyRegion(reg);
+	XFlush(app_inst.display);
 }
 
 /*
@@ -1887,8 +1884,8 @@ static void expose_cb(Widget w, XtPointer client, XtPointer call)
  */
 static void redraw_tile(struct browser_data *bd, long i)
 {
-	Position x, y;
-	Dimension w, h;
+	int x, y;
+	unsigned int w, h;
 	Boolean visible;
 
 	compute_tile_position(bd, i, &x, &y, &w, &h, &visible);
@@ -1979,7 +1976,7 @@ static void update_scroll_bar(struct browser_data *bd)
 	int i=0;
 	
 	if(bd->nfiles && bd->view_width>0 && bd->view_height>0){
-		Dimension tile_height;
+		unsigned int tile_height;
 		long tiles_per_row;
 		long tiles_per_col;
 		int delta;
