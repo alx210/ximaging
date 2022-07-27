@@ -47,7 +47,6 @@ static int copy_file(struct proc_data*, const char *src, const char *dest);
 static int move_file(struct proc_data*, const char *src, const char *dest);
 static int launch_proc_thread(struct proc_data*);
 static enum response_code ask_replace(struct proc_data*, const char *fname);
-static void abbreviate_file_name(char *buffer, const char *fname);
 static char* make_dest_file_name(const char *src, const char *dir);
 static void map_progress_widget_cb(XtPointer client, XtIntervalId *iid);
 static void thread_callback_proc(XtPointer,int*,XtInputId*);
@@ -121,7 +120,7 @@ static void* proc_thread_entry(void *data)
 		pthread_cond_wait(&pd->got_response,&pd->state_mutex);
 		pthread_mutex_unlock(&pd->state_mutex);
 	}
-	
+
 	tmsg.code=TM_FINISHED;
 	tmsg.status=0;
 	write(pd->thread_notify_fd[TNFD_OUT],&tmsg,sizeof(struct thread_msg));
@@ -134,13 +133,16 @@ static void* proc_thread_entry(void *data)
  */
 static void update_progress_widget(struct proc_data *pd)
 {
-	char sz_label[MAX_LABEL_PATH_NAME];
+	char *sz_label;
 	XmString str_label;
 	Arg arg[1];
 	
 	if(pd->wshell==None) return;
-	abbreviate_file_name(sz_label,pd->src[pd->cur_file]);
-	str_label=XmStringCreateLocalized(sz_label);
+	sz_label = shorten_mb_string(pd->src[pd->cur_file],
+		MAX_LABEL_PATH_NAME, True);
+	str_label = XmStringCreateLocalized(sz_label);
+	free(sz_label);
+	
 	XtSetArg(arg[0],XmNlabelString,str_label);
 	XtSetValues(pd->wsrc,arg,1);
 	XmUpdateDisplay(pd->wshell);
@@ -441,22 +443,6 @@ static void map_progress_widget_cb(XtPointer client, XtIntervalId *iid)
 }
 
 /*
- * Abbreviate the file name to MAX_LABEL_PATH_NAME length prefixing it
- * with an ellipsis. 'buffer' must be at least MAX_LABEL_PATH_NAME in size.
- */
-static void abbreviate_file_name(char *buffer, const char *fname)
-{
-	size_t len;
-	
-	len=strlen(fname);
-	if(len>=MAX_LABEL_PATH_NAME){
-		sprintf(buffer,"...%s",&fname[len-(MAX_LABEL_PATH_NAME-4)]);
-	}else{
-		strcpy(buffer,fname);
-	}
-}
-
-/*
  * Construct a full path to the destination file from source file name.
  * Allocates dynamic storage for the returned string.
  */
@@ -514,8 +500,8 @@ static void create_progress_widget(struct proc_data *pd)
 	XmStringFree(title_str);
 	
 	if(pd->proc!=FPROC_DELETE){
-		char sz_label[MAX_LABEL_PATH_NAME];
-		abbreviate_file_name(sz_label,pd->dest);
+		char *sz_label;
+		sz_label = shorten_mb_string(pd->dest, MAX_LABEL_PATH_NAME, True);
 		
 		pd->wdest_frm=XmVaCreateManagedFrame(wform,"destinationFrame",
 			XmNmarginHeight,2,XmNmarginWidth,2,
@@ -531,6 +517,7 @@ static void create_progress_widget(struct proc_data *pd)
 		XmStringFree(title_str);
 
 		title_str=XmStringCreateLocalized(sz_label);
+		free(sz_label);
 		pd->wdest=XmVaCreateManagedLabel(pd->wdest_frm,"destinationLabel",
 			XmNlabelString,title_str,XmNchildType,XmFRAME_WORKAREA_CHILD,
 			XmNalignment,XmALIGNMENT_BEGINNING,NULL);

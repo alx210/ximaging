@@ -1162,23 +1162,15 @@ static XmString create_file_label(struct browser_data *bd, const char *name)
 	max_width=bd->tile_size[bd->itile_size]+bd->border_width*2;
 	label=XmStringCreateLocalized((String)name);
 	str_width=XmStringWidth(bd->render_table,label);
-	if(str_width>max_width){
-		const char ellips[]="...";
+	if(str_width > max_width){
+		char *new_name;
 		size_t new_len;
 
 		XmStringFree(label);
-		new_len=(float)strlen(name)*((float)max_width/str_width);
-
-		if(new_len<=4){
-			label=XmStringCreateLocalized((String)ellips);
-		}else{
-			char *new_name;
-			new_name=strdup(name);
-			new_name[new_len-3]='\0';
-			strcat(new_name,ellips);
-			label=XmStringCreateLocalized(new_name);
-			free(new_name);
-		}
+		new_len = (float)mb_strlen(name) * ((float)max_width / str_width);
+		new_name = shorten_mb_string(name, new_len, False);
+		label = XmStringCreateLocalized(new_name);
+		free(new_name);
 	}
 	height=XmStringHeight(bd->render_table,label);
 	if(height>bd->max_label_height) bd->max_label_height=height;

@@ -39,4 +39,10 @@ void get_screen_size(Widget w, int *pwidth,
 /* Convert string to double (locale independent) */
 double str_to_double(const char *str);
 
+/* Shortens a multibyte string to max_chrs */
+char* shorten_mb_string(const char *sz, size_t max_chrs, Boolean ltor);
+
+/* Returns number of characters in a multibyte string */
+size_t mb_strlen(const char *sz);
+
 #endif /* GUIUTIL_H */

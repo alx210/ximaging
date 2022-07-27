@@ -9,6 +9,7 @@
  */
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <stdint.h>
 #include <string.h>
 #include <ctype.h>
@@ -230,4 +231,73 @@ double str_to_double(const char *str)
 	if(sign) sum= -sum;
 	
 	return sum;
+}
+
+/* Shortens a multibyte string to max_chrs */
+char* shorten_mb_string(const char *sz, size_t max_chrs, Boolean ltor)
+{
+	size_t nbytes = strlen(sz);
+	size_t nchrs = 0;
+	size_t i = 0;
+	char *result;
+	
+	mblen(NULL, 0);
+	
+	while(sz[i]) {
+		int n = mblen(sz + i, nbytes - i);
+		if(n <= 0) break;
+		nchrs++;
+		i += n;
+	}
+
+	if(nchrs <= max_chrs)
+		return strdup(sz);
+	
+	mblen(NULL, 0);
+	
+	if(ltor) {
+		int i;
+		size_t n, nskip = nchrs - (max_chrs - 3);
+		
+		for(n = 0, i = 0; n < nskip; n++) { 
+			i += mblen(sz + i, nbytes - i);
+		}
+		nbytes = strlen(sz + i);
+		result = malloc(nbytes + 4);
+		if(!result) return NULL;
+		sprintf(result, "...%s", sz + i);
+	} else {
+		int i;
+		size_t n, nskip = nchrs - (nchrs - (max_chrs - 3));
+		
+		for(n = 0, i = 0; n < nskip; n++) { 
+			i += mblen(sz + i, nbytes - i);
+		}
+		result = malloc(i + 4);
+		if(!result) return NULL;
+		strncpy(result, sz, i);
+		result[i] = '\0';
+		strcat(result, "...");	
+	}
+	return result;
+}
+
+/* Returns number of characters in a multibyte string */
+size_t mb_strlen(const char *sz)
+{
+	size_t nbytes = strlen(sz);
+	size_t nchrs = 0;
+	size_t i = 0;
+	
+	if(!nbytes) return 0;
+	
+	mblen(NULL, 0);
+	
+	while(sz[i]) {
+		int n = mblen(sz + i, nbytes - i);
+		if(n <= 0) break;
+		nchrs++;
+		i += n;
+	}
+	return nchrs;
 }
