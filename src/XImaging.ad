@@ -19,7 +19,7 @@ XImaging*showDirectories: True
 XImaging*tileSizeList: 80,120,160
 XImaging*tileSize: small
 XImaging*tileAspectRatio: 4:3
-XImaging*refreshInterval: 3
+XImaging*refreshInterval: 6
 
 XImaging*lockRotation: False
 XImaging*zoomFit: True

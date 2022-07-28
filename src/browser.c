@@ -1205,6 +1205,13 @@ static int launch_reader_thread(struct browser_data *bd)
 			return res;
 	}
 	
+	if(bd->nfiles) {
+		struct sched_param sp;
+		sp.sched_priority = sched_get_priority_min(SCHED_OTHER);
+		pthread_attr_setschedpolicy(&attr, SCHED_OTHER);
+		pthread_attr_setschedparam(&attr, &sp);
+	}
+	
 	bd->state |= BSF_READING;
 	
 	res = pthread_create(&bd->rdr_thread, &attr, reader_thread, (void*)bd);

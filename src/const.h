@@ -53,7 +53,7 @@
 #define MIN_ZOOMED_SIZE 32
 
 /* Directory refresh interval in seconds */
-#define DEF_REFRESH_INT 3
+#define DEF_REFRESH_INT 6
 
 /* Default amount of pixels to scroll with direction keys */
 #define DEF_KEY_PAN_AMOUNT 15
