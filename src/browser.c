@@ -472,7 +472,8 @@ static void* loader_thread(void *data)
 
 	for(i=0; i<bd->nfiles && !(bd->state&BSF_LCANCEL); result=0, i++){
 		size_t cur_data_size;
-		if(bd->files[i].state!=FS_PENDING) continue;
+		if(bd->files[i].state == FS_VIEWABLE) continue;
+		
 		tmsg.update_data.index=i;
 		
 		if(!bd->files[i].image){
@@ -497,6 +498,9 @@ static void* loader_thread(void *data)
 				result=ENOMEM;
 				break;
 			}
+		} else {
+			bd->files[i].image->width = tile_width;
+			bd->files[i].image->height = tile_height;
 		}
 		snprintf(path_buf,bd->path_max,"%s/%s",bd->path,bd->files[i].name);
 		result=img_open(path_buf,&cbd.img_file,0);
@@ -564,6 +568,7 @@ static void* loader_thread(void *data)
 		scale=compute_scaling_factor(cbd.buf_image,bd->files[i].image);
 		bd->files[i].image->width = cbd.img_file.width * scale;
 		bd->files[i].image->height = cbd.img_file.height * scale;
+
 		if(!bd->files[i].image->width) bd->files[i].image->width = 1;
 		if(!bd->files[i].image->height) bd->files[i].image->height = 1;
 		bd->files[i].image->bytes_per_line=0;
@@ -2471,13 +2476,11 @@ static void update_interval_cb(XtPointer client, XtIntervalId *iid)
 			return;
 		}
 
-		if(difftime(st.st_mtime,bd->dir_modtime)){
-			launch_reader_thread(bd);
-		}else{
-			bd->update_timer=XtAppAddTimeOut(
-				app_inst.context,bd->refresh_int,
-				update_interval_cb,(XtPointer)bd);
-		}
+		launch_reader_thread(bd);
+
+		bd->update_timer=XtAppAddTimeOut(
+			app_inst.context,bd->refresh_int,
+			update_interval_cb,(XtPointer)bd);
 	}
 }
 
