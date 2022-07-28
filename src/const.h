@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2021 alx@fastestcode.org
+ * Copyright (C) 2012-2022 alx@fastestcode.org
  * This software is distributed under the terms of the MIT license.
  * See the included LICENSE file for further information.
  */
@@ -13,14 +13,14 @@
 
 /* Release info */
 #define APP_VERSION 1
-#define APP_REVISION 5
+#define APP_REVISION 6
 
 #define BASE_NAME "ximaging"	/* X application name */
 #define APP_CLASS "XImaging"	/* X application class */
 #define BASE_TITLE "XImaging"	/* base title for GUI elements */
 
 /* Copyright string */
-#define COPYRIGHT "Copyright (C) 2012-2021 alx@fastestcode.org" \
+#define COPYRIGHT "Copyright (C) 2012-2022 alx@fastestcode.org" \
 	"\nThis program is distributed under the terms of the MIT license." \
 	"\nSee the included LICENSE file for detailed information."
 
