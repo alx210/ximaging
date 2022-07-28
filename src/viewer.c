@@ -1747,6 +1747,10 @@ static void input_cb(Widget w, XtPointer client_data, XtPointer call_data)
 			(img_width > view_width || img_height > view_height)) {
 				set_widget_cursor(w,CUR_DRAG);
 				vd->panning = True;
+		} else if(cbs->event->xbutton.button == Button4) {
+			zoom_view(vd, vd->zoom * vd->zoom_inc);
+		} else if(cbs->event->xbutton.button == Button5) {
+			zoom_view(vd, vd->zoom / vd->zoom_inc);
 		}
 		break;	/* ButtonPress */
 		
