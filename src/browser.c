@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2017 alx@fastestcode.org
+ * Copyright (C) 2012-2022 alx@fastestcode.org
  * This software is distributed under the terms of the MIT license.
  * See the included LICENSE file for further information.
  */
@@ -1382,25 +1382,31 @@ static void input_cb(Widget w, XtPointer client_data, XtPointer call_data)
 	switch(cbs->event->type){
 		case ButtonPress:{
 			XButtonEvent *e=(XButtonEvent*)cbs->event;
-			enum sel_mode smode;
+			enum sel_mode smode = SM_SINGLE;
 			Boolean hit;
 
-			if(e->state&ShiftMask && (e->button==Button1 ||
-				e->button==Button3)){
+			if(e->state&ShiftMask){
 				smode=SM_EXTEND;
-			}else if(e->state&ControlMask && (e->button==Button1 ||
-				e->button==Button3) && bd->nsel_files){
+			}else if(e->state&ControlMask && bd->nsel_files){
 				smode=SM_MULTI;
-			}else{
-				smode=SM_SINGLE;
 			}
-			hit=select_tile_at(bd,e->x,e->y,smode);
-			if(hit && bd->nsel_files && e->button==Button3){
-				Widget wrename=XtNameToWidget(bd->wpopup,"*rename");
-				dbg_assert(wrename);
-				XtSetSensitive(wrename,(bd->nsel_files==1)?True:False);
-				XmMenuPosition(bd->wpopup,(XButtonPressedEvent*)cbs->event);
-				XtManageChild(bd->wpopup);
+			if(e->button == Button1 || e->button == Button3) {
+				hit=select_tile_at(bd,e->x,e->y,smode);
+				if(hit && bd->nsel_files && e->button==Button3){
+					Widget wrename=XtNameToWidget(bd->wpopup,"*rename");
+					dbg_assert(wrename);
+					XtSetSensitive(wrename,(bd->nsel_files==1)?True:False);
+					XmMenuPosition(bd->wpopup,(XButtonPressedEvent*)cbs->event);
+					XtManageChild(bd->wpopup);
+				}
+			} else if(e->button == Button4) {
+				String p="Up";
+				XEvent e={0};
+				XtCallActionProc(bd->wvscroll,"PageUpOrLeft",&e,&p,1);			
+			} else if(e->button == Button5) {
+				String p="Down";
+				XEvent e={0};
+				XtCallActionProc(bd->wvscroll,"PageDownOrRight",&e,&p,1);
 			}
 		}break; /* ButtonPress */
 		
