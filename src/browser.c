@@ -1187,6 +1187,7 @@ static XmString create_file_label(struct browser_data *bd, const char *name)
  */
 static int launch_reader_thread(struct browser_data *bd)
 {
+	pthread_attr_t attr;
 	int res=0;
 	
 	if(bd->update_timer){
@@ -1194,14 +1195,23 @@ static int launch_reader_thread(struct browser_data *bd)
 		bd->update_timer=None;
 	}
 	pthread_mutex_lock(&bd->rdr_cond_mutex);
-	if(bd->state&BSF_READING)
-		pthread_cond_wait(&bd->ldr_cond,&bd->rdr_cond_mutex);
+
+	if(bd->state & BSF_READING)
+		pthread_cond_wait(&bd->ldr_cond, &bd->rdr_cond_mutex);
 	pthread_mutex_unlock(&bd->rdr_cond_mutex);
-	bd->state|=BSF_READING;
-	if(pthread_create(&bd->rdr_thread,NULL,reader_thread,(void*)bd)){
-		res=errno;
-		bd->state&=(~BSF_READING);
+	
+	if( (res = pthread_attr_init(&attr)) ||
+		(res = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED)) ) {
+			return res;
 	}
+	
+	bd->state |= BSF_READING;
+	
+	res = pthread_create(&bd->rdr_thread, &attr, reader_thread, (void*)bd);
+	if(res)	bd->state &= (~BSF_READING);
+	
+	pthread_attr_destroy(&attr);
+	
 	update_status_msg(bd);
 	return res;
 }
@@ -1211,17 +1221,24 @@ static int launch_reader_thread(struct browser_data *bd)
  */
 static int launch_loader_thread(struct browser_data *bd)
 {
+	pthread_attr_t attr;
 	int res=0;
 	
 	pthread_mutex_lock(&bd->ldr_cond_mutex);
-	if(bd->state&BSF_LOADING)
+	if(bd->state & BSF_LOADING)
 		pthread_cond_wait(&bd->ldr_cond,&bd->ldr_cond_mutex);
 	pthread_mutex_unlock(&bd->ldr_cond_mutex);
-	bd->state|=BSF_LOADING;
-	if(pthread_create(&bd->ldr_thread,NULL,loader_thread,(void*)bd)){
-		res=errno;
-		bd->state&=(~BSF_LOADING);
+
+	if( (res = pthread_attr_init(&attr)) ||
+		(res = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED)) ) {
+			return res;
 	}
+
+	bd->state |= BSF_LOADING;
+	res = pthread_create(&bd->ldr_thread,NULL,loader_thread,(void*)bd);
+	if(res) bd->state &= (~BSF_LOADING);
+
+	pthread_attr_destroy(&attr);
 	update_status_msg(bd);
 	return res;
 }

@@ -421,6 +421,7 @@ static Boolean load_image(struct viewer_data *vd, const char *fname)
 		reset_viewer(vd);
 		return False;
 	}
+	pthread_detach(vd->ldr_thread);
 
 	update_controls(vd);
 	/* set up timers */
@@ -617,6 +618,7 @@ static void load_next_page(struct viewer_data *vd, Bool forward)
 	}
 	
 	update_controls(vd);
+	
 	/* launch the loader thread */
 	vd->state|=ISF_LOADING;
 	vd->load_prog=0;
@@ -626,6 +628,7 @@ static void load_next_page(struct viewer_data *vd, Bool forward)
 		reset_viewer(vd);
 		return;
 	}
+	pthread_detach(vd->ldr_thread);
 	
 	/* setup timers */
 	if(vd->vprog){
@@ -665,6 +668,7 @@ static void load_next_file(struct viewer_data *vd, Bool forward)
 			errno_message_box(vd->wshell,errno,NULL,False);
 			return;
 		}
+		pthread_detach(vd->rdr_thread);
 		/* since this is a user initiated action it is expected to be carried
 		 * out linearly, hence the gui is locked here and unlocked in the
 		 * thread notification handler which also invokes this proc again */
