@@ -2005,41 +2005,38 @@ static void set_vscroll(struct browser_data *bd, int new_offset)
  */
 static void update_scroll_bar(struct browser_data *bd)
 {
-	int max=1, cur=0, slider=1, page=10;
+	int max = 100, cur = 0, slider = 100, page = 10;
 	Arg args[5];
-	int i=0;
+	int i = 0;
 	
-	if(bd->nfiles && bd->view_width>0 && bd->view_height>0){
+	if(bd->nfiles && bd->view_height && bd->view_width){
+		unsigned int list_height;
 		unsigned int tile_height;
 		long tiles_per_row;
 		long tiles_per_col;
-		int delta;
 
-		i=0;
-		XtSetArg(args[i],XmNsliderSize,&slider); i++;
-		XtSetArg(args[i],XmNvalue,&cur); i++;
-		XtGetValues(bd->wvscroll,args,i);
-		if(cur>1 && (delta=slider-bd->view_height)<0){
-			bd->yoffset+=delta;
-			dbg_assert(bd->yoffset>=0);
+		compute_tile_dimensions(bd, &tiles_per_row, &tiles_per_col,
+			NULL, NULL, NULL, &tile_height);
+		list_height = tile_height * tiles_per_col + TILE_YMARGIN;
+		
+		if(bd->view_height < list_height) {
+			if(bd->yoffset >= (list_height - bd->view_height))
+				bd->yoffset -= (bd->yoffset - (list_height - bd->view_height));
+			max = list_height;
+			slider = bd->view_height;
+			page = tile_height;
+		} else {
+			bd->yoffset = 0;
 		}
-		compute_tile_dimensions(bd,&tiles_per_row,&tiles_per_col,
-			NULL,NULL,NULL,&tile_height);
-		max=(tile_height*tiles_per_col+TILE_YMARGIN)-bd->view_height;
-		max=(max>0)?max+bd->view_height:bd->view_height;
-		slider=bd->view_height;
-		bd->yoffset=(bd->yoffset>max-bd->view_height)?0:bd->yoffset;
-		cur=bd->yoffset;
-		page=tile_height;
+		cur = bd->yoffset;
 	}
 	
-	i=0;
-	XtSetArg(args[i],XmNminimum,0); i++;
-	XtSetArg(args[i],XmNmaximum,max); i++;
-	XtSetArg(args[i],XmNvalue,cur); i++;
-	XtSetArg(args[i],XmNsliderSize,slider); i++;
-	XtSetArg(args[i],XmNpageIncrement,page); i++;
-	XtSetValues(bd->wvscroll,args,i);
+	XtSetArg(args[i],XmNminimum, 0); i++;
+	XtSetArg(args[i],XmNmaximum, max); i++;
+	XtSetArg(args[i],XmNvalue, cur); i++;
+	XtSetArg(args[i],XmNsliderSize, slider); i++;
+	XtSetArg(args[i],XmNpageIncrement, page); i++;
+	XtSetValues(bd->wvscroll, args, i);
 }
 
 /*
