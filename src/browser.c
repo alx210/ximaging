@@ -1604,12 +1604,13 @@ static void set_focus(struct browser_data *bd, long i)
 {
 	long prev_focus=bd->ifocus;
 	
+	bd->ifocus=i;
+
+	if(!bd->nfiles) return;
+
 	bd->owns_primary = XtOwnSelection(bd->wshell, XA_PRIMARY,
 		XtLastTimestampProcessed(app_inst.display),
 		convert_selection_proc, lose_selection_proc, NULL);
-	
-	bd->ifocus=i;
-	if(!bd->nfiles) return;
 	
 	if(prev_focus>=0) redraw_tile(bd, prev_focus);
 
