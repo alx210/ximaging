@@ -47,6 +47,7 @@ struct browser_file {
 	XImage *image;
 	enum file_state state;
 	Boolean selected;
+	size_t file_size;
 	
 	/* image metadata */
 	unsigned long xres;

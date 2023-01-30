@@ -471,6 +471,7 @@ static void* loader_thread(void *data)
 	tmsg.code=TMSG_UPDATE;
 
 	for(i=0; i<bd->nfiles && !(bd->state&BSF_LCANCEL); result=0, i++){
+		struct stat st;
 		size_t cur_data_size;
 		if(bd->files[i].state == FS_VIEWABLE) continue;
 		
@@ -502,7 +503,12 @@ static void* loader_thread(void *data)
 			bd->files[i].image->width = tile_width;
 			bd->files[i].image->height = tile_height;
 		}
+
 		snprintf(path_buf,bd->path_max,"%s/%s",bd->path,bd->files[i].name);
+
+		if(!stat(path_buf, &st))
+			bd->files[i].file_size = st.st_size;
+
 		result=img_open(path_buf,&cbd.img_file,0);
 
 		if(result){
@@ -978,7 +984,7 @@ static void thread_callback_proc(XtPointer data, int *pfd, XtInputId *iid)
 				for(i=0; i<msg.change_data.nfiles; i++){
 					XmString label;
 					long di=i+bd->nfiles;
-
+					
 					new_files[di].selected=False;
 					new_files[di].image=NULL;
 					new_files[di].state=FS_PENDING;
@@ -986,7 +992,8 @@ static void thread_callback_proc(XtPointer data, int *pfd, XtInputId *iid)
 					label=create_file_label(bd,new_files[di].name);
 					new_files[di].label_width=XmStringWidth(
 						bd->render_table,label);
-					new_files[di].label=label;			
+					new_files[di].label=label;
+											
 					free(msg.change_data.files[i]);
 				}
 				free(msg.change_data.files);
@@ -2111,37 +2118,57 @@ static void update_status_msg(struct browser_data *bd)
 				if(bd->files[bd->ifocus].state==FS_PENDING){
 					char *loading_str=nlstr(
 						APP_MSGSET,SID_LOADING,"Loading...");
-					str_len=strlen(files_str)+strlen(sel_str)+
-							strlen(bd->files[bd->ifocus].name)+
-							strlen(loading_str)+20;
-					stat_str=malloc(str_len+1);
-					snprintf(stat_str,str_len,
-						"%ld %s, %ld %s; %s: %s",
-						bd->nfiles,files_str,bd->nsel_files,sel_str,
-						bd->files[bd->ifocus].name,loading_str);
+					
+					str_len = snprintf(NULL, 0,
+						"%ld %s, %ld %s; %s [%s]",
+						bd->nfiles, files_str, bd->nsel_files, sel_str,
+						bd->files[bd->ifocus].name, loading_str) + 1;
+					
+					stat_str = malloc(str_len);
+					
+					snprintf(stat_str, str_len,
+						"%ld %s, %ld %s; %s [%s]",
+						bd->nfiles, files_str, bd->nsel_files, sel_str,
+						bd->files[bd->ifocus].name, loading_str);
 				}else{
 					if(bd->files[bd->ifocus].loader_result==0){
-						str_len=strlen(files_str)+strlen(sel_str)+
-							strlen(bd->files[bd->ifocus].name)+46;
-						stat_str=malloc(str_len+1);
-						snprintf(stat_str,str_len,
-							"%ld %s, %ld %s; %s: %ldx%ld, %d BPP",
+						char size_str[SIZE_CS_MAX];
+						
+						get_size_string(
+							bd->files[bd->ifocus].file_size, size_str);
+						
+						str_len = snprintf(NULL, 0,
+							"%ld %s, %ld %s; %s [%s, %ldx%ld, %d BPP]",
 							bd->nfiles,files_str,bd->nsel_files,sel_str,
-							bd->files[bd->ifocus].name,
+							bd->files[bd->ifocus].name, size_str,
+							bd->files[bd->ifocus].xres,
+							bd->files[bd->ifocus].yres,
+							bd->files[bd->ifocus].bpp) + 1;
+						
+						stat_str = malloc(str_len);
+						
+						snprintf(stat_str, str_len,
+							"%ld %s, %ld %s; %s [%s, %ldx%ld, %d BPP]",
+							bd->nfiles, files_str, bd->nsel_files, sel_str,
+							bd->files[bd->ifocus].name,	size_str,
 							bd->files[bd->ifocus].xres,
 							bd->files[bd->ifocus].yres,
 							bd->files[bd->ifocus].bpp);
 					}else{
 						char *loader_msg=img_strerror(
 							bd->files[bd->ifocus].loader_result);
-						str_len=strlen(files_str)+strlen(sel_str)+
-							strlen(bd->files[bd->ifocus].name)+
-							strlen(loader_msg)+32;
-						stat_str=malloc(str_len+1);
+
+						str_len= snprintf(NULL, 0,
+							"%ld %s, %ld %s; %s [%s]",
+							bd->nfiles, files_str, bd->nsel_files, sel_str,
+							bd->files[bd->ifocus].name, loader_msg) + 1;
+
+						stat_str=malloc(str_len);
+
 						snprintf(stat_str,str_len,
-							"%ld %s, %ld %s; %s: %s",
-							bd->nfiles,files_str,bd->nsel_files,sel_str,
-							bd->files[bd->ifocus].name,loader_msg);
+							"%ld %s, %ld %s; %s [%s]",
+							bd->nfiles, files_str, bd->nsel_files, sel_str,
+							bd->files[bd->ifocus].name, loader_msg);
 					}
 				}
 			}else{

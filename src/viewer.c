@@ -1195,31 +1195,25 @@ static void display_status_summary(struct viewer_data *vd)
 	char *buffer;
 	size_t len;
 	struct tm *time;
-	char const *units_str="B";
-	double size_units=vd->file_size;
-	const char fmt_string[]="%s, %.1f %s, %d-%.2d-%.2d %.2d:%.2d";
+	char size_str[SIZE_CS_MAX];
+	const char fmt_string[]="%s, %s, %d-%.2d-%.2d %.2d:%.2d";
 	XmString xm_str;
 	Arg arg[1];
 	
 	if(vd->state&ISF_OPENED){
-		if(vd->file_size>1048576){
-			units_str="MiB";
-			size_units=vd->file_size/1048576;
-		}else if(vd->file_size>1024){
-			units_str="KiB";
-			size_units=vd->file_size/1024;
-		}
-		
+		get_size_string(vd->file_size, size_str);
+
 		time=localtime(&vd->img_file.cr_time);
 		
-		len=strlen(vd->img_file.type_str)+
-			strlen(units_str)+strlen(fmt_string)+6;
-		buffer=malloc(len);
+		len = snprintf(NULL, 0, fmt_string, vd->img_file.type_str,
+			size_str, time->tm_year + 1900, time->tm_mon + 1,
+			time->tm_mday + 1, time->tm_hour, time->tm_min) + 1;
+
+		buffer = malloc(len);
 	
-		snprintf(buffer,len,fmt_string,vd->img_file.type_str,
-			size_units,units_str,
-			time->tm_year+1900,time->tm_mon+1,time->tm_mday+1,
-			time->tm_hour,time->tm_min);
+		snprintf(buffer, len, fmt_string, vd->img_file.type_str,
+			size_str, time->tm_year + 1900, time->tm_mon + 1,
+			time->tm_mday + 1, time->tm_hour, time->tm_min);
 			
 		xm_str=XmStringCreateLocalized(buffer);
 		XtSetArg(arg[0],XmNlabelString,xm_str);

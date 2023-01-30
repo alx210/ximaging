@@ -19,6 +19,7 @@
 #include <X11/extensions/Xinerama.h>
 #endif
 #include "common.h"
+#include "guiutil.h"
 #include "debug.h"
 
 /* Set input focus to 'w' */
@@ -300,4 +301,40 @@ size_t mb_strlen(const char *sz)
 		i += n;
 	}
 	return nchrs;
+}
+
+char* get_size_string(unsigned long size, char buffer[SIZE_CS_MAX])
+{
+	char CS_BYTES[] = "B";
+	char CS_KILO[] = "K";
+	char CS_MEGA[] = "M";
+	char CS_GIGA[] = "G";
+
+	const double kilo = 1024;
+	double fsize = size;
+	char *sz_units = CS_BYTES;
+	double dp;
+	char *fmt;
+
+	
+	if(size >= pow(kilo, 3)) {
+		fsize /=  pow(kilo, 3);
+		sz_units = CS_GIGA;
+	}else if(size >=  pow(kilo, 2)) {
+		fsize /= pow(kilo, 2);
+		sz_units = CS_MEGA;
+	} else if(size >= kilo) {
+		fsize /= kilo;
+		sz_units = CS_KILO;
+	}
+
+	/* don't show decimal part if it's near .0 */
+	dp = fsize - trunc(fsize);
+	if(dp > 0.1 && dp < 0.9)
+		fmt = "%.1f%s";
+	else
+		fmt = "%.0f%s";
+
+	snprintf(buffer, SIZE_CS_MAX, fmt, fsize, sz_units);
+	return buffer;
 }
