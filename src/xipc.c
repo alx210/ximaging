@@ -48,15 +48,21 @@ Boolean init_x_ipc(const char *open_spec)
 {
 	char *login;
 	char host[256]="localhost";
+	char tmp[32];
 	char *xa_server_str;
 	char *xa_sreq_str;
 	Window xw_owner;
 	int retries = 3;
 
 	open_file_name = open_spec;
-	login=getlogin();
-	if(!login) fatal_error(errno,NULL,NULL);
-	gethostname(host,255);
+
+	login = getlogin();
+	if(!login) {
+		snprintf(tmp, 32, "%u", getuid());
+		login = tmp;
+	}
+	gethostname(host, 255);
+	host[255] = '\0';
 
 	xa_server_str=malloc(strlen(login)+strlen(host)+strlen(XA_SERVER)+3);
 	xa_sreq_str=malloc(strlen(login)+strlen(host)+strlen(XA_SERVER_REQ)+3);
@@ -65,6 +71,7 @@ Boolean init_x_ipc(const char *open_spec)
 	}
 	sprintf(xa_server_str,"%s_%s_%s",XA_SERVER,login,host);
 	sprintf(xa_sreq_str,"%s_%s_%s",XA_SERVER_REQ,login,host);
+
 	app_inst.XaSERVER = XInternAtom(app_inst.display,xa_server_str,False);
 	app_inst.XaSERVER_REQ = XInternAtom(app_inst.display,xa_sreq_str,False);
 	free(xa_server_str);
