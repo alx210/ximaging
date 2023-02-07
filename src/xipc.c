@@ -67,7 +67,8 @@ Boolean init_x_ipc(const char *open_spec)
 	xa_server_str=malloc(strlen(login)+strlen(host)+strlen(XA_SERVER)+3);
 	xa_sreq_str=malloc(strlen(login)+strlen(host)+strlen(XA_SERVER_REQ)+3);
 	if(!xa_server_str || !xa_sreq_str){
-		fatal_error(errno,NULL,NULL);
+		warning_msg("Cannot initialize X IPC");
+		return True;
 	}
 	sprintf(xa_server_str,"%s_%s_%s",XA_SERVER,login,host);
 	sprintf(xa_sreq_str,"%s_%s_%s",XA_SERVER_REQ,login,host);
@@ -140,7 +141,10 @@ static Boolean ipcs_convert_cb(Widget w, Atom *sel, Atom *tgt,
 		(open_file_name?strlen(open_file_name):0);
 
 	msg_data = malloc(msg_len+1);
-	if(!msg_data) fatal_error(errno,NULL,NULL);
+	if(!msg_data) {
+		warning_msg("Failed to send IPC message");
+		return False;
+	}
 
 	snprintf(msg_data,msg_len,
 		(open_file_name?
