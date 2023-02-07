@@ -65,6 +65,10 @@ struct app_inst_data {
 /*  main.c exports */
 extern struct app_inst_data app_inst;
 
+/* Reliable signal handling (using POSIX sigaction) */
+typedef void (*sigfunc_t)(int);
+sigfunc_t rsignal(int sig, sigfunc_t);
+
 /* 
  * Display an error message and terminate.
  * if "title" is null "Fatal Error" will be used.

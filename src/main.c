@@ -33,7 +33,9 @@
 /* Local prototypes */
 static Boolean init_instance(const char *open_spec);
 static void init_display_globals(void);
-static void sig_handler(int);
+static void sigchld_handler(int);
+static void sigusr1_handler(int);
+static void sigusr2_handler(int);
 
 /* Application global variables */
 struct app_resources init_app_res;
@@ -241,7 +243,12 @@ int main(int argc, char **argv)
 
 	app_inst.bin_name=argv[0];
 	
-	signal(SIGCHLD,sig_handler);
+	if(rsignal(SIGCHLD, sigchld_handler) == SIG_ERR ||
+		rsignal(SIGUSR1, sigusr1_handler) == SIG_ERR ||
+		rsignal(SIGUSR2, sigusr2_handler) == SIG_ERR) {
+		
+		warning_msg("Error setting up signal handlers");
+	}
 	
 	XtSetLanguageProc(NULL,NULL,NULL);
 
@@ -367,15 +374,33 @@ void warning_msg(const char *msg)
 		nlstr(APP_MSGSET,SID_WARNING,"Warning"),msg);
 }
 
-/* Handles sigchld */
-void sig_handler(int sig)
+/* Reliable signal handling (using POSIX sigaction) */
+sigfunc_t rsignal(int sig, sigfunc_t handler)
 {
-	int status;
-	if(sig == SIGCHLD) {
-		wait(&status);
-		#ifdef __svr4__
-		signal(SIGCHLD, sig_handler);
+	struct sigaction set, ret;
+	
+	set.sa_handler = handler;
+	sigemptyset(&set.sa_mask);
+	set.sa_flags = SA_NOCLDSTOP;
+	
+	if(sig == SIGALRM) {
+		#ifdef SA_INTERRUPT
+		set.sa_flags |= SA_INTERRUPT;
 		#endif
+	} else {
+		set.sa_flags |= SA_RESTART;
 	}
+	if(sigaction(sig, &set, &ret) < 0)
+		return SIG_ERR;
+	
+	return ret.sa_handler;
 }
 
+void sigchld_handler(int sig)
+{
+	int status;
+	waitpid(-1, &status, WNOHANG);
+}
+
+void sigusr1_handler(int sig){}
+void sigusr2_handler(int sig){}
