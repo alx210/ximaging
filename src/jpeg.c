@@ -99,9 +99,9 @@ int img_open_jpeg(const char *file_name, struct img_file *img, int flags)
 		return IMG_EFILE;
 	}
 	if(jpeg_read_header(&ld->cinfo,TRUE)!=JPEG_HEADER_OK){
+		jpeg_destroy_decompress(&ld->cinfo);
 		free(ld);
 		fclose(file);
-		jpeg_destroy_decompress(&ld->cinfo);
 		return IMG_EFILE;
 	}
 

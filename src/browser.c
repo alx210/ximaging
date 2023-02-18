@@ -2509,7 +2509,7 @@ static void update_interval_cb(XtPointer client, XtIntervalId *iid)
 	bd->update_timer=None;
 	
 	dbg_assert(bd->path);
-	
+
 	if(XtAppPending(app_inst.context)&XtIMAlternateInput){
 		bd->update_timer=XtAppAddTimeOut(
 			app_inst.context,bd->refresh_int,
@@ -2525,7 +2525,8 @@ static void update_interval_cb(XtPointer client, XtIntervalId *iid)
 			return;
 		}
 
-		launch_reader_thread(bd);
+		if(!(bd->state & (BSF_READING|BSF_LOADING)))
+			launch_reader_thread(bd);
 
 		bd->update_timer=XtAppAddTimeOut(
 			app_inst.context,bd->refresh_int,
