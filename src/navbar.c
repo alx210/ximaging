@@ -257,11 +257,11 @@ static char* get_displayed_path(struct navbar_data *pbd)
 {
 	char *path;
 	char *new_path=NULL;
-	char *home=getenv("HOME");
+	char *home = getenv("HOME");
 	
 	path=XmTextFieldGetString(pbd->wtext);
 	
-	if(path[0]=='~'){
+	if(home && path[0]=='~'){
 		new_path=malloc(strlen(home)+strlen(path)+1);
 		sprintf(new_path,"%s%s",home,&path[1]);
 	}else{
@@ -277,16 +277,29 @@ static char* get_displayed_path(struct navbar_data *pbd)
 static void set_displayed_path(struct navbar_data *pbd, const char *path)
 {
 	char *new_path=NULL;
-	char *home=getenv("HOME");
+	char *real_home = NULL;
+	char *home = getenv("HOME");
+	char *subst_path = NULL;
+	
+	if(home) real_home = realpath(home, NULL);
 
-	if(!strncmp(path,home,strlen(home))){
-		new_path=malloc((strlen(path)-strlen(home))+3);
-		sprintf(new_path,"~%s",&path[strlen(home)]);
-		XmTextFieldSetString(pbd->wtext,new_path);
+	if(home && real_home ) {
+		if(!strncmp(path, home, strlen(home)) )
+			subst_path = home;
+		else if(!strncmp(path, real_home, strlen(real_home)) )
+			subst_path = real_home;
+	}
+
+	if(subst_path) {
+		new_path = malloc(strlen(path) + 3);
+		sprintf(new_path, "~%s", path + strlen(subst_path));
+		XmTextFieldSetString(pbd->wtext, new_path);
+		XmTextFieldSetInsertionPosition(pbd->wtext, strlen(new_path));
 		free(new_path);
 	}else{
-		new_path=(char*)path;
-		XmTextFieldSetString(pbd->wtext,new_path);
+		XmTextFieldSetString(pbd->wtext, (char*)path);
+		XmTextFieldSetInsertionPosition(pbd->wtext, strlen(path));
 	}
-	XmTextFieldSetInsertionPosition(pbd->wtext,strlen(new_path));
+	
+	if(real_home) free(real_home);
 }
