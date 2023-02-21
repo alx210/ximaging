@@ -22,7 +22,7 @@
 #include <Xm/DrawingA.h>
 #include <Xm/LabelG.h>
 #include <Xm/Form.h>
-#include <Xm/Paned.h>
+#include <Xm/PanedW.h>
 #include <Xm/List.h>
 #include <Xm/RowColumn.h>
 #include <Xm/Container.h>
@@ -189,8 +189,7 @@ static struct browser_data* create_browser(const struct app_resources *res)
 		XmNshadowType, XmSHADOW_OUT,
 		XmNshadowThickness, 1, NULL);
 
-	bd->wpaned = XtVaCreateManagedWidget("paned",
-		xmPanedWidgetClass, wframe,
+	bd->wpaned = XmVaCreateManagedPanedWindow(wframe, "paned",
 		XmNorientation, XmHORIZONTAL,
 		XmNmarginWidth, 2, XmNmarginHeight, 2,
 		XmNshadowThickness, 1, NULL);
