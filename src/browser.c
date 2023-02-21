@@ -2809,8 +2809,9 @@ static void dirlist_cb(Widget w, XtPointer client, XtPointer call)
 	unsigned int pos = cbs->item_position - 1;
 	char *new_path;
 	
-	if(cbs->reason != XmCR_DEFAULT_ACTION) return;
-	
+	if( (cbs->reason != XmCR_DEFAULT_ACTION) ||
+		(!strcmp(bd->subdirs[pos], "..") && !strcmp(bd->path, "/")) ) return;
+
 	new_path = malloc(strlen(bd->path) +
 		strlen(bd->subdirs[pos]) + 2);
 	if(!new_path) {

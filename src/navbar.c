@@ -215,6 +215,9 @@ static void dir_up_cb(Widget w,
 	char *new_path;
 	
 	dbg_assert(pbd->cur_path);
+	
+	if(!strcmp(pbd->cur_path, "/")) return;
+	
 	new_path=malloc(strlen(pbd->cur_path)+4);
 	sprintf(new_path,"%s/..",pbd->cur_path);
 	if(!set_navbar_path(pbd->wform,new_path))
