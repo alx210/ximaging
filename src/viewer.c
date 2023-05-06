@@ -1900,6 +1900,9 @@ static void zoom_fit_cb(Widget w, XtPointer client, XtPointer call)
 	}else{
 		vd->zoom=1;
 	}
+	XmToggleButtonGadgetSetState(get_menu_item(vd,"*zoomFit"), set, False);
+	XmToggleButtonGadgetSetState(
+		get_toolbar_item(vd->wtoolbar,"*zoomFit"), set, False);
 }
 
 static void zoom_in_cb(Widget w, XtPointer client, XtPointer call)
@@ -1907,6 +1910,9 @@ static void zoom_in_cb(Widget w, XtPointer client, XtPointer call)
 	struct viewer_data *vd=(struct viewer_data*)client;
 	if(vd->zoom_fit){
 		XmToggleButtonGadgetSetState(get_menu_item(vd,"*zoomFit"),False,False);
+		XmToggleButtonGadgetSetState(
+			get_toolbar_item(vd->wtoolbar,"*zoomFit"), False, False);
+
 		vd->zoom_fit=False;
 	}
 	zoom_view(vd,vd->zoom*vd->zoom_inc);
@@ -1917,6 +1923,9 @@ static void zoom_out_cb(Widget w, XtPointer client, XtPointer call)
 	struct viewer_data *vd=(struct viewer_data*)client;
 	if(vd->zoom_fit){
 		XmToggleButtonGadgetSetState(get_menu_item(vd,"*zoomFit"),False,False);
+		XmToggleButtonGadgetSetState(
+			get_toolbar_item(vd->wtoolbar,"*zoomFit"), False, False);
+
 		vd->zoom_fit=False;
 	}
 	zoom_view(vd,vd->zoom/vd->zoom_inc);
@@ -1927,7 +1936,9 @@ static void zoom_reset_cb(Widget w, XtPointer client, XtPointer call)
 	struct viewer_data *vd=(struct viewer_data*)client;
 	if(vd->zoom_fit){
 		XmToggleButtonGadgetSetState(
-			get_menu_item(vd,"*zoomFit"),False,True);
+			get_menu_item(vd,"*zoomFit"), False, True);
+		XmToggleButtonGadgetSetState(
+			get_toolbar_item(vd->wtoolbar,"*zoomFit"), False, True);
 	}else{
 		zoom_view(vd,1);
 	}
@@ -2459,6 +2470,7 @@ static void create_viewer_toolbar(struct viewer_data *vd)
 	#include "bitmaps/tbrol.bm"
 	#include "bitmaps/tbror.bm"
 	#include "bitmaps/tbpin.bm"
+	#include "bitmaps/tbzoomfit.bm"
 
 	#include "bitmaps/tbbrowse_s.bm"
 	#include "bitmaps/tbopen_s.bm"
@@ -2472,6 +2484,7 @@ static void create_viewer_toolbar(struct viewer_data *vd)
 	#include "bitmaps/tbrol_s.bm"
 	#include "bitmaps/tbror_s.bm"
 	#include "bitmaps/tbpin_s.bm"
+	#include "bitmaps/tbzoomfit_s.bm"
 
 	#define BMDATA(name) \
 		vd->large_tbr?name##_bits:name##_s_bits, \
@@ -2488,6 +2501,7 @@ static void create_viewer_toolbar(struct viewer_data *vd)
 		{TB_PUSH,"zoomIn",BMDATA(tbzoomin),zoom_in_cb},
 		{TB_PUSH,"zoomNone",BMDATA(tbzreset),zoom_reset_cb},
 		{TB_PUSH,"zoomOut",BMDATA(tbzoomout),zoom_out_cb},
+		{TB_TOGGLE,"zoomFit",BMDATA(tbzoomfit),zoom_fit_cb},
 		{TB_SEP,NULL,NULL,0,0,NULL},
 		{TB_PUSH,"rotateLeft",BMDATA(tbrol),rotate_left_cb},
 		{TB_PUSH,"rotateRight",BMDATA(tbror),rotate_right_cb},
