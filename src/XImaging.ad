@@ -37,8 +37,8 @@ XImagingViewer.height:400
 *XmFileSelectionBox.pathMode: PATH_MODE_RELATIVE
 *XmFileSelectionBox.fileFilterStyle: FILTER_HIDDEN_FILES
 
-! By default, the directories pane will resize itself according to contents.
-! Following resources may be set to specify constant width in pixels:
+!! By default, the directories pane will resize itself according to contents.
+!! Following resources may be set to specify constant width in pixels:
 ! XImagingBrowser*directoriesList.listSizePolicy: CONSTANT
 ! XImagingBrowser*directoriesList.width: 100
 
