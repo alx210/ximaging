@@ -100,6 +100,7 @@ static int read_rgb_scanlines(struct img_file *img,
 	img_scanline_cbt cb, void *cdata);
 static int read_cm_scanlines(struct img_file *img,
 	img_scanline_cbt cb, void *cdata);
+static int build_grs_cmap(struct img_file *img, void *buffer);
 static void bswap_header(struct tga_header *hdr);
 static void bswap_footer(struct tga_footer *ftr);
 static void close_image(struct img_file *img);
@@ -253,7 +254,8 @@ static int read_cm_scanlines(struct img_file *img,
 	scl_size=img->width*(img->bpp/8);
 	buffer=malloc(scl_size);
 	
-	if(ld->hdr.im_type==TGA_IMT_RLE_PAL){
+	if(ld->hdr.im_type == TGA_IMT_RLE_PAL ||
+	 ld->hdr.im_type == TGA_IMT_RLE_BW){
 		unsigned char *ptr;
 		size_t total, run;
 		int cur;
@@ -297,6 +299,19 @@ static int read_cm_scanlines(struct img_file *img,
 			if((*cb)(iscl,buffer,cdata)==IMG_READ_CANCEL) break;
 		}
 	}
+	return 0;
+}
+
+
+static int build_grs_cmap(struct img_file *img, void *buffer)
+{
+	char *ptr = (char*) buffer;
+	unsigned int i;
+	
+	for(i = 0; i < 256; i++) {
+		ptr[i * 3] = ptr[i * 3 + 1] = ptr[i * 3 + 2] = i;
+	}
+	
 	return 0;
 }
 
@@ -394,12 +409,22 @@ int img_open_tga(char *file_name, struct img_file *img, int flags)
 		img->read_cmap_fnc=&read_cmap;
 		img->read_scanlines_fnc=&read_cm_scanlines;
 		break;
+		
 		case TGA_IMT_RAW_RGB:
 		case TGA_IMT_RLE_RGB:
 		/* high/true-color images */
 		img->format=IMG_DIRECT;
 		img->read_scanlines_fnc=&read_rgb_scanlines;
 		break;
+		
+		case TGA_IMT_RAW_BW:
+		case TGA_IMT_RLE_BW:
+		/* grayscale */
+		img->format = IMG_PSEUDO;
+		img->read_cmap_fnc = &build_grs_cmap;
+		img->read_scanlines_fnc = &read_cm_scanlines;
+		break;
+		
 		default:
 		fclose(file);
 		return IMG_EUNSUP;
