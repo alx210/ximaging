@@ -652,10 +652,11 @@ static void load_next_file(struct viewer_data *vd, Bool forward)
 				APP_MSGSET,SID_EREADDIR,"Error reading directory."),False);
 		return;
 	}
-	
+
 	/* check if the directory cache is usable, re/build if not */	
 	if(!vd->dir_files || (vd->dir_stat.st_mtime!=st.st_mtime) ||
 		(vd->dir_stat.st_ino!=st.st_ino)){
+
 		memcpy(&vd->dir_stat,&st,sizeof(struct stat));
 		pthread_mutex_lock(&vd->ldr_cond_mutex);
 		if(vd->state&ISF_LOADING){
@@ -669,15 +670,15 @@ static void load_next_file(struct viewer_data *vd, Bool forward)
 			return;
 		}
 		pthread_detach(vd->rdr_thread);
-		/* since this is a user initiated action it is expected to be carried
-		 * out linearly, hence the gui is locked here and unlocked in the
-		 * thread notification handler which also invokes this proc again */
 		vd->dir_forward=forward;
 		set_widget_cursor(vd->wshell,CUR_HOURGLAS);
 		update_controls(vd);
 		set_status_msg(vd,SID_READDIRPG,"Reading directory...");
+		/* this function will be invoked again after directory cache is built */
 		return;
 	}
+	if(!vd->dir_nfiles) return;
+	
 	if(forward){
 		if(vd->dir_cur_file+1==vd->dir_nfiles)
 			vd->dir_cur_file=0;
@@ -940,10 +941,13 @@ static void* dir_reader_thread(void *arg)
 	if(vd->dir_nfiles){
 		while(vd->dir_nfiles--)
 			free(vd->dir_files[vd->dir_nfiles]);
+		vd->dir_nfiles=0;
+	}
+	
+	if(vd->dir_files) {
 		free(vd->dir_files);
 		vd->dir_files=NULL;
 		vd->dir_cur_file=0;
-		vd->dir_nfiles=0;
 	}
 
 	dir=opendir(vd->dir_name);
@@ -957,6 +961,10 @@ static void* dir_reader_thread(void *arg)
 			closedir(dir);
 			goto exit_thread;
 		}
+
+		if(!strcmp(dir_ent->d_name, "..") ||
+			!strcmp(dir_ent->d_name, ".")) continue;
+			
 		if(nfiles==buf_size){
 			char **new_buf;
 			buf_size+=DIR_CACHE_GROWBY;
