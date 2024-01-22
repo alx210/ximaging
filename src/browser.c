@@ -1429,9 +1429,11 @@ static void input_cb(Widget w, XtPointer client_data, XtPointer call_data)
 					select_tile_at(bd, e->x, e->y, smode);
 				
 				if(bd->nsel_files && e->button==Button3){
-					Widget wrename=XtNameToWidget(bd->wpopup,"*rename");
-					dbg_assert(wrename);
+					Widget wrename = XtNameToWidget(bd->wpopup,"*rename");
+					Widget wedit = XtNameToWidget(bd->wpopup,"*edit");
+					dbg_assert(wrename && wedit);
 					XtSetSensitive(wrename,(bd->nsel_files==1)?True:False);
+					XtSetSensitive(wedit,(bd->nsel_files==1)?True:False);
 					XmMenuPosition(bd->wpopup,(XButtonPressedEvent*)cbs->event);
 					XtManageChild(bd->wpopup);
 				}
@@ -2947,6 +2949,8 @@ static void create_browser_menubar(struct browser_data *bd)
 static void create_tile_popup(struct browser_data *bd)
 {
 	static struct menu_item items[]={
+		{IT_PUSH, "edit", "_Edit", SID_BMFEDIT, edit_cb},
+		{IT_SEP},
 		{IT_PUSH,"copyTo","_Copy to ...",SID_BMCOPYTO,copy_to_cb},
 		{IT_PUSH,"moveTo","_Move to ...",SID_BMMOVETO,move_to_cb},
 		{IT_PUSH,"rename","_Rename",SID_BMRENAME,rename_cb},
