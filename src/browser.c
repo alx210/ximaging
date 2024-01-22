@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2022 alx@fastestcode.org
+ * Copyright (C) 2012-2024 alx@fastestcode.org
  * This software is distributed under the terms of the MIT license.
  * See the included LICENSE file for further information.
  */
@@ -1418,7 +1418,6 @@ static void input_cb(Widget w, XtPointer client_data, XtPointer call_data)
 		case ButtonPress:{
 			XButtonEvent *e=(XButtonEvent*)cbs->event;
 			enum sel_mode smode = SM_SINGLE;
-			Boolean hit;
 
 			if(e->state&ShiftMask){
 				smode=SM_EXTEND;
@@ -1426,8 +1425,10 @@ static void input_cb(Widget w, XtPointer client_data, XtPointer call_data)
 				smode=SM_MULTI;
 			}
 			if(e->button == Button1 || e->button == Button3) {
-				hit=select_tile_at(bd,e->x,e->y,smode);
-				if(hit && bd->nsel_files && e->button==Button3){
+				if(e->button == Button1 || !bd->nsel_files)
+					select_tile_at(bd, e->x, e->y, smode);
+				
+				if(bd->nsel_files && e->button==Button3){
 					Widget wrename=XtNameToWidget(bd->wpopup,"*rename");
 					dbg_assert(wrename);
 					XtSetSensitive(wrename,(bd->nsel_files==1)?True:False);
