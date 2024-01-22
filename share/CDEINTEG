@@ -1,10 +1,7 @@
 CDE/ToolTalk Integration
 ------------------------
 
-XImaging must be built with CDE/ToolTalk support. A separate makefile
-'Makefile.cde' is provided for this purpose. Change the working directory
-to 'src' and run 'make -f Makefile.cde', then 'make -f Makefile.cde install'
-as root.
+XImaging must be built with CDE/ToolTalk support: make ENABLE_CDE=1
 
 For other ToolTalk aware applications, like Dtfile, to be able to communicate
 with XImaging, the XImaging process type must be registered within the CDE ptype
