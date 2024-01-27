@@ -1425,8 +1425,10 @@ static void input_cb(Widget w, XtPointer client_data, XtPointer call_data)
 				smode=SM_MULTI;
 			}
 			if(e->button == Button1 || e->button == Button3) {
-				if(e->button == Button1 || !bd->nsel_files)
+				if( (e->button == Button1 || !bd->nsel_files) ||
+					(e->button == Button3 && bd->nsel_files <= 1) )
 					select_tile_at(bd, e->x, e->y, smode);
+				
 				
 				if(bd->nsel_files && e->button==Button3){
 					Widget wrename = XtNameToWidget(bd->wpopup,"*rename");
