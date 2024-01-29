@@ -25,6 +25,7 @@
 #define SID_VMFEDIT		6	/* Edit */
 #define SID_VMNEXT		7	/* Next File */
 #define SID_VMPREV		8	/* Previous File */
+#define SID_VMPASS		9	/* Pass To... */
 
 #define SID_VMVIEW		20	/* View (cascade) */
 #define SID_VMREFRESH	21	/* Refresh */
@@ -73,6 +74,7 @@
 #define SID_BMFEDIT		3	/* Edit */
 #define SID_BMDISPLAY	4	/* Display */
 #define SID_BMCLOSE		5	/* Close */
+#define SID_BMFPASS		6	/* Pass To... */
 
 #define SID_BMVIEW			20	/* View (cascade) */
 #define SID_BMREFRESH		21	/* Refresh */
@@ -172,6 +174,8 @@
 #define SID_BPP			21	/* Depth */
 #define SID_DATE		22	/* Date */
 #define SID_FSIZE		23	/* Size */
+#define SID_INPUTCMD	24	/* Specify a command... */
+#define SID_PASSTO		25	/* Pass To */
 
 /* Use catgets for message strings */
 #ifdef ENABLE_NLS

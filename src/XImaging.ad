@@ -57,6 +57,8 @@ XImagingViewer.height:400
 
 *fileMenu.open.accelerator: Ctrl<Key>o
 *fileMenu.open.acceleratorText: Ctrl+O
+*fileMenu.passTo.acceleratorText: Ctlr+P
+*fileMenu.passTo.accelerator: Ctrl<Key>p
 *fileMenu.nextFile.accelerator: <Key>osfPageDown
 *fileMenu.nextFile.acceleratorText: PgDn
 *fileMenu.previousFile.accelerator: <Key>osfPageUp

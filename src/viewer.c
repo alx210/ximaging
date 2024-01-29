@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2021 alx@fastestcode.org
+ * Copyright (C) 2012-2024 alx@fastestcode.org
  * This software is distributed under the terms of the MIT license.
  * See the included LICENSE file for further information.
  */
@@ -112,6 +112,7 @@ static void rotate_lock_cb(Widget,XtPointer,XtPointer);
 static void refresh_cb(Widget,XtPointer,XtPointer);
 static void open_cb(Widget,XtPointer,XtPointer);
 static void edit_cb(Widget,XtPointer,XtPointer);
+static void pass_to_cb(Widget,XtPointer,XtPointer);
 static void file_select_cb(Widget,XtPointer,XtPointer);
 static void browse_cb(Widget,XtPointer,XtPointer);
 static void browse_here_cb(Widget,XtPointer,XtPointer);
@@ -2195,21 +2196,70 @@ static void edit_cb(Widget w, XtPointer client, XtPointer call)
 {
 	struct viewer_data *vd=(struct viewer_data*)client;
 	char *path;
+	pid_t pid;
+	volatile int errv = 0;
 	
-	path=realpath(vd->file_name,NULL);
+	path = realpath(vd->file_name,NULL);
 	if(!path){
 		message_box(vd->wshell,MB_ERROR_NB,NULL,nlstr(APP_MSGSET,SID_ENORES,
 			"Not enough resources available for this task."));
 		return;
 	}
-	if(!vfork()){
-		if(execlp(init_app_res.edit_cmd,init_app_res.edit_cmd,path,NULL)){
-			errno_message_box(vd->wshell,errno,init_app_res.edit_cmd,False);
-		}
+
+	pid = vfork();
+	
+	if(pid == 0) {
+		if(execlp(init_app_res.edit_cmd, init_app_res.edit_cmd,path, NULL))
+			errv = errno;
+
 		_exit(0);
+	} else if(pid == (-1)) {
+		errv = errno;
 	}
+	
+	if(errv)
+		errno_message_box(vd->wshell, errv, init_app_res.edit_cmd, False);
+
 	free(path);
 }
+
+static void pass_to_cb(Widget w, XtPointer client, XtPointer call)
+{
+	struct viewer_data *vd = (struct viewer_data*)client;
+	char *path;
+	char *cmd;
+	pid_t pid;
+	volatile int errv = 0;
+	
+	cmd = pass_to_input_dlg(vd->wshell);
+	if(!cmd) return;
+
+	path = realpath(vd->file_name, NULL);
+	if(!path){
+		free(cmd);
+		message_box(vd->wshell, MB_ERROR_NB, NULL, nlstr(APP_MSGSET, SID_ENORES,
+			"Not enough resources available for this task."));
+		return;
+	}
+
+	pid = vfork();
+	
+	if(pid == 0){
+		if(execlp(cmd, cmd, path, NULL))
+			errv = errno;
+
+		_exit(0);
+	} else if(pid == (-1)) {
+		errv = errno;
+	}
+	
+	if(errv)
+		errno_message_box(vd->wshell, errv, cmd, False);
+	
+	free(cmd);
+	free(path);
+}
+
 
 /*
  * File management callbacks
@@ -2369,6 +2419,7 @@ static void create_viewer_menubar(struct viewer_data *vd)
 		{IT_PUSH,"fileMenu","_File",SID_VMFILE,NULL},
 		{IT_PUSH,"open","_Open...",SID_VMOPEN,open_cb},
 		{IT_PUSH,"edit","_Edit",SID_VMFEDIT,edit_cb},
+		{IT_PUSH,"passTo", "Pass _to...", SID_VMPASS, pass_to_cb},
 		{IT_SEP},
 		{IT_PUSH,"browse","_Browse...",SID_VMBROWSE,browse_cb},
 		{IT_PUSH,"browseHere","Browse _Here",SID_VMBHERE,browse_here_cb},

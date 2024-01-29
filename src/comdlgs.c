@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2017 alx@fastestcode.org
+ * Copyright (C) 2012-2024 alx@fastestcode.org
  * This software is distributed under the terms of the MIT license.
  * See the included LICENSE file for further information.
  */
@@ -267,6 +267,71 @@ char* rename_file_dlg(Widget parent, char *file_title)
 	XtDestroyWidget(dlg);
 	XmUpdateDisplay(parent);
 	return (ret_string[0]=='\0')?NULL:ret_string;
+}
+
+/*
+ * Displays a blocking command input dialog.
+ * Returns a valid string or NULL if cancelled.
+ */
+char* pass_to_input_dlg(Widget parent)
+{
+	static Widget dlg;
+	Arg arg[8];
+	Widget wtext;
+	Widget wlabel;
+	static char *last_input = NULL;
+	char *ret_string = NULL;
+	XmString xm_label_string;
+	int i = 0;
+
+	XtSetArg(arg[i], XmNdialogType, XmDIALOG_PROMPT); i++;
+	XtSetArg(arg[i], XmNminWidth, 200); i++;
+	XtSetArg(arg[i], XmNtitle, nlstr(DLG_MSGSET, SID_PASSTO, "Pass To")); i++;
+	XtSetArg(arg[i], XmNdialogStyle, XmDIALOG_PRIMARY_APPLICATION_MODAL); i++;
+
+	dlg = XmCreatePromptDialog(parent,"passToDialog", arg ,i);
+	XtAddCallback(dlg, XmNokCallback, input_dlg_cb, (XtPointer)&ret_string);
+	XtAddCallback(dlg, XmNcancelCallback,
+		input_dlg_cb, (XtPointer)&ret_string);
+	XtUnmanageChild(XmSelectionBoxGetChild(dlg, XmDIALOG_HELP_BUTTON));
+
+	wlabel = XmSelectionBoxGetChild(dlg, XmDIALOG_SELECTION_LABEL);
+	wtext = XmSelectionBoxGetChild(dlg, XmDIALOG_TEXT);
+
+	xm_label_string = XmStringCreateLocalized(
+		nlstr(DLG_MSGSET, SID_INPUTCMD,
+			"Specify a command to pass the file name to") );
+	XtSetArg(arg[0], XmNlabelString, xm_label_string);
+	XtSetValues(wlabel, arg, 1);
+	XmStringFree(xm_label_string);
+
+	XtManageChild(dlg);
+	
+	if(last_input) {
+		i = 0;
+		XtSetArg(arg[i], XmNvalue, last_input); i++;
+		XtSetArg(arg[i], XmNpendingDelete, True); i++;
+		XtSetValues(wtext, arg, i);
+
+		XmTextFieldSetSelection(wtext, 0, strlen(last_input),
+				XtLastTimestampProcessed(XtDisplay(wtext)));
+		
+		free(last_input);
+		last_input = NULL;
+	}
+
+	while(!ret_string){
+		XtAppProcessEvent(app_inst.context,XtIMAll);
+	}
+	
+	XtDestroyWidget(dlg);
+	XmUpdateDisplay(parent);
+	
+	if(ret_string[0] != '\0') {
+		last_input = strdup(ret_string);
+		return ret_string;
+	}
+	return NULL;
 }
 
 /*

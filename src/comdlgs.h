@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2017 alx@fastestcode.org
+ * Copyright (C) 2012-2024 alx@fastestcode.org
  * This software is distributed under the terms of the MIT license.
  * See the included LICENSE file for further information.
  */
@@ -56,6 +56,8 @@ char* dir_select_dlg(Widget parent, const char *title,
  * Returns a valid string or NULL if cancelled.
  */
 char* rename_file_dlg(Widget parent, char *file_title);
+
+char* pass_to_input_dlg(Widget parent);
 
 /*
  * Display the 'About' dialog box

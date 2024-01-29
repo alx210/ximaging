@@ -104,6 +104,7 @@ static int launch_loader_thread(struct browser_data*);
 static void update_interval_cb(XtPointer,XtIntervalId*);
 static void set_tile_size(struct browser_data*,enum tile_preset);
 static void edit_cb(Widget,XtPointer,XtPointer);
+static void pass_to_cb(Widget,XtPointer,XtPointer);
 static void scroll_cb(Widget,XtPointer,XtPointer);
 static void input_cb(Widget,XtPointer,XtPointer);
 static void expose_cb(Widget,XtPointer,XtPointer);
@@ -1431,11 +1432,13 @@ static void input_cb(Widget w, XtPointer client_data, XtPointer call_data)
 				
 				
 				if(bd->nsel_files && e->button==Button3){
-					Widget wrename = XtNameToWidget(bd->wpopup,"*rename");
-					Widget wedit = XtNameToWidget(bd->wpopup,"*edit");
-					dbg_assert(wrename && wedit);
-					XtSetSensitive(wrename,(bd->nsel_files==1)?True:False);
-					XtSetSensitive(wedit,(bd->nsel_files==1)?True:False);
+					Widget wrename = XtNameToWidget(bd->wpopup, "*rename");
+					Widget wedit = XtNameToWidget(bd->wpopup, "*edit");
+					Widget wpass = XtNameToWidget(bd->wpopup, "*passTo");
+					dbg_assert(wrename && wedit && wpass);
+					XtSetSensitive(wrename,(bd->nsel_files == 1) ? True:False);
+					XtSetSensitive(wedit, (bd->nsel_files == 1) ? True:False);
+					XtSetSensitive(wpass, (bd->nsel_files == 1) ? True:False);
 					XmMenuPosition(bd->wpopup,(XButtonPressedEvent*)cbs->event);
 					XtManageChild(bd->wpopup);
 				}
@@ -2591,6 +2594,8 @@ static void edit_cb(Widget w, XtPointer client, XtPointer call)
 {
 	struct browser_data *bd=(struct browser_data*)client;
 	char *path;
+	pid_t pid;
+	volatile int errv = 0;
 	
 	dbg_assert(init_app_res.edit_cmd);
 	dbg_assert(bd->ifocus>(-1));
@@ -2606,12 +2611,63 @@ static void edit_cb(Widget w, XtPointer client, XtPointer call)
 	snprintf(path,bd->path_max,"%s/%s",bd->path,bd->files[bd->ifocus].name);
 	pthread_mutex_unlock(&bd->data_mutex);
 
-	if(!vfork()){
-		if(execlp(init_app_res.edit_cmd,init_app_res.edit_cmd,path,NULL)){
-			errno_message_box(bd->wshell,errno,init_app_res.edit_cmd,False);
-		}
+	pid = vfork();
+	
+	if(pid == 0) {
+		if(execlp(init_app_res.edit_cmd, init_app_res.edit_cmd, path, NULL))
+			errv = errno;
+
 		_exit(0);
+	} else if(pid == (-1)) {
+		errv = errno;
 	}
+	
+	if(errv)
+		errno_message_box(bd->wshell, errv, init_app_res.edit_cmd, False);
+
+	free(path);
+}
+
+static void pass_to_cb(Widget w, XtPointer client, XtPointer call)
+{
+	struct browser_data *bd = (struct browser_data*)client;
+	char *path;
+	char *cmd;
+	pid_t pid;
+	volatile int errv = 0;
+	
+	dbg_assert(bd->ifocus > (-1));
+
+	cmd = pass_to_input_dlg(bd->wshell);
+	if(!cmd) return;
+
+	pthread_mutex_lock(&bd->data_mutex);	
+	path = malloc(bd->path_max + 2);
+	if(!path){
+		free(cmd);
+		pthread_mutex_unlock(&bd->data_mutex);
+		message_box(bd->wshell, MB_ERROR_NB, NULL, nlstr(APP_MSGSET,SID_ENORES,
+			"Not enough resources available for this task."));
+		return;
+	}
+	snprintf(path, bd->path_max, "%s/%s", bd->path, bd->files[bd->ifocus].name);
+	pthread_mutex_unlock(&bd->data_mutex);
+
+	pid = vfork();
+	
+	if(pid == 0){
+		if(execlp(cmd, cmd, path, NULL))
+			errv = errno;
+
+		_exit(0);
+	} else if(pid == (-1)) {
+		errv = errno;
+	}
+
+	if(errv)
+		errno_message_box(bd->wshell, errv, cmd, False);
+	
+	free(cmd);
 	free(path);
 }
 
@@ -2880,6 +2936,7 @@ static void create_browser_menubar(struct browser_data *bd)
 		{IT_SEP},
 		{IT_PUSH,"display","_Display",SID_BMDISPLAY,display_cb},
 		{IT_PUSH,"edit","_Edit",SID_BMFEDIT,edit_cb},
+		{IT_PUSH,"passTo", "_Pass to...", SID_BMFPASS, pass_to_cb},
 		{IT_SEP},
 		{IT_PUSH,"close","_Close",SID_BMCLOSE,close_cb}
 	};
@@ -2952,6 +3009,7 @@ static void create_tile_popup(struct browser_data *bd)
 {
 	static struct menu_item items[]={
 		{IT_PUSH, "edit", "_Edit", SID_BMFEDIT, edit_cb},
+		{IT_PUSH, "passTo", "_Pass to...", SID_BMFPASS, pass_to_cb},
 		{IT_SEP},
 		{IT_PUSH,"copyTo","_Copy to ...",SID_BMCOPYTO,copy_to_cb},
 		{IT_PUSH,"moveTo","_Move to ...",SID_BMMOVETO,move_to_cb},
