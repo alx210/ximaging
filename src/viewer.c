@@ -456,7 +456,7 @@ static struct viewer_data* get_viewer_inst_data(Widget wshell)
 static void destroy_viewer(struct viewer_data *vd)
 {
 	#ifdef ENABLE_CDE
-	/* reply if destruction was invoked trough a ToolTalk request */
+	/* reply if destruction was invoked through a ToolTalk request */
 	if(vd->tt_quit_req){
 		tt_message_reply(vd->tt_quit_req);
 		tt_message_destroy(vd->tt_quit_req);
@@ -821,7 +821,7 @@ static int scanline_read_cb(unsigned long iscl,
 }
 
 /*
- * Receives notifications from work threads trough XtInput
+ * Receives notifications from work threads through XtInput
  */
 static void thread_callback_proc(XtPointer client, int *pfd, XtInputId *iid)
 {
@@ -1085,7 +1085,7 @@ static void reset_viewer(struct viewer_data *vd)
 	}
 	
 	#ifdef ENABLE_CDE
-	/* notify the requestor if the viewer was instantiated trough ToolTalk */
+	/* notify the requestor if the viewer was instantiated through ToolTalk */
 	if(vd->tt_disp_req){
 		ttmedia_load_reply(vd->tt_disp_req,NULL,0,True);
 		vd->tt_disp_req=NULL;

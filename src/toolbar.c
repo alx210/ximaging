@@ -119,7 +119,8 @@ static void make_button_pixmaps(Widget w, const unsigned char *bits,
 	Pixmap *armed, Pixmap *grayed)
 {
 	Pixel fg,bg,ns,ts;
-	GC gc=0;
+	GC gc;
+	XGCValues gcv;
 
 	#ifdef TBR_STIPPLE_SHADING
 	static Pixmap stipple=0;
@@ -145,21 +146,22 @@ static void make_button_pixmaps(Widget w, const unsigned char *bits,
 			XmNenableThinThickness,&thin_borders,NULL);
 		armed_offset=thin_borders?1:2;
 	}
+
+	XtVaGetValues(w, XmNforeground, &fg,
+		XmNbackground, &bg, XmNbottomShadowColor, &ns,
+		XmNtopShadowColor, &ts, NULL);
 	
-	gc=XtGetGC(w,0,NULL);
+	gcv.function = GXcopy;
+	gcv.fill_style = FillSolid;
+	gcv.foreground = bg;
+	gc = XCreateGC(dpy, wnd, GCFunction|GCFillStyle|GCForeground, &gcv);
 	
-	XtVaGetValues(w,XmNforeground,&fg,
-		XmNbackground,&bg,XmNbottomShadowColor,&ns,
-		XmNtopShadowColor,&ts,NULL);
 
 	*normal=XCreatePixmapFromBitmapData(dpy,wnd,
 		(char*)bits,width,height,fg,bg,depth);
 
 	/* armed pixmap shapes are offset in x,y */
 	*armed=XCreatePixmap(dpy,wnd,width,height,depth);
-	XSetClipMask(dpy,gc,None);
-	XSetFillStyle(dpy,gc,FillSolid);	
-	XSetForeground(dpy,gc,bg);
 	XFillRectangle(dpy,*armed,gc,0,0,width,height);		
 	XCopyArea(dpy,*normal,*armed,gc,0,0,
 		width-armed_offset,height-armed_offset,
@@ -179,7 +181,6 @@ static void make_button_pixmaps(Widget w, const unsigned char *bits,
 	XSetStipple(dpy,gc,stipple);
 	XSetClipMask(dpy,gc,mask);
 	XSetFillStyle(dpy,gc,FillStippled);	
-	XSetForeground(dpy,gc,bg);
 	XFillRectangle(dpy,*grayed,gc,0,0,width,height);
 	XFreePixmap(dpy,mask);
 	#else
@@ -203,7 +204,7 @@ static void make_button_pixmaps(Widget w, const unsigned char *bits,
 	XFreePixmap(dpy,mask);
 	#endif
 	
-	XtReleaseGC(w,gc);
+	XFreeGC(dpy, gc);
 }
 
 Widget get_toolbar_item(Widget toolbar, const char *name)

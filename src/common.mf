@@ -8,17 +8,17 @@
 # CFLAGS += -fopenmp -DENABLE_OMP
 # LDFLAGS += -fopenmp
 
-# JPEG file support trough libjpeg
+# JPEG file support through libjpeg
 CFLAGS += -DENABLE_JPEG
 JPEG_OBJS = jpeg.o
 JPEG_LIBS = -ljpeg
 
-# PNG file support trough libpng
+# PNG file support through libpng
 CFLAGS += -DENABLE_PNG
 PNG_OBJS = png.o
 PNG_LIBS = -lpng
 
-# TIFF file support trough libtiff
+# TIFF file support through libtiff
 CFLAGS += -DENABLE_TIFF
 TIFF_OBJS = tiff.o
 TIFF_LIBS = -ltiff

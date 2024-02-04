@@ -1323,7 +1323,7 @@ static void reset_browser(struct browser_data *bd)
 	bd->state=0;
 	
 	#ifdef ENABLE_CDE
-	/* notify the requestor if the browser was instantiated trough ToolTalk */
+	/* notify the requestor if the browser was instantiated through ToolTalk */
 	if(bd->tt_disp_req){
 		ttmedia_load_reply(bd->tt_disp_req,NULL,0,True);
 		bd->tt_disp_req=NULL;
