@@ -43,15 +43,6 @@ XImagingViewer.height:400
 ! XImagingBrowser*directoriesList.width: 100
 
 !##############################################################################
-!# Fonts
-!##############################################################################
-
-*renderTable: variable
-*renderTable.variable.fontType: FONT_IS_XFT
-*renderTable.variable.fontName: Liberation Sans
-*renderTable.variable.fontSize: 10
-
-!##############################################################################
 !# Accelerators
 !##############################################################################
 
