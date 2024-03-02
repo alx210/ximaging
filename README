@@ -13,5 +13,9 @@ be installed also - e.g. xorg-dev, motif-dev, etc.
 
 2. BUILDING AND INSTALLING
 -----------------------------
+If necessary, tweak the target platform specific makefile, Makefile.$(uname),
+in the mf sub-directory (to change the installation prefix, perhaps). If no
+appropriate Makefile exists, try Makefile.generic.
+
 Run 'make' in the top-level directory of the source distribution and follow
 instructions. When build process finishes, run 'make install' as root.
