@@ -1320,6 +1320,7 @@ static void update_controls(struct viewer_data *vd)
 	XtSetSensitive(get_menu_item(vd,"*zoomIn"),True);
 	XtSetSensitive(get_menu_item(vd,"*zoomOut"),True);
 	XtSetSensitive(get_menu_item(vd,"*edit"),(ready && init_app_res.edit_cmd));
+	XtSetSensitive(get_menu_item(vd,"*passTo"), ready);
 
 	XmUpdateDisplay(vd->wmenubar);
 

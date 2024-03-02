@@ -2071,6 +2071,7 @@ static void update_controls(struct browser_data *bd)
 	XtSetSensitive(get_menu_item(bd,"*display"),(bd->ifocus>=0));
 	XtSetSensitive(get_menu_item(bd,"*edit"),
 		((bd->ifocus>=0)&&(init_app_res.edit_cmd)));
+	XtSetSensitive(get_menu_item(bd, "*passTo"), (bd->ifocus >= 0));
 	XmUpdateDisplay(bd->wmenubar);
 }
 
