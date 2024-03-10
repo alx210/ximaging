@@ -23,8 +23,8 @@ static int expand_table(hashtbl_t *tbl);
 static int insert_item(hashtbl_t *tbl, const void *entry);
 static int find_index(const hashtbl_t *tbl,	const void *entry, long *res);
 
-/* Fullness treshold in percent at which storage should be expanded */
-#define FULL_TRESHOLD	80
+/* Fullness threshold in percent at which storage should be expanded */
+#define FULL_THRESHOLD	80
 
 /* Item state values */
 #define ST_EMPTY	0x00
@@ -100,7 +100,7 @@ static int expand_table(hashtbl_t *tbl)
 	 * bounce slots then compacting may suffice */
 	for(count=0, i=0; i<tbl->item_count; i++)
 		if(tbl->stat_vec[i]==ST_SET) count++;
-	if(((float)count/tbl->tbl_size)*100 < FULL_TRESHOLD){
+	if(((float)count/tbl->tbl_size)*100 < FULL_THRESHOLD){
 		count=tbl->tbl_size;
 	}else{
 		count=tbl->tbl_size+tbl->grow_by;
@@ -181,8 +181,8 @@ hashtbl_t* ht_alloc(size_t tbl_size, size_t grow_by,
 	hashtbl_t *tbl;
 	
 	if(!grow_by) grow_by=tbl_size;
-	/* adjust size according to the fullness treshold */
-	tbl_size+=((float)(120-(FULL_TRESHOLD))/100)*tbl_size;
+	/* adjust size according to the fullness threshold */
+	tbl_size+=((float)(120-(FULL_THRESHOLD))/100)*tbl_size;
 	while(!test_prime(tbl_size)) tbl_size++;
 	dbg_assert(tbl_size>0);
 
@@ -224,7 +224,7 @@ void ht_free(hashtbl_t *tbl)
  */
 int ht_insert(hashtbl_t *tbl, const void *entry)
 {
-	if(((float)tbl->item_count/tbl->tbl_size)*100 > FULL_TRESHOLD){
+	if(((float)tbl->item_count/tbl->tbl_size)*100 > FULL_THRESHOLD){
 		int res;
 		res=expand_table(tbl);
 		if(res) return res;
@@ -271,46 +271,6 @@ int ht_replace(hashtbl_t *tbl, const void *entry)
 long ht_count(hashtbl_t *tbl)
 {
 	return tbl->item_count;
-}
-
-/* 
- * Initialize an iterator.
- */
-void ht_init_iterator(const hashtbl_t *tbl,
-	enum ht_it_dir dir, ht_iterator_t *it)
-{
-	it->dir=dir;
-	it->tbl=(hashtbl_t*)tbl;
-	
-	if(dir==HT_IT_FORWARD)
-		it->index=0;
-	else
-		it->index=tbl->tbl_size;
-}
-
-/*
- * Returns a volatile pointer to the next hash table record or
- * NULL if either end of the table is reached.
- */
-void* ht_iterate(ht_iterator_t *it)
-{
-	long i;
-	if(it->dir==HT_IT_FORWARD){
-		for(i=it->index; i<it->tbl->tbl_size; i++){
-			if(it->tbl->stat_vec[i]==ST_SET){
-				it->index=i+1;
-				return &it->tbl->data_vec[it->tbl->entry_size*i];
-			}
-		}
-	}else{
-		for(i=it->index; i>=0; i--){
-			if(it->tbl->stat_vec[i]==ST_SET){
-				it->index=i-1;
-				return &it->tbl->data_vec[it->tbl->entry_size*i];
-			}
-		}
-	}		
-	return NULL;
 }
 
 /* Hash a zero terminated string */

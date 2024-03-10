@@ -32,19 +32,6 @@ typedef struct {
 	ht_hash_ft hash_fnc;
 } hashtbl_t;
 
-/* Iterator */
-enum ht_it_dir { HT_IT_FORWARD, HT_IT_BACKWARD };
-
-typedef struct {
-	hashtbl_t *tbl;
-	long index;
-	enum ht_it_dir dir;
-} ht_iterator_t;
-
-#ifdef __cplusplus
-extern "C"{
-#endif
-
 /*
  * Allocate a hash table and initial storage.
  * Returns a valid pointer, or NULL on failure.
@@ -96,26 +83,10 @@ int ht_delete(hashtbl_t *tbl, const void *entry);
  */
 long ht_count(hashtbl_t *tbl);
 
-/* 
- * Initialize an iterator. It is guaranteed to remain valid as long
- * as table contents aren't changed.
- */
-void ht_init_iterator(const hashtbl_t*,enum ht_it_dir, ht_iterator_t*);
-
-/*
- * Returns a volatile pointer to the next hash table record or
- * NULL if either end of the table is reached.
- */
-void* ht_iterate(ht_iterator_t*);
-
 /* Hash a zero terminated string */
 hashkey_t hash_string(const char *str);
 
 /* Hash a zero terminated string disregadring case */
 hashkey_t hash_string_nocase(const char *str);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* HASHTBL_H */
