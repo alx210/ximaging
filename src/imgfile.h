@@ -89,20 +89,22 @@ typedef int (*img_open_proc_t)(const char*,struct img_file*,int);
 /* Image format descriptor */
 struct img_format_info {
 	char *desc;		/* description */
-	char *ext;		/* space separated list of file name extensions */
+	char *suffixes;	/* space separated list of file suffixes */
 	img_open_proc_t open_proc;
 };
 
 /* 
- * Get image format info. Returns NULL if unable to identify the image.
+ * Returns file format info for suffix or fname (in that order of preference),
+ * or NULL if unable to identify.
  */
-struct img_format_info* const img_get_format_info(const char *fname);
+struct img_format_info* const img_ident(const char *fname, const char *suffix);
 
 /* Retrieve the list of supported image formats */
 int img_get_formats(struct img_format_info const **ptr);
 
-/* Open the image file */
-int img_open(const char *file_name, struct img_file *img, int flags);
+/* Open the image file (type_suffix may be NULL) */
+int img_open(const char *file_name, const char *type_suffix,
+	struct img_file *img, int flags);
 
 /* Retrieve descriptive text for an IMG error code */
 char * const img_strerror(int img_errno);

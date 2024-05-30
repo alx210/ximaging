@@ -31,7 +31,7 @@
 #include "debug.h"
 
 /* Local prototypes */
-static Boolean init_instance(const char *open_spec);
+static Boolean init_instance(const char *open_spec, const char*);
 static void init_display_globals(void);
 static void sigchld_handler(int);
 static void sigusr1_handler(int);
@@ -139,7 +139,7 @@ static const int num_xrdb_options=
  * Launch a viewer or browser instance, depending on 'open_spec' contents.
  * If 'open_spec' is NULL launch as specified in app-defaults.
  */
-static Boolean init_instance(const char *open_spec)
+static Boolean init_instance(const char *open_spec, const char *force_suffix)
 {
 	Widget wshell;
 	struct stat st;
@@ -162,7 +162,7 @@ static Boolean init_instance(const char *open_spec)
 			if(wshell) browse_path(wshell,open_spec,NULL);
 		}else{
 			wshell=get_viewer(&init_app_res,NULL);
-			if(wshell) display_image(wshell,open_spec,NULL);
+			if(wshell) display_image(wshell, open_spec, force_suffix, NULL);
 		}
 	}
 	return True;
@@ -237,9 +237,11 @@ static void init_display_globals(void)
  */
 int main(int argc, char **argv)
 {
-	char *open_spec=NULL;
+	char *open_spec = NULL;
+	char *force_suffix = NULL;
 	/* fallback resources defined in defaults.c */
 	extern char *fallback_res[];
+	int i;
 
 	app_inst.bin_name=argv[0];
 	
@@ -289,11 +291,20 @@ int main(int argc, char **argv)
 	init_display_globals();
 		
 	/* non XRDB arguments */
-	if(argc>1){
-		open_spec=argv[1];
-		if(argc>2)
+	for(i = 1; i < argc; i++) {
+		if(!strcmp(argv[i], "-f") || !strcmp(argv[i], "-format")) {
+			if(i + 1 == argc) {
+				warning_msg(nlstr(APP_MSGSET, SID_ENOARG,
+					"Argument expected.\n"));
+			} else {
+				force_suffix = argv[++i];
+			}
+		} else if(!open_spec) {
+			open_spec = argv[i];
+		} else {
 			warning_msg(nlstr(APP_MSGSET,SID_EARG,
 				"Ignoring redundant arguments.\n"));
+		}
 	}
 	
 	if(open_spec){
@@ -306,13 +317,17 @@ int main(int argc, char **argv)
 			return EXIT_FAILURE;
 		}
 		open_spec=real_path;
+	} else if(force_suffix) {
+		warning_msg(nlstr(APP_MSGSET, SID_ENOARG,
+						"Argument expected.\n"));
+		return EXIT_FAILURE;
 	}
 	
 	#ifdef ENABLE_CDE
-	if(!query_server(open_spec)){
+	if(!query_server(open_spec, force_suffix)){
 		init_tt_media_exchange(True);
 		if(!init_app_res.server){
-			if(!init_instance(open_spec)) return EXIT_FAILURE;
+			if(!init_instance(open_spec, force_suffix)) return EXIT_FAILURE;
 		}
 	}else{
 		if(init_app_res.server){
@@ -323,8 +338,8 @@ int main(int argc, char **argv)
 		return EXIT_SUCCESS;
 	}
 	#else /* ENABLE_CDE */
-	if(init_x_ipc(open_spec) && !init_app_res.server){
-		if(!init_instance(open_spec)) return EXIT_FAILURE;
+	if(init_x_ipc(open_spec, force_suffix) && !init_app_res.server){
+		if(!init_instance(open_spec, force_suffix)) return EXIT_FAILURE;
 	}
 	#endif /* ENABLE_CDE */
 	

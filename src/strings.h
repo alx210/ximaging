@@ -145,6 +145,7 @@
 #define SID_SELECTED	35	/* selected */
 #define SID_EFEXIST		36	/* File already exists. */
 #define SID_QSTIMEOUT	37	/* Another instance is running...*/
+#define SID_ENOARG		38	/* Argument expected */
 
 /*
  * Dialog strings

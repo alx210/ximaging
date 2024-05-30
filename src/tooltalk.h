@@ -18,7 +18,7 @@ void quit_tt_session(void);
  * Pass 'open_spec' to the server instance if it exists.
  * Returns True if a server instance has accepted the request.
  */
-Boolean query_server(const char *open_spec);
+Boolean query_server(const char *open_spec, const char*);
 
 #else
 
@@ -27,7 +27,7 @@ Boolean query_server(const char *open_spec);
  * Checks for an existing instance and returns True if no other instance
  * exists, initiates client/server communication and returns False otherwise.
  */
-Boolean init_x_ipc(const char *open_spec);
+Boolean init_x_ipc(const char *open_spec, const char *force_suffix);
 
 #endif /* ENABLE_CDE */
 

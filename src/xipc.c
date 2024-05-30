@@ -36,6 +36,7 @@ static void ipsc_value_ready_cb(Widget,XtPointer,Atom*,Atom*,
 static Boolean try_own_selection(void);
 
 static const char *open_file_name = NULL;
+static const char *open_force_suffix = NULL;
 static char *msg_data = NULL;
 static Boolean is_server = False;
 
@@ -44,7 +45,7 @@ static Boolean is_server = False;
  * Returns True if no other instance exists, initiates client/server
  * communication and returns False otherwise.
  */
-Boolean init_x_ipc(const char *open_spec)
+Boolean init_x_ipc(const char *open_spec, const char *force_suffix)
 {
 	char *login;
 	char host[256]="localhost";
@@ -55,6 +56,7 @@ Boolean init_x_ipc(const char *open_spec)
 	int retries = 3;
 
 	open_file_name = open_spec;
+	open_force_suffix = force_suffix;
 
 	login = getlogin();
 	if(!login) {
@@ -136,9 +138,11 @@ static Boolean ipcs_convert_cb(Widget w, Atom *sel, Atom *tgt,
 {
 	size_t msg_len;
 	char *msg_data;
+	size_t bpos;
 
-	msg_len = 256 + (init_app_res.geometry?25:0) +
-		(open_file_name?strlen(open_file_name):0);
+	msg_len = 256 + (init_app_res.geometry ? 25 : 0) +
+		(open_file_name ? strlen(open_file_name) : 0) +
+		(open_force_suffix ? strlen(open_force_suffix) : 0);
 
 	msg_data = malloc(msg_len+1);
 	if(!msg_data) {
@@ -146,15 +150,22 @@ static Boolean ipcs_convert_cb(Widget w, Atom *sel, Atom *tgt,
 		return False;
 	}
 
-	snprintf(msg_data,msg_len,
-		(open_file_name?
-		"geometry=%s pin_window=%d browse=%d open_spec=%s":
-		"geometry=%s pin_window=%d browse=%d"),
-		init_app_res.geometry?init_app_res.geometry:"*",
-		init_app_res.pin_window?1:0,
-		init_app_res.browse?1:0,
-		open_file_name);
+	bpos = snprintf(msg_data, msg_len,
+		"geometry=%s pin_window=%d browse=%d",
+		init_app_res.geometry ? init_app_res.geometry : "*",
+		init_app_res.pin_window ? 1 : 0,
+		init_app_res.browse ? 1 : 0);
+	
+	if(open_file_name) {
+		bpos += snprintf(msg_data + bpos,
+			msg_len - bpos, " open_spec=%s", open_file_name);
+	}
 
+	if(open_force_suffix) {
+		snprintf(msg_data + bpos, msg_len - bpos,
+			" force_suffix=%s", open_force_suffix);
+	}
+	
 	*type_ret = app_inst.XaSERVER_REQ;
 	*val_ret = (XtPointer) msg_data;
 	*len_ret = msg_len;
@@ -187,31 +198,42 @@ static void ipsc_value_ready_cb(Widget w, XtPointer client_data,
 	unsigned long *length, int *format)
 {
 	char geometry[25];
-	char *open_spec;
+	char *open_spec = NULL;
+	char *force_suffix = NULL;
 	int pin_window;
 	int browse;
 	int items;
 	struct app_resources res;
+	int res_len = 0;
+	int fname_len = 0;
+	int suffix_len = 0;
 	
 	/* This should never happen^TM */
 	if(*type != app_inst.XaSERVER_REQ) return;
 
-	dbg_assert(*length);
-	open_spec = malloc(*length);
-	if(!open_spec){
-		warning_msg(strerror(errno));
-		return;
-	}
-	open_spec[0] = '\0';
-	
 	dbg_trace("request received: %s\n",(char*)value);
+
+	sscanf((char*)value,
+		"geometry=%*s pin_window=%*d browse=%*d %n"
+		"open_spec=%*s%n force_suffix=%*s%n",
+			&res_len, &fname_len, &suffix_len);
+	
+	if(fname_len) {
+		fname_len -= res_len;
+		open_spec = malloc(fname_len + 1);
+	}
+	if(suffix_len) {
+		suffix_len -= (res_len + fname_len);
+		force_suffix = malloc(suffix_len + 1);
+	}
 	
 	items = sscanf((char*)value,
-		"geometry=%s pin_window=%d browse=%d open_spec=%s",
+		"geometry=%s pin_window=%d browse=%d open_spec=%s force_suffix=%s",
 		geometry,
 		&pin_window,
 		&browse,
-		open_spec);
+		open_spec,
+		force_suffix);
 	
 	if(items < 3){
 		warning_msg("Invalid IPC request\n");
@@ -224,13 +246,13 @@ static void ipsc_value_ready_cb(Widget w, XtPointer client_data,
 	res.geometry = (geometry[0] == '*')?NULL:geometry;
 	res.pin_window = (Boolean)pin_window;
 	
-	if(!open_spec[0]){
+	if(!open_spec){
 		if(browse){
 			get_browser(&res,NULL);
 		}else{
 			get_viewer(&res,NULL);
 		}
-	}else{
+	} else {
 		Widget wshell;
 		struct stat st;
 		
@@ -241,7 +263,7 @@ static void ipsc_value_ready_cb(Widget w, XtPointer client_data,
 				browse_path(wshell,open_spec,NULL);
 			}else{
 				wshell=get_viewer(&res,NULL);
-				display_image(wshell,open_spec,NULL);
+				display_image(wshell, open_spec, force_suffix, NULL);
 			}
 		}else{
 			message_box(app_inst.session_shell,MB_ERROR,BASE_TITLE,
@@ -249,7 +271,8 @@ static void ipsc_value_ready_cb(Widget w, XtPointer client_data,
 				"The specified file is invalid."));
 		}
 	}
-	free(open_spec);
+	if(open_spec) free(open_spec);
+	if(force_suffix) free(force_suffix);
 }
 
 /*

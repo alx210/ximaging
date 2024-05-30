@@ -227,7 +227,7 @@ static Tt_message media_load_cb(Tt_message msg, void *pwidget,
  * Pass 'open_spec' to the server instance if it exists.
  * Returns True if a server instance accepted the request.
  */
-Boolean query_server(const char *open_spec)
+Boolean query_server(const char *open_spec, const char *force_suffix)
 {
 	Tt_message msg;
 	Tt_message reply;
@@ -260,6 +260,7 @@ Boolean query_server(const char *open_spec)
 	tt_message_scope_set(msg,TT_SESSION);
 	tt_message_callback_add(msg,com_message_cb);
 	tt_message_context_set(msg,"open_spec",open_spec);
+	tt_message_context_set(msg, "force_suffix", force_suffix);
 	tt_message_context_set(msg,"geometry",init_app_res.geometry);
 	tt_message_context_set(msg,"pin_window",
 		(init_app_res.pin_window?"True":"False"));
@@ -326,6 +327,7 @@ static Tt_callback_action com_pattern_cb(Tt_message msg, Tt_pattern pat)
 {
 	int mark;
 	char *open_spec;
+	char *force_suffix;
 	struct stat st;
 	struct app_resources res;
 	Widget wshell;
@@ -337,6 +339,7 @@ static Tt_callback_action com_pattern_cb(Tt_message msg, Tt_pattern pat)
 	memcpy(&res,&init_app_res,sizeof(struct app_resources));
 	obtain_msg_resources(msg,&res);	
 	open_spec=tt_message_context_val(msg,"open_spec");
+	force_suffix = tt_message_context_val(msg, "force_suffix");
 	
 	/* no file/directory name specified */
 	if(!open_spec[0]){
@@ -356,7 +359,7 @@ static Tt_callback_action com_pattern_cb(Tt_message msg, Tt_pattern pat)
 			browse_path(wshell,open_spec,NULL);
 		}else{
 			wshell=get_viewer(&res,NULL);
-			display_image(wshell,open_spec,NULL);
+			display_image(wshell, open_spec, force_suffix, NULL);
 		}
 	}else{
 		message_box(app_inst.session_shell,MB_ERROR,BASE_TITLE,

@@ -30,7 +30,8 @@ Widget get_viewer(const struct app_resources*, Tt_message req_msg);
  * 'req_msg' is optional and associates the instance with a ToolTalk request.
  * Returns True on success.
  */
-Boolean display_image(Widget, const char *file_name, Tt_message req_msg);
+Boolean display_image(Widget, const char *file_name,
+	const char *force_suffix, Tt_message req_msg);
 
 #ifdef ENABLE_CDE
 /*

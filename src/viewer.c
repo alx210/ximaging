@@ -56,7 +56,7 @@ static struct viewer_data* get_viewer_inst_data(Widget wshell);
 static void destroy_viewer(struct viewer_data *vd);
 static void create_viewer_menubar(struct viewer_data *vd);
 static void create_viewer_toolbar(struct viewer_data *vd);
-static Boolean load_image(struct viewer_data *vd, const char *fname);
+static Boolean load_image(struct viewer_data *vd, const char*, const char*);
 static void reset_viewer(struct viewer_data *vd);
 static int alloc_storage(struct viewer_data *vd);
 static void set_status_msg(struct viewer_data *vd,int msg_id, const char *text);
@@ -351,7 +351,8 @@ static struct viewer_data* create_viewer(const struct app_resources *res)
 /*
  * Load and display an image
  */
-static Boolean load_image(struct viewer_data *vd, const char *fname)
+static Boolean load_image(struct viewer_data *vd, const char *fname,
+	const char *force_suffix)
 {
 	struct stat st;
 	int img_errno;
@@ -384,7 +385,7 @@ static Boolean load_image(struct viewer_data *vd, const char *fname)
 	}
 
 	/* open the image and allocate initial buffers */
-	img_errno=img_open(vd->file_name,&vd->img_file,0);
+	img_errno = img_open(vd->file_name, force_suffix, &vd->img_file,0);
 	if(img_errno){
 		report_img_error(vd,img_errno);
 		reset_viewer(vd);
@@ -695,7 +696,7 @@ static void load_next_file(struct viewer_data *vd, Bool forward)
 		strlen(vd->dir_files[vd->dir_cur_file])+2);
 	sprintf(new_file_name,"%s/%s",vd->dir_name,
 		vd->dir_files[vd->dir_cur_file]);
-	load_image(vd,new_file_name);
+	load_image(vd, new_file_name, NULL);
 	free(new_file_name);
 }
 
@@ -977,7 +978,7 @@ static void* dir_reader_thread(void *arg)
 			}
 			files=new_buf;
 		}
-		if(img_get_format_info(dir_ent->d_name)){
+		if(img_ident(dir_ent->d_name, NULL)){
 			files[nfiles]=strdup(dir_ent->d_name);
 		}else{	continue; }
 		nfiles++;
@@ -1961,7 +1962,7 @@ static void refresh_cb(Widget w, XtPointer client, XtPointer call)
 
 	fname=strdup(vd->file_name);
 	reset_viewer(vd);
-	load_image(vd,fname);
+	load_image(vd, fname, NULL);
 	free(fname);
 }
 
@@ -2184,7 +2185,7 @@ static void file_select_cb(Widget w, XtPointer client, XtPointer call)
 	}else{
 		fname=(char*)XmStringUnparse(fscb->value,NULL,0,XmCHARSET_TEXT,
 			NULL,0,XmOUTPUT_ALL);
-		load_image(vd,fname);
+		load_image(vd, fname, NULL);
 		XtFree(fname);
 		XtUnmanageChild(w);
 	}
@@ -2358,7 +2359,7 @@ static void rename_cb(Widget w, XtPointer client, XtPointer call)
 			"The action couldn't be completed."),False);
 	}else{
 		reset_viewer(vd);
-		load_image(vd,new_name);
+		load_image(vd, new_name, NULL);
 	}
 	free(file_path);
 	free(new_name);
@@ -2631,7 +2632,8 @@ Widget get_viewer(const struct app_resources *res, Tt_message req_msg)
 /*
  * Public interface to load_image
  */
-Boolean display_image(Widget wshell, const char *fname, Tt_message req_msg)
+Boolean display_image(Widget wshell, const char *fname,
+	const char *force_suffix, Tt_message req_msg)
 {
 	struct viewer_data *vd=viewers;
 	Boolean res;
@@ -2640,7 +2642,7 @@ Boolean display_image(Widget wshell, const char *fname, Tt_message req_msg)
 
 	vd=get_viewer_inst_data(wshell);
 	dbg_assert(vd);
-	res=load_image(vd,fname);
+	res = load_image(vd, fname, force_suffix);
 
 	#ifdef ENABLE_CDE
 	if(req_msg){

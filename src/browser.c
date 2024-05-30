@@ -509,7 +509,7 @@ static void* loader_thread(void *data)
 		if(!stat(path_buf, &st))
 			bd->files[i].file_size = st.st_size;
 
-		result=img_open(path_buf,&cbd.img_file,0);
+		result = img_open(path_buf, NULL, &cbd.img_file, 0);
 
 		if(result){
 			dbg_trace("%s: img_open failed with %d\n",path_buf,result);
@@ -715,7 +715,7 @@ static int read_directory(struct browser_data *bd)
 			
 		} else if(S_ISREG(st.st_mode)) {
 			if(!bd->show_dot_files && dir_ent->d_name[0] == '.') continue;
-			if(!img_get_format_info(path_buf) ||
+			if(!img_ident(path_buf, NULL) ||
 				(bd->nfiles && (find_file_entry(bd,dir_ent->d_name)>=0)))
 				continue;
 
@@ -2213,7 +2213,7 @@ static void invoke_default_action(struct browser_data *bd, long i)
 			free(full_path);
 			break;
 		}
-		display_image(viewer,full_path,NULL);
+		display_image(viewer, full_path, NULL, NULL);
 		free(full_path);
 		break;
 		case FS_BROKEN:

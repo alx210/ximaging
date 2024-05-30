@@ -135,6 +135,7 @@ on how to fix this.
 35 Selected
 36 File already exists.
 37 Another instance of XImaging appears to be running, but is not responding.
+38 Argument expected
 
 $ -----------------------------------------------------------------------------
 $set 4 - dialog messages
