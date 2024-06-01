@@ -174,22 +174,22 @@ static void planes_to_row(uint8_t *planes, short nplanes,
 	unsigned int xres, uint8_t *row, short bpc)
 {
 	unsigned int i,j,k;
-	if(bpc<2){
-		for(i=0, k=0; i<xres; i++, k+=nplanes){
-			for(j=0; j<nplanes; j++)
-				row[k+j]=planes[i+xres*j];
+	if(bpc < 2){
+		for(i = 0, k = 0; i < xres; i++, k += nplanes){
+			for(j = 0; j < nplanes; j++)
+				row[k + j] = planes[i + xres * j];
 		}
 	}else{
-		uint16_t *ptr=(uint16_t*)planes;
+		uint16_t *ptr = (uint16_t*)planes;
 		if(is_big_endian()){
-			for(i=0, k=0; i<xres*bpc; i++, k+=nplanes){
-				for(j=0; j<nplanes; j++)
-					row[k+j]=(ptr[i+xres*j]/256);
+			for(i = 0, k = 0; i < xres; i++, k += nplanes){
+				for(j = 0; j < nplanes; j++)
+					row[k + j] = (ptr[i + xres * j] / 256);
 			}
 		}else{
-			for(i=0, k=0; i<xres*bpc; i++, k+=nplanes){
-				for(j=0; j<nplanes; j++)
-					row[k+j]=(bswap_word(ptr[i+xres*j])/256);
+			for(i = 0, k = 0; i < xres; i++, k += nplanes){
+				for(j = 0; j < nplanes; j++)
+					row[k + j] = (bswap_word(ptr[i + xres * j]) / 256);
 			}
 		}
 	}
