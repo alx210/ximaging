@@ -241,15 +241,6 @@ int ht_lookup(const hashtbl_t *tbl, const void *entry, void *res)
 	return 0;
 }
 
-/* Lookup an item and store the pointer to it in 'res' */
-int ht_lookup_ptr(const hashtbl_t *tbl, const void *entry, void **res)
-{
-	long index;
-	if(find_index(tbl,entry,&index)) return ENOENT;
-	if(res)	*res=&tbl->data_vec[tbl->entry_size*index];
-	return 0;
-}
-
 /* Remove a key */
 int ht_delete(hashtbl_t *tbl, const void *entry)
 {

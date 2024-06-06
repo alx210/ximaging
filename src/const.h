@@ -13,16 +13,25 @@
 
 /* Release info */
 #define APP_VERSION 1
-#define APP_REVISION 7
+#define APP_REVISION 8
 
 #define BASE_NAME "ximaging"	/* X application name */
 #define APP_CLASS "XImaging"	/* X application class */
 #define BASE_TITLE "XImaging"	/* base title for GUI elements */
 
-/* Copyright string */
-#define COPYRIGHT "Copyright (C) 2012-2024 alx@fastestcode.org" \
+/* Copyright and about strings */
+#define COPYRIGHT_CS "Copyright (C) 2012-2024 alx@fastestcode.org" \
 	"\nThis program is distributed under the terms of the MIT license." \
 	"\nSee the included LICENSE file for detailed information."
+
+#define DESCRIPTION_CS "XImaging - Raster image viewer for Unix/X11"
+
+#ifdef DEBUG
+#define APP_BUILD "Debug; Built " __DATE__
+#else
+#define APP_BUILD "Built " __DATE__
+#endif
+
 
 #ifdef ENABLE_CDE
 

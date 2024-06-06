@@ -1,5 +1,5 @@
 $ -----------------------------------------------------------------------------
-$ Copyright (C) 2012-2017 alx@fastestcode.org
+$ Copyright (C) 2012-2024 alx@fastestcode.org
 $ This software is distributed under the terms of the MIT license.
 $ See the included LICENSE file for further information.
 $ -----------------------------------------------------------------------------
@@ -135,7 +135,9 @@ on how to fix this.
 35 Selected
 36 File already exists.
 37 Another instance of XImaging appears to be running, but is not responding.
-38 Argument expected
+38 Argument expected.
+39 Failed to execute filter.
+40 Insufficient data.
 
 $ -----------------------------------------------------------------------------
 $set 4 - dialog messages
@@ -166,3 +168,5 @@ $ -----------------------------------------------------------------------------
 23 Size
 24 Specify a command to pass the file name to
 25 Pass To
+26 About
+27 Close

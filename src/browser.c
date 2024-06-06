@@ -715,7 +715,7 @@ static int read_directory(struct browser_data *bd)
 			
 		} else if(S_ISREG(st.st_mode)) {
 			if(!bd->show_dot_files && dir_ent->d_name[0] == '.') continue;
-			if(!img_ident(path_buf, NULL) ||
+			if(img_ident(path_buf, NULL, NULL) ||
 				(bd->nfiles && (find_file_entry(bd,dir_ent->d_name)>=0)))
 				continue;
 

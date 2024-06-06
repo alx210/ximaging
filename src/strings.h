@@ -146,6 +146,8 @@
 #define SID_EFEXIST		36	/* File already exists. */
 #define SID_QSTIMEOUT	37	/* Another instance is running...*/
 #define SID_ENOARG		38	/* Argument expected */
+#define SID_EFILTER		39	/* Failed to execute filter */
+#define SID_EDATA		40	/* Insufficient data */
 
 /*
  * Dialog strings
@@ -177,6 +179,8 @@
 #define SID_FSIZE		23	/* Size */
 #define SID_INPUTCMD	24	/* Specify a command... */
 #define SID_PASSTO		25	/* Pass To */
+#define SID_ABOUT		26	/* About (dialog title) */
+#define SID_CLOSE		27	/* Close */
 
 /* Use catgets for message strings */
 #ifdef ENABLE_NLS

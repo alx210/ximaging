@@ -21,8 +21,8 @@
 #define IMGT_ROTATE	4	/* Rotate clockwise */
 
 /* Pixel format */
-#define IMG_DIRECT		0	/* data is RGB(A) */
-#define IMG_PSEUDO		1	/* color mapped (img_read_cmap is valid) */
+#define IMG_DIRECT		0	/* data contains color intensities */
+#define IMG_PSEUDO		1	/* data contains indices (img_read_cmap is valid) */
 
 /* Pixel format flags */
 #define IMGF_PMALPHA	1	/* pixel values are premultiplied with alpha */
@@ -82,25 +82,25 @@ struct img_file {
 #define IMG_EINVAL	(-5)	/* invalid function call */
 #define IMG_EIO		(-6)	/* read error */
 #define IMG_EPERM	(-7)	/* no permission */
+#define IMG_EFILTER	(-8)	/* error executing filter */
+#define IMG_EDATA	(-9)	/* insufficient data */
 
 /* 'open' function type */
 typedef int (*img_open_proc_t)(const char*,struct img_file*,int);
 
-/* Image format descriptor */
-struct img_format_info {
-	char *desc;		/* description */
-	char *suffixes;	/* space separated list of file suffixes */
-	img_open_proc_t open_proc;
+struct img_type_rec {
+	char *suffix;
+	char *desc;
+	img_open_proc_t open_fnc;
+	char *filter_cmd;
 };
 
 /* 
- * Returns file format info for suffix or fname (in that order of preference),
- * or NULL if unable to identify.
+ * Retrieves file type/handler info for suffix or fname (in that order of
+ * preference). Returns zero if a handler exists. If no type info desired,
+ * rec may be NULL.
  */
-struct img_format_info* const img_ident(const char *fname, const char *suffix);
-
-/* Retrieve the list of supported image formats */
-int img_get_formats(struct img_format_info const **ptr);
+int img_ident(const char *fname, const char *suffix, struct img_type_rec *rec);
 
 /* Open the image file (type_suffix may be NULL) */
 int img_open(const char *file_name, const char *type_suffix,
@@ -112,16 +112,18 @@ char * const img_strerror(int img_errno);
 /* Inlines for calling the loader assigned functions */
 static inline int img_read_cmap(struct img_file *img, void *buf){
 	if(!img->read_cmap_fnc) return IMG_EINVAL;
-	return img->read_cmap_fnc(img,buf);
+	return img->read_cmap_fnc(img, buf);
 }
 
 static inline int img_read_scanlines(struct img_file *img,
 	img_scanline_cbt cb, void *client){
-	return img->read_scanlines_fnc(img,cb,client);
+	if(!img->read_scanlines_fnc) return IMG_EINVAL;
+	return img->read_scanlines_fnc(img, cb, client);
 }
 
 static inline int img_set_page(struct img_file *img, unsigned int page){
-	return img->set_page_fnc(img,page);
+	if(!img->set_page_fnc) return IMG_EINVAL;
+	return img->set_page_fnc(img, page);
 }
 
 static inline void img_close(struct img_file *img){

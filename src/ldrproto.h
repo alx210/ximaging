@@ -22,6 +22,7 @@ PROTODEF(sgi)
 PROTODEF(ras)
 PROTODEF(xpm)
 PROTODEF(xbm)
+PROTODEF(pam)
 PROTODEF(bmp)
 #ifdef ENABLE_JPEG
 PROTODEF(jpeg)
@@ -34,6 +35,10 @@ PROTODEF(tiff)
 #endif
 
 #undef PROTODEF
+
+/* in netpbm.c */
+int img_filter_pnm(const char *cmd_spec,
+	const char *file_name, struct img_file *img, int flags);
 
 #endif /* LDRPROTO_H */
 

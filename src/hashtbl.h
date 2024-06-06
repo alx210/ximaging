@@ -62,16 +62,10 @@ int ht_insert(hashtbl_t *tbl, const void *entry);
  */
 int ht_lookup(const hashtbl_t *tbl, const void *ref, void *res);
 
-/* 
- * Lookup an item and store the pointer to it in 'res'.
- * Returns 0 on success, ENOENT otherwise.
- */
-int ht_lookup_ptr(const hashtbl_t *tbl, const void *entry, void **res);
-
 /*
  * Replace an entry. Returns 0 on success.
  */
-int ht_set(hashtbl_t *tbl, const void *entry);
+int ht_replace(hashtbl_t *tbl, const void *entry);
 
 /*
  * Delete an entry. Returns 0 on success.

@@ -5,6 +5,7 @@
  */
 
 #include <stdlib.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <errno.h>
 #include <sys/types.h>
@@ -34,6 +35,7 @@
 static Boolean init_instance(const char *open_spec, const char*);
 static void init_display_globals(void);
 static void sigchld_handler(int);
+static void sigpipe_handler(int);
 static void sigusr1_handler(int);
 static void sigusr2_handler(int);
 
@@ -119,8 +121,10 @@ static XtResource xrdb_resources[]={
 	},
 	{ "showDotFiles","ShowDotFiles",XmRBoolean,sizeof(Boolean),
 		RESFIELD(show_dot_files),XmRImmediate,(XtPointer)True
+	},
+	{ "advanceOnDelete","AdvanceOnDelete",XmRBoolean,sizeof(Boolean),
+		RESFIELD(advance_on_del),XmRImmediate,(XtPointer)True
 	}
-
 };
 #undef RESFIELD
 
@@ -246,6 +250,7 @@ int main(int argc, char **argv)
 	app_inst.bin_name=argv[0];
 	
 	if(rsignal(SIGCHLD, sigchld_handler) == SIG_ERR ||
+		rsignal(SIGPIPE, sigpipe_handler) == SIG_ERR ||
 		rsignal(SIGUSR1, sigusr1_handler) == SIG_ERR ||
 		rsignal(SIGUSR2, sigusr2_handler) == SIG_ERR) {
 		
@@ -382,11 +387,17 @@ void fatal_error(int rv, const char *title, const char *msg)
 }
 
 /* Print a warning message to stderr */
-void warning_msg(const char *msg)
+void warning_msg(const char *fmt, ...)
 {
+	va_list ap;
+
 	if(init_app_res.quiet) return;
-	fprintf(stderr,"[%s] %s: %s\n",BASE_TITLE,
-		nlstr(APP_MSGSET,SID_WARNING,"Warning"),msg);
+
+	fputs(BASE_TITLE ": ", stderr);
+	va_start(ap, fmt);
+	vfprintf(stderr, fmt, ap);
+	va_end(ap);
+	fflush(stderr);
 }
 
 /* Reliable signal handling (using POSIX sigaction) */
@@ -416,6 +427,6 @@ void sigchld_handler(int sig)
 	int status;
 	waitpid(-1, &status, WNOHANG);
 }
-
+void sigpipe_handler(int sig){}
 void sigusr1_handler(int sig){}
 void sigusr2_handler(int sig){}

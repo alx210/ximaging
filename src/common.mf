@@ -49,9 +49,10 @@ rebuild: clean .depend all
 # Object files
 OBJS = main.o menu.o imgfile.o browser.o viewer.o cmap.o \
 	navbar.o cursor.o imgblt.o pixconv.o comdlgs.o filemgmt.o \
-	hashtbl.o defaults.o guiutil.o toolbar.o sgimage.o sunras.o \
-	pbrush.o targa.o msbitmap.o xbitmap.o xpixmap.o debug.o \
-	$(JPEG_OBJS) $(PNG_OBJS) $(TIFF_OBJS) $(IPC_OBJS)
+	hashtbl.o defaults.o guiutil.o toolbar.o extres.o exec.o \
+	sgimage.o sunras.o pbrush.o targa.o msbitmap.o xbitmap.o \
+	xpixmap.o netpbm.o debug.o $(JPEG_OBJS) $(PNG_OBJS) \
+	$(TIFF_OBJS) $(IPC_OBJS)
 
 # Application
 ximaging: $(OBJS)

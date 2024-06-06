@@ -978,9 +978,11 @@ static void* dir_reader_thread(void *arg)
 			}
 			files=new_buf;
 		}
-		if(img_ident(dir_ent->d_name, NULL)){
-			files[nfiles]=strdup(dir_ent->d_name);
-		}else{	continue; }
+		
+		if(!img_ident(dir_ent->d_name, NULL, NULL)){
+			files[nfiles] = strdup(dir_ent->d_name);
+		} else continue;
+		
 		nfiles++;
 	}
 	closedir(dir);
@@ -2370,6 +2372,7 @@ static void delete_cb(Widget w, XtPointer client, XtPointer call)
 {
 	struct viewer_data *vd=(struct viewer_data*)client;
 	int ret;
+	char *cur_file;
 	
 	if(init_app_res.confirm_rm){
 		Boolean pinned_state=vd->pinned;
@@ -2383,14 +2386,21 @@ static void delete_cb(Widget w, XtPointer client, XtPointer call)
 		}
 		vd->pinned=pinned_state;
 	}
-	ret=unlink(vd->file_name);
+	
+	cur_file = strdup(vd->file_name);
+	
+	if(!access(cur_file, W_OK) && init_app_res.advance_on_del)
+		load_next_file(vd, True);
+
+	ret = unlink(cur_file);
 	if(ret){
 		errno_message_box(vd->wshell,ret,
 			nlstr(APP_MSGSET,SID_EFAILED,
 			"The action couldn't be completed."),False);
 	}else{
-		reset_viewer(vd);
+		if(!init_app_res.advance_on_del) reset_viewer(vd);
 	}
+	free(cur_file);
 }
 
 /*

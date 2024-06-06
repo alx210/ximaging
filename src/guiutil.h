@@ -32,6 +32,12 @@ void load_icon(const void *bits, const void *mask_bits,
 Pixmap load_widget_bitmap(Widget w, const unsigned char *bits,
 	unsigned int width, unsigned int height);
 
+/*
+ * Create a pixmap with the masked area colored according to w's background
+ */
+Pixmap load_masked_bitmap(Widget w, const unsigned char *bits,
+	const unsigned char *mask_bits, unsigned int width, unsigned int height);
+
 /* Returns size and x/y offsets of the screen the widget is located on */
 void get_screen_size(Widget w, int *pwidth,
 	int *pheight, int *px, int *py);

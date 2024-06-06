@@ -12,10 +12,15 @@
 #include <stdio.h>
 #include <errno.h>
 #include <Xm/Xm.h>
+#include <Xm/DialogS.h>
 #include <Xm/MessageB.h>
 #include <Xm/FileSB.h>
 #include <Xm/SelectioB.h>
 #include <Xm/TextF.h>
+#include <Xm/Form.h>
+#include <Xm/Label.h>
+#include <Xm/PushB.h>
+#include <Xm/Separator.h>
 #include <Xm/MwmUtil.h>
 #include "common.h"
 #include "strings.h"
@@ -432,40 +437,105 @@ void errno_message_box(Widget parent, int errno_val,
 /*
  * Display the 'About' dialog box
  */
-void display_about_dlgbox(Widget parent)
+void display_about_dlgbox(Widget wparent)
 {
-	Widget wbox;
-	const char fmt_string[]="%s v%.1d.%.1d\n\n%s";
-	char *version_text;
-	XmString msg_text;
-	XmString title;
-	Arg args[5];
-	int i=0;
-
-	version_text=malloc(strlen(BASE_TITLE)+
-		strlen(fmt_string)+strlen(COPYRIGHT)+1);
-	sprintf(version_text,fmt_string,BASE_TITLE,APP_VERSION,
-		APP_REVISION,COPYRIGHT);
-	wbox=XmCreateInformationDialog(parent,"messageDialog",NULL,0);
-	msg_text=XmStringCreateLocalized(version_text);
-	free(version_text);
-	title=XmStringCreateLocalized(BASE_TITLE);
+	Arg args[10];
+	Cardinal n;
+	Widget wdlg;
+	Widget wform;
+	Widget wtext;
+	Widget wicon;
+	Widget wclose;
+	Widget wsep;
+	Pixmap icon_pix;
+	char *about_text;
+	size_t text_len;
+	XmString xms;
 	
-	XtSetArg(args[i],XmNmessageString,msg_text); i++;
-	XtSetArg(args[i],XmNnoResize,True); i++;
-	XtSetArg(args[i],XmNdialogTitle,title); i++;
-	XtSetArg(args[i],XmNdialogStyle,XmDIALOG_PRIMARY_APPLICATION_MODAL); i++;
-	XtSetValues(wbox,args,i);
-	i=0;
-	XtSetArg(args[i],XmNdeleteResponse,XmDESTROY); i++;
-	XtSetArg(args[i],XmNmwmFunctions,MWM_FUNC_MOVE); i++;
-	XtSetValues(XtParent(wbox),args,i);
+	#include "bitmaps/appicon.xbm"
+	#include "bitmaps/appicon_m.xbm"
 	
-	XtUnmanageChild(XmMessageBoxGetChild(wbox,XmDIALOG_CANCEL_BUTTON));
-	XtUnmanageChild(XmMessageBoxGetChild(wbox,XmDIALOG_HELP_BUTTON));
+	text_len = snprintf(NULL, 0,
+		"%s\nVersion %d.%d (%s; Motif %d.%d.%d)\n\n%s",
+		DESCRIPTION_CS, APP_VERSION, APP_REVISION, APP_BUILD,
+		XmVERSION, XmREVISION, XmUPDATE_LEVEL, COPYRIGHT_CS) + 1;
+	about_text = malloc(text_len);
+	snprintf(about_text, text_len,
+		"%s\nVersion %d.%d (%s; Motif %d.%d.%d)\n\n%s",
+		DESCRIPTION_CS, APP_VERSION, APP_REVISION, APP_BUILD,
+		XmVERSION, XmREVISION, XmUPDATE_LEVEL, COPYRIGHT_CS);
+	
+	n = 0;
+	XtSetArg(args[n], XmNmappedWhenManaged, True); n++;
+	XtSetArg(args[n], XmNallowShellResize, True); n++;
+	XtSetArg(args[n], XmNdeleteResponse, XmDESTROY); n++;
+	wdlg = XmCreateDialogShell(wparent, "about", args, n);
 
-	XtManageChild(wbox);
+	n = 0;
+	xms = XmStringCreateLocalized(nlstr(DLG_MSGSET, SID_ABOUT, "About"));
+	XtSetArg(args[n], XmNdialogTitle, xms); n++;
+	XtSetArg(args[n], XmNhorizontalSpacing, 4); n++;
+	XtSetArg(args[n], XmNverticalSpacing, 4); n++;
+	XtSetArg(args[n], XmNnoResize, True); n++;
+	XtSetArg(args[n], XmNdialogStyle, XmDIALOG_PRIMARY_APPLICATION_MODAL); n++;
+	wform = XmCreateForm(wdlg, "form", args, n);
+	XmStringFree(xms);
 
-	XmStringFree(title);
-	XmStringFree(msg_text);
+	if( (icon_pix = load_masked_bitmap(wform, appicon_bits,
+		appicon_m_bits, appicon_width, appicon_height)) == None)
+		icon_pix = XmUNSPECIFIED_PIXMAP;
+
+	n = 0;
+	XtSetArg(args[n], XmNtopAttachment, XmATTACH_FORM); n++;
+	XtSetArg(args[n], XmNleftAttachment, XmATTACH_FORM); n++;
+	XtSetArg(args[n], XmNlabelPixmap, icon_pix); n++;
+	XtSetArg(args[n], XmNlabelType, XmPIXMAP); n++;
+	wicon = XmCreateLabel(wform, "icon", args, n);
+	
+	n = 0;
+	xms = XmStringCreateLocalized(about_text);
+	XtSetArg(args[n], XmNlabelString, xms); n++;
+	XtSetArg(args[n], XmNtopAttachment, XmATTACH_FORM); n++;
+	XtSetArg(args[n], XmNleftAttachment, XmATTACH_WIDGET); n++;
+	XtSetArg(args[n], XmNleftWidget, wicon); n++;
+	XtSetArg(args[n], XmNrightAttachment, XmATTACH_FORM); n++;
+	XtSetArg(args[n], XmNalignment, XmALIGNMENT_BEGINNING); n++;
+	wtext = XmCreateLabel(wform, "text", args, n);
+	XmStringFree(xms);
+
+	n = 0;
+	XtSetArg(args[n], XmNrightAttachment, XmATTACH_FORM); n++;
+	XtSetArg(args[n], XmNleftAttachment, XmATTACH_FORM); n++;
+	XtSetArg(args[n], XmNtopAttachment, XmATTACH_WIDGET); n++;
+	XtSetArg(args[n], XmNtopWidget, wtext); n++;
+	XtSetArg(args[n], XmNorientation, XmHORIZONTAL); n++;
+	XtSetArg(args[n], XmNseparatorType, XmSHADOW_ETCHED_IN); n++;
+	wsep = XmCreateSeparator(wform, "separator", args, n);
+
+	n = 0;
+	xms = XmStringCreateLocalized(nlstr(DLG_MSGSET, SID_CLOSE, "Close"));
+	XtSetArg(args[n], XmNlabelString, xms); n++;
+	XtSetArg(args[n], XmNshowAsDefault, True); n++;
+	XtSetArg(args[n], XmNsensitive, True); n++;
+	XtSetArg(args[n], XmNrightAttachment, XmATTACH_FORM); n++;
+	XtSetArg(args[n], XmNtopAttachment, XmATTACH_WIDGET); n++;
+	XtSetArg(args[n], XmNtopWidget, wsep); n++;
+	XtSetArg(args[n], XmNbottomAttachment, XmATTACH_FORM); n++;
+	wclose = XmCreatePushButton(wform, "closeButton", args, n);
+	XmStringFree(xms);
+
+	n = 0;
+	XtSetArg(args[n], XmNdefaultButton, wclose); n++;
+	XtSetArg(args[n], XmNcancelButton, wclose); n++;
+	XtSetValues(wform, args, n);
+
+	XtManageChild(wicon);
+	XtManageChild(wtext);
+	XtManageChild(wsep);
+	XtManageChild(wclose);	
+	XtManageChild(wform);
+
+	XtRealizeWidget(wdlg);
+	
+	free(about_text);
 }

@@ -154,6 +154,56 @@ Pixmap load_widget_bitmap(Widget w, const unsigned char *bits,
 }
 
 /*
+ * Create a pixmap with the masked area colored according to w's background
+ */
+Pixmap load_masked_bitmap(Widget w, const unsigned char *bits,
+	const unsigned char *mask_bits, unsigned int width, unsigned int height)
+{
+	Pixel bg;
+	GC gc;
+	XGCValues gcv;
+	Window wnd;
+	int screen;
+	int depth;
+	Pixmap image;
+	Pixmap mask = None;
+	Pixmap result;
+	Display *display = XtDisplay(w);
+	
+	screen = XScreenNumberOfScreen(XtScreen(app_inst.session_shell));
+	wnd = XtWindow(app_inst.session_shell);
+	depth = DefaultDepth(display, screen);
+
+	XtVaGetValues(w, XmNbackground, &bg, NULL);
+
+	image = XCreatePixmapFromBitmapData(display, wnd,
+		(char*)bits, width,	height, BlackPixel(display, screen),
+		WhitePixel(display, screen), depth);
+
+	mask = XCreatePixmapFromBitmapData(display, wnd,
+		(char*)mask_bits, width, height, 1, 0, 1);
+	
+	gc = XCreateGC(display, wnd, 0, &gcv);
+
+	result = XCreatePixmap(display, wnd, width, height, depth);
+	if(!result) {
+		XFreeGC(display, gc);
+		XFreePixmap(display, image);
+		return None;
+	}
+
+	XSetForeground(display, gc, bg);
+	XFillRectangle(display, result, gc, 0, 0, width, height);		
+	XSetClipMask(display, gc, mask);
+	XCopyArea(display, image, result, gc, 0, 0, width, height, 0, 0);
+
+	XFreeGC(display, gc);
+	XFreePixmap(display, mask);
+
+	return result;
+}
+
+/*
  * Returns size and x/y offsets of the screen the widget is located on.
  */
 void get_screen_size(Widget w, int *pwidth, int *pheight, int *px, int *py)

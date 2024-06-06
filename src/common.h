@@ -38,6 +38,7 @@ struct app_resources {
 	Boolean browse;	/* launch in browser mode */
 	Boolean show_dirs; /* show subdirectories in the browser */
 	Boolean show_dot_files; /* show files/dirs starting with . */
+	Boolean advance_on_del; /* advance file on delete in the viewer */
 	char *edit_cmd; /* the command to invoke for File/Edit */
 };
 
@@ -77,7 +78,7 @@ sigfunc_t rsignal(int sig, sigfunc_t);
 void fatal_error(int errno_value, const char *title, const char *message);
 
 /* Print a warning message to stderr */
-void warning_msg(const char *msg);
+void warning_msg(const char *fmt, ...);
 
 /* Set the exit flag and the return value */
 void set_exit_flag(int ret);
