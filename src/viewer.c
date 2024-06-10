@@ -2371,7 +2371,6 @@ static void rename_cb(Widget w, XtPointer client, XtPointer call)
 static void delete_cb(Widget w, XtPointer client, XtPointer call)
 {
 	struct viewer_data *vd=(struct viewer_data*)client;
-	int ret;
 	char *cur_file;
 	
 	if(init_app_res.confirm_rm){
@@ -2392,12 +2391,11 @@ static void delete_cb(Widget w, XtPointer client, XtPointer call)
 	if(!access(cur_file, W_OK) && init_app_res.advance_on_del)
 		load_next_file(vd, True);
 
-	ret = unlink(cur_file);
-	if(ret){
-		errno_message_box(vd->wshell,ret,
+	if(unlink(cur_file)) {
+		errno_message_box(vd->wshell, errno,
 			nlstr(APP_MSGSET,SID_EFAILED,
 			"The action couldn't be completed."),False);
-	}else{
+	} else {
 		if(!init_app_res.advance_on_del) reset_viewer(vd);
 	}
 	free(cur_file);
