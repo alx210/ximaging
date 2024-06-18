@@ -50,7 +50,7 @@
 #include "filemgmt.h"
 #include "viewer.h"
 #include "browser.h"
-#include "navbar.h"
+#include "pathw.h"
 #include "bswap.h"
 #include "debug.h"
 #include "bitmaps/wmiconb.bm"
@@ -120,9 +120,12 @@ static void show_subdirs_cb(Widget,XtPointer,XtPointer);
 static void show_dotfiles_cb(Widget,XtPointer,XtPointer);
 static void pin_window_cb(Widget,XtPointer,XtPointer);
 static void new_window_cb(Widget,XtPointer,XtPointer);
-static void navbar_change_cb(const char*, void*);
+static void path_change_cb(Widget, void*, void*);
+static void dir_up_cb(Widget,XtPointer,XtPointer);
 static void about_cb(Widget,XtPointer,XtPointer);
 static void dirlist_cb(Widget,XtPointer,XtPointer);
+static void dirlist_keypress_cb(Widget,XtPointer,XEvent*,Boolean*);
+static void dir_up(struct browser_data*);
 static Boolean convert_selection_proc(Widget w,
 	Atom*, Atom*, Atom*, XtPointer*, unsigned long*, int*);
 static void lose_selection_proc(Widget, Atom*);
@@ -141,12 +144,15 @@ static struct browser_data* create_browser(const struct app_resources *res)
 {
 	static XtTranslations view_tt=NULL;
 	Colormap colormap;
-	Widget wmsgbar,wframe,wview_scrl;
+	Widget wmsgbar, wpathbar, wframe, wview_scrl;
 	struct browser_data *bd;
 	Dimension line_width=0;
 	XGCValues gc_values;
 	static Pixmap wmicon=0;
 	static Pixmap wmicon_mask=0;
+	XtCallbackRec path_change_cbr[] = {
+		{ path_change_cb, NULL }, { NULL, NULL }
+	};
 
 	bd=calloc(1,sizeof(struct browser_data));
 	if(!bd) return NULL;
@@ -204,6 +210,8 @@ static struct browser_data* create_browser(const struct app_resources *res)
 		XmNautomaticSelection, XmNO_AUTO_SELECT, NULL);
 	XtAddCallback(bd->wdirlist,
 		XmNdefaultActionCallback, dirlist_cb, (XtPointer)bd);
+	XtAddEventHandler(bd->wdirlist, KeyPressMask, False,
+		dirlist_keypress_cb, (XtPointer)bd);
 	
 	if(res->show_dirs) XtManageChild(bd->wdlscroll);
 	
@@ -223,7 +231,7 @@ static struct browser_data* create_browser(const struct app_resources *res)
 	XtAddEventHandler(bd->wview,StructureNotifyMask,
 		False,view_map_cb,(XtPointer)bd);
 	if(!view_tt){
-		view_tt=XtParseTranslationTable(
+		view_tt = XtParseTranslationTable(
 			"<Btn1Down>:DrawingAreaInput() ManagerGadgetArm()\n"
 			"<Btn1Up>:DrawingAreaInput() ManagerGadgetActivate()\n"
 			"<Key>osfActivate:DrawingAreaInput()\n"
@@ -232,6 +240,7 @@ static struct browser_data* create_browser(const struct app_resources *res)
 			"<Key>osfLeft:DrawingAreaInput()\n"
 			"<Key>osfRight:DrawingAreaInput()\n"
 			"<Key>osfCancel:DrawingAreaInput()\n"
+			"<Key>osfBackSpace:DrawingAreaInput()\n"
 			"s ~m ~a <Key>Tab:DrawingAreaInput()\n"
 			"~m ~a <Key>Tab:DrawingAreaInput()\n");
 	}
@@ -248,12 +257,18 @@ static struct browser_data* create_browser(const struct app_resources *res)
 
 	XtVaGetValues(bd->wmsg,XmNrenderTable,&bd->render_table,NULL);
 	
-	bd->wnavbar=create_navbar(bd->wmain,navbar_change_cb,bd);
+	path_change_cbr[0].closure = (XtPointer)bd;
+	wpathbar = XmVaCreateManagedFrame(bd->wmain, "pathFieldFrame",
+		XmNshadowType, XmSHADOW_OUT, XmNshadowThickness, 1,NULL);
+	bd->wnavbar = VaCreatePathField(wpathbar, "pathField",
+		XmNvalueChangedCallback, path_change_cbr, NULL);
 	
 	XtVaSetValues(bd->wmain,XmNmenuBar,bd->wmenubar,
-		XmNworkWindow,wframe,XmNmessageWindow,wmsgbar,
-		XmNcommandWindow,bd->wnavbar,
-		XmNcommandWindowLocation,XmCOMMAND_ABOVE_WORKSPACE,NULL);
+		XmNworkWindow, wframe,
+		XmNmessageWindow, wmsgbar,
+		XmNcommandWindow, wpathbar,
+		XmNcommandWindowLocation,
+		XmCOMMAND_ABOVE_WORKSPACE,NULL);
 
 	create_tile_popup(bd);
 	
@@ -357,7 +372,7 @@ static void load_path(struct browser_data *bd, const char *path)
 	if(*ptr=='/' && bd->path!=ptr) *ptr='\0';
 	update_status_msg(bd);
 	update_shell_title(bd);
-	set_navbar_path(bd->wnavbar,path);
+	path_field_set_location(bd->wnavbar, path, False);
 	launch_reader_thread(bd);
 	XmProcessTraversal(bd->wview,XmTRAVERSE_CURRENT);
 }
@@ -686,8 +701,9 @@ static int read_directory(struct browser_data *bd)
 		if(S_ISDIR(st.st_mode)) {
 			long i;
 			
-			if(!bd->show_dot_files && dir_ent->d_name[0] == '.' &&
-				strcmp(dir_ent->d_name, "..")) continue;
+			if(!strcmp(dir_ent->d_name, "..")) continue;
+
+			if(!bd->show_dot_files && dir_ent->d_name[0] == '.') continue;
 			
 			for(i = 0; i < bd->nsubdirs; i++) {
 				if(!strcmp(bd->subdirs[i], dir_ent->d_name)) break;
@@ -1139,7 +1155,7 @@ static void thread_callback_proc(XtPointer data, int *pfd, XtInputId *iid)
 		update_status_msg(bd);
 		break;
 	}
-	
+
 	if(bd->ifocus<0) set_focus(bd,-1);
 }
 
@@ -1334,7 +1350,7 @@ static void reset_browser(struct browser_data *bd)
 	update_controls(bd);
 	update_status_msg(bd);
 	update_scroll_bar(bd);
-	set_navbar_path(bd->wnavbar,NULL);
+	path_field_set_location(bd->wnavbar, "", False);
 
 	XmUpdateDisplay(bd->wshell);
 }
@@ -1409,8 +1425,10 @@ static void input_cb(Widget w, XtPointer client_data, XtPointer call_data)
 		if(cbs->event->type==KeyPress){
 			XmTranslateKey(app_inst.display,cbs->event->xkey.keycode,
 				cbs->event->xkey.state,&mods,&sym);
-			if(sym==XK_Tab)
-				XmProcessTraversal(bd->wnavbar,XmTRAVERSE_CURRENT);
+			if(sym == XK_Tab)
+				XmProcessTraversal(bd->wnavbar, XmTRAVERSE_CURRENT);
+			else if(bd->path && sym == osfXK_BackSpace)
+				dir_up(bd);
 		}
 		return;
 	}
@@ -1475,6 +1493,10 @@ static void input_cb(Widget w, XtPointer client_data, XtPointer call_data)
 				/* actions */
 				case XK_space:
 				toggle_selection(bd,bd->ifocus);
+				break;
+
+				case osfXK_BackSpace:
+				dir_up(bd);
 				break;
 
 				/* traversal */
@@ -2061,6 +2083,8 @@ static void update_controls(struct browser_data *bd)
 {
 	Boolean ready=((bd->state&BSF_READY)?True:False);
 	
+	XtSetSensitive(get_menu_item(bd, "*goUp"), bd->path ? True : False);
+	XtSetSensitive(get_menu_item(bd, "*selectAll"), bd->nfiles);
 	XtSetSensitive(get_menu_item(bd,"*selectNone"),bd->nsel_files);
 	XtSetSensitive(get_menu_item(bd,"*invertSelection"),bd->nsel_files);
 	XtSetSensitive(get_menu_item(bd,"*copyTo"),bd->nsel_files);
@@ -2888,6 +2912,23 @@ static void dirlist_cb(Widget w, XtPointer client, XtPointer call)
 	XmProcessTraversal(bd->wdirlist, XmTRAVERSE_CURRENT);
 }
 
+static void dirlist_keypress_cb(Widget w,
+	XtPointer client, XEvent *evt, Boolean *cont)
+{
+	KeySym sym;
+	Modifiers mods;
+	
+	XmTranslateKey(app_inst.display,
+		evt->xkey.keycode, evt->xkey.state, &mods, &sym);
+	
+	if(sym == osfXK_BackSpace) {
+		dir_up(client);
+		*cont = False;
+	} else {
+		*cont = True;
+	}
+}
+
 static void show_dotfiles_cb(Widget w, XtPointer client, XtPointer call)
 {
 	struct browser_data *bd=(struct browser_data*)client;
@@ -2958,6 +2999,7 @@ static void create_browser_menubar(struct browser_data *bd)
 	
 	static struct menu_item view_menu[]={
 		{IT_PUSH,"viewMenu","_View",SID_BMVIEW},
+		{IT_PUSH, "goUp", "_Go Up", SID_GOUP, dir_up_cb },
 		{IT_PUSH,"refresh","_Refresh",SID_BMREFRESH,refresh_cb},
 		{IT_SEP},
 		{IT_RADIO,"smallTiles","_Small Tiles",SID_BMSMALL,small_tiles_cb},
@@ -3032,16 +3074,47 @@ static Widget get_menu_item(struct browser_data *bd, const char *name)
 }
 
 /*
- * Callback invoked by the path box widget on path change
+ * PathField value change callback
  */
-static void navbar_change_cb(const char *path, void *cb_data)
+static void path_change_cb(Widget w, void *cb_data, void *pf_data)
 {
-	struct browser_data *bd=(struct browser_data*)cb_data;
-	char *tmp=strdup(path); /* load_path may call reset_browser, which
-							 * in turn resets the path box, so we want
-							 * to keep a local copy of the path string */
-	load_path(bd,tmp);
-	free(tmp);
+	struct path_field_cb_data *pf = (struct path_field_cb_data*)pf_data;
+	struct browser_data *bd = (struct browser_data*)cb_data;
+
+	if(!access(pf->value, R_OK|X_OK)) {
+		char *tmp = strdup(pf->value); 
+		load_path(bd, tmp);
+		free(tmp);
+	} else {
+		errno_message_box(bd->wshell, errno,nlstr(APP_MSGSET, SID_EFAILED,
+			"The action couldn't be completed."), False);
+		pf->accept = False;
+	} 
+}
+
+static void dir_up(struct browser_data *pbd)
+{
+	char *tmp;
+	char *p;
+	
+	if(!pbd->path || !strcmp(pbd->path, "/")) return;
+	
+	tmp = strdup(pbd->path);
+	p = strrchr(tmp, '/');
+	if(p) {
+		if(p == tmp)
+			p[1] = '\0';
+		else
+			*p = '\0';
+			
+		load_path(pbd, tmp);
+	}
+	free(tmp);	
+}
+
+static void dir_up_cb(Widget w, XtPointer client, XtPointer call)
+{
+	dir_up((struct browser_data*)client);
 }
 
 /*

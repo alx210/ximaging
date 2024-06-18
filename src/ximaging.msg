@@ -72,6 +72,9 @@ $ -----------------------------------------------------------------------------
 24 _Small Tiles
 25 _Medium Tiles
 26 _Large Tiles
+27 _Directories
+28 Dot _Files
+29 _Go Up
 
 30 _Window
 31 _Pin This

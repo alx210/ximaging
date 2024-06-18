@@ -56,6 +56,7 @@ char *fallback_res[]={
 	"*windowMenu.openNew.acceleratorText: Ctrl+N",
 	"*windowMenu.pinThis.accelerator: <Key>F2",
 	"*windowMenu.pinThis.acceleratorText: F2",
+	"XImagingBrowser*viewMenu.goUp.acceleratorText: Backspace",
 	"XImagingBrowser*viewMenu.smallTiles.accelerator: <Key>KP_Subtract",
 	"XImagingBrowser*viewMenu.smallTiles.acceleratorText: Kp: Subtract",
 	"XImagingBrowser*viewMenu.largeTiles.accelerator: <Key>KP_Add",

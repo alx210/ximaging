@@ -84,6 +84,7 @@
 #define SID_BMLARGE			26	/* Large Tiles */
 #define SID_BMSUBDIRS		27	/* Directories */
 #define SID_BMDOTFILES		28	/* Dot Files */
+#define SID_GOUP			29	/* Go Up */
 
 #define SID_BMWINDOW		30	/* Window */
 #define SID_BMPIN			31	/* Pin This */

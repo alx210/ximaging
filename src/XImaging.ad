@@ -91,7 +91,8 @@ XImagingBrowser*viewMenu.directories.accelerator: Ctrl<Key>d
 XImagingBrowser*viewMenu.directories.acceleratorText: Ctrl+D
 XImagingBrowser*viewMenu.dotFiles.accelerator: Ctrl<Key>h
 XImagingBrowser*viewMenu.dotFiles.acceleratorText: Ctrl+H
-
+! No actual binding, since it's handled by view and directory list widgets
+XImagingBrowser*viewMenu.goUp.acceleratorText: Backspace
 
 *zoomMenu.zoomIn.accelerator: <Key>KP_Add
 *zoomMenu.zoomIn.acceleratorText: Kp: Add

@@ -65,8 +65,10 @@ in a Viewer window.
 Navigation keys may be used to move the focus rectangle among the items.
 Pressing the \fISpace\fP key toggles the selection state of
 the focused item. Holding the\fIShift\fP key while moving the selection
-rectangle extends the selection. The \fITab\fP key may be used to switch
-keyboard focus between the view and the navigation bar.
+rectangle extends the selection.
+.IP
+Pressing the \fBBackspace\fP key, while the view area or the directory list is
+focused, changes current location to the parent directory.
 .TP
 \fBViewer\fP
 The Viewer window is used to display single images, and provides functionality
@@ -83,6 +85,10 @@ to stay within its current state by choosing \fBPin This\fP from its
 \fBWindow\fP menu. The initial value for this setting may also be specified as
 X resource (see \fBRESOURCES\fP) or using the \fB\-pin\fP command line switch.
 .SH RESOURCES
+.SS General Resources
+The the application class name is XImaging, class names of its viewer and
+browser shell windows are \fBXImagingViewer\fP and \fBXImagingBrowser\fP,
+respectively.
 .TP
 \fBadvanceOnDelete\fP \fIBoolean\fP
 If True, the viewer will load next file in the directory, when currently
@@ -176,6 +182,23 @@ Shrink the image to fit the viewer window. Default is True.
 \fBzoomIncrement\fP \fI<1.1 - 4.0>\fP
 Specifies the increment value for the zoom-in/out function. Must be in the
 1.1 - 4.0 range. Default is 1.6.
+.SS Path Field Widget Resources
+The path field widget consists of a text field that displays the current
+working directory with an array of push buttons, each representing an element
+of the path, above\.
+.PP
+The class name of the widget is \fBPathField\fP, the widget name
+\fBpathField\fP. Aside from resources described below, the widget inherits
+resources from XmManager(3)\.
+.TP
+\fBbuttonHeight \fIInteger\fP\fP
+A value in percent that sets the vertical size of path element buttons
+relative to the height of the font used to draw text in the widget\.
+Default is 100\.
+.TP
+\fBcompactPath\fP \fIBoolean\fP
+If True, the $HOME part of the path will be represented by a tilde\.
+Default is true\.
 .SH SUPPORTED FILE FORMATS
 .PP
 .nf
