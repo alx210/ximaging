@@ -59,6 +59,8 @@ char* rename_file_dlg(Widget parent, char *file_title);
 
 char* pass_to_input_dlg(Widget parent);
 
+char* select_pattern_input_dlg(Widget parent);
+
 /*
  * Display the 'About' dialog box
  */

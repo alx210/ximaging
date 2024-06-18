@@ -15,6 +15,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <fnmatch.h>
 #include <errno.h>
 #include <Xm/Xm.h>
 #include <Xm/MainW.h>
@@ -120,6 +121,7 @@ static void show_subdirs_cb(Widget,XtPointer,XtPointer);
 static void show_dotfiles_cb(Widget,XtPointer,XtPointer);
 static void pin_window_cb(Widget,XtPointer,XtPointer);
 static void new_window_cb(Widget,XtPointer,XtPointer);
+static void select_pattern_cb(Widget,XtPointer,XtPointer);
 static void path_change_cb(Widget, void*, void*);
 static void dir_up_cb(Widget,XtPointer,XtPointer);
 static void about_cb(Widget,XtPointer,XtPointer);
@@ -2085,6 +2087,7 @@ static void update_controls(struct browser_data *bd)
 	
 	XtSetSensitive(get_menu_item(bd, "*goUp"), bd->path ? True : False);
 	XtSetSensitive(get_menu_item(bd, "*selectAll"), bd->nfiles);
+	XtSetSensitive(get_menu_item(bd, "*selectPattern"), bd->nfiles);
 	XtSetSensitive(get_menu_item(bd,"*selectNone"),bd->nsel_files);
 	XtSetSensitive(get_menu_item(bd,"*invertSelection"),bd->nsel_files);
 	XtSetSensitive(get_menu_item(bd,"*copyTo"),bd->nsel_files);
@@ -2989,6 +2992,8 @@ static void create_browser_menubar(struct browser_data *bd)
 		{IT_PUSH,"selectNone","Select _None",SID_BMSELECTNONE,select_none_cb},
 		{IT_PUSH,"invertSelection","_Invert Selection",SID_BMINVERTSEL,
 			invert_selection_cb},
+		{IT_PUSH, "selectPattern", "Select _Pattern...", SID_BMSELPAT,
+			select_pattern_cb },
 		{IT_SEP},
 		{IT_PUSH,"copyTo","_Copy to ...",SID_BMCOPYTO,copy_to_cb},
 		{IT_PUSH,"moveTo","_Move to ...",SID_BMMOVETO,move_to_cb},
@@ -3115,6 +3120,28 @@ static void dir_up(struct browser_data *pbd)
 static void dir_up_cb(Widget w, XtPointer client, XtPointer call)
 {
 	dir_up((struct browser_data*)client);
+}
+
+static void select_pattern_cb(Widget w, XtPointer client, XtPointer call)
+{
+	struct browser_data *bd = (struct browser_data*)client;
+	char *pattern;
+	long int i;
+	
+	pattern = select_pattern_input_dlg(bd->wshell);
+	if(!pattern) return;
+	
+	for(i = 0; i < bd->nfiles; i++) {
+		if(!fnmatch(pattern, bd->files[i].name, 0) &&
+			!bd->files[i].selected) {
+
+			bd->files[i].selected = True;
+			bd->nsel_files++;
+			redraw_tile(bd, i);
+		}
+	}
+	free(pattern);
+	update_controls(bd);
 }
 
 /*

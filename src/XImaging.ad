@@ -132,6 +132,8 @@ XImagingBrowser*viewMenu.goUp.acceleratorText: Backspace
 *editMenu.selectNone.acceleratorText: Ctrl+N
 *editMenu.invertSelection.accelerator: Ctrl<Key>i
 *editMenu.invertSelection.acceleratorText: Ctrl+I
+*editMenu.selectPattern.accelerator: Ctrl<Key>g
+*editMenu.selectPattern.acceleratorText: Ctrl+G
 
 *helpMenu.topics.accelerator: <Key>F1
 *helpMenu.topics.acceleratorText: F1

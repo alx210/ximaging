@@ -99,6 +99,7 @@
 #define SID_BMMOVETO		45	/* Move To... */
 #define SID_BMRENAME		46	/* Rename... */
 #define SID_BMDELETE		47	/* Delete */
+#define SID_BMSELPAT		48	/* Select Pattern */
 
 #define SID_BMHELP			100	/* Help (cascade) */
 #define SID_BMTOPICS		101	/* Manual */
@@ -182,6 +183,8 @@
 #define SID_PASSTO		25	/* Pass To */
 #define SID_ABOUT		26	/* About (dialog title) */
 #define SID_CLOSE		27	/* Close */
+#define SID_SELPATERN	28	/* Select pattern */
+#define SID_INPATTERN	29	/* Specify a glob pattern */
 
 /* Use catgets for message strings */
 #ifdef ENABLE_NLS
