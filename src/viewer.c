@@ -2000,7 +2000,26 @@ static void rotate_left_cb(Widget w, XtPointer client, XtPointer call)
 static void rotate_reset_cb(Widget w, XtPointer client, XtPointer call)
 {
 	struct viewer_data *vd=(struct viewer_data*)client;
-	vd->tform=0;
+	
+	if(vd->tform & IMGT_ROTATE) {
+		Dimension vw, vh;
+		int iw, ih;
+		float vpc = 0;
+		float hpc = 0;
+		
+		XtVaGetValues(vd->wview, XmNwidth, &vw, XmNheight, &vh, NULL);
+		compute_image_dimensions(vd, vd->zoom, vd->tform, &iw, &ih);
+		
+		if(vw < iw) hpc = (float)fabs(vd->xoff) / (iw - vw);
+		if(vh < ih) vpc = (float)fabs(vd->yoff) / (ih - vh);
+	
+		compute_image_dimensions(vd, vd->zoom, 0, &iw, &ih);
+		
+		if(vw < iw) vd->xoff = -((iw - vw) * hpc); else vd->xoff = 0;
+		if(vh < ih) vd->yoff = -((ih - vh) * vpc); else vd->yoff = 0;
+	}
+	
+	vd->tform = 0;
 	update_back_buffer(vd);
 	redraw_view(vd,True);
 }
