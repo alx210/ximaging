@@ -53,6 +53,7 @@ enum mb_result message_box(Widget parent, enum mb_type type,
 	Boolean blocking=False;
 	XWindowAttributes xwatt;
 	Widget parent_shell;
+	char *dlg_type_name = NULL;
 	
 	if(parent==None) parent=app_inst.session_shell;
 	dbg_assert(parent);
@@ -67,7 +68,22 @@ enum mb_result message_box(Widget parent, enum mb_type type,
 	}
 	msg_text=XmStringCreateLocalized((char*)msg_str);	
 
-	wbox=XmCreateMessageDialog(parent,"messageDialog",NULL,0);
+	switch(type) {
+		case MB_QUESTION:
+		case MB_CQUESTION:
+		dlg_type_name = "questionDialog";
+		break;
+		
+		case MB_CONFIRM:
+		dlg_type_name = "confirmationDialog";
+		break;
+		
+		default:
+		dlg_type_name = "messageDialog";
+		break;
+	}
+
+	wbox = XmCreateMessageDialog(parent, dlg_type_name, NULL, 0);
 	
 	switch(type){
 		case MB_CONFIRM:

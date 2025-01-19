@@ -36,6 +36,8 @@ XImagingViewer.height:400
 
 *XmFileSelectionBox.pathMode: PATH_MODE_RELATIVE
 *XmFileSelectionBox.fileFilterStyle: FILTER_HIDDEN_FILES
+! Make "Cancel" the default button in confirmation dialogs
+*confirmationDialog.defaultButtonType: DIALOG_CANCEL_BUTTON
 
 !! By default, the directories pane will resize itself according to contents.
 !! Following resources may be set to specify constant width in pixels:
