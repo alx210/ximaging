@@ -696,7 +696,10 @@ static void load_next_file(struct viewer_data *vd, Bool forward)
 		strlen(vd->dir_files[vd->dir_cur_file])+2);
 	sprintf(new_file_name,"%s/%s",vd->dir_name,
 		vd->dir_files[vd->dir_cur_file]);
-	load_image(vd, new_file_name, NULL);
+	
+	if(strcmp(vd->file_name, new_file_name))
+		load_image(vd, new_file_name, NULL);
+
 	free(new_file_name);
 }
 
