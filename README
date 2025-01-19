@@ -19,3 +19,11 @@ appropriate Makefile exists, try Makefile.generic.
 
 Run 'make' in the top-level directory of the source distribution and follow
 instructions. When build process finishes, run 'make install' as root.
+
+3. NOTES
+-----------------------------
+OpenMP (multiprocessor optimizations) are enabled by default for Linux and
+FreeBSD targets. This may cause the build to fail with OMP related errors
+on architectures that don't support it. If this is the case, comment out
+or delete the "ENABLE_OMP = 1" line in the platform specific makefile:
+mf/Makefile.<platform name>
