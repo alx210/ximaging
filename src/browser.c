@@ -703,9 +703,9 @@ static int read_directory(struct browser_data *bd)
 		if(S_ISDIR(st.st_mode)) {
 			long i;
 			
-			if(!strcmp(dir_ent->d_name, "..")) continue;
-
-			if(!bd->show_dot_files && dir_ent->d_name[0] == '.') continue;
+			if(!bd->show_dot_files &&
+				(dir_ent->d_name[0] == '.') &&
+				strcmp(dir_ent->d_name, "..")) continue;
 			
 			for(i = 0; i < bd->nsubdirs; i++) {
 				if(!strcmp(bd->subdirs[i], dir_ent->d_name)) break;
@@ -2897,21 +2897,23 @@ static void dirlist_cb(Widget w, XtPointer client, XtPointer call)
 	unsigned int pos = cbs->item_position - 1;
 	char *new_path;
 	
-	if( (cbs->reason != XmCR_DEFAULT_ACTION) ||
-		(!strcmp(bd->subdirs[pos], "..") && !strcmp(bd->path, "/")) ) return;
-
-	new_path = malloc(strlen(bd->path) +
-		strlen(bd->subdirs[pos]) + 2);
-	if(!new_path) {
-		message_box(app_inst.session_shell, MB_ERROR, BASE_NAME,
-				nlstr(APP_MSGSET,SID_ENORES,
-				"Not enough resources available for this task."));
-		return;
-	}
-	sprintf(new_path, "%s/%s", bd->path, bd->subdirs[pos]);
-	load_path(bd, new_path);
-	free(new_path);
+	if(cbs->reason != XmCR_DEFAULT_ACTION) return;
 	
+	if(!strcmp(bd->subdirs[pos], "..")) {
+		dir_up(bd);
+	} else {
+		new_path = malloc(strlen(bd->path) +
+			strlen(bd->subdirs[pos]) + 2);
+		if(!new_path) {
+			message_box(app_inst.session_shell, MB_ERROR, BASE_NAME,
+					nlstr(APP_MSGSET,SID_ENORES,
+					"Not enough resources available for this task."));
+			return;
+		}
+		sprintf(new_path, "%s/%s", bd->path, bd->subdirs[pos]);
+		load_path(bd, new_path);
+		free(new_path);
+	}
 	XmProcessTraversal(bd->wdirlist, XmTRAVERSE_CURRENT);
 }
 
