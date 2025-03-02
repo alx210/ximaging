@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2024 alx@fastestcode.org
+ * Copyright (C) 2012-2025 alx@fastestcode.org
  * This software is distributed under the terms of the MIT license.
  * See the included LICENSE file for further information.
  */
@@ -20,7 +20,7 @@
 #define BASE_TITLE "XImaging"	/* base title for GUI elements */
 
 /* Copyright and about strings */
-#define COPYRIGHT_CS "Copyright (C) 2012-2024 alx@fastestcode.org" \
+#define COPYRIGHT_CS "Copyright (C) 2012-2025 alx@fastestcode.org" \
 	"\nThis program is distributed under the terms of the MIT license." \
 	"\nSee the included LICENSE file for detailed information."
 
