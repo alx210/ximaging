@@ -243,17 +243,12 @@ suffixes (without the dot character) this filter should be invoked for.
 .PP
 \fBtype_description\fP is optional and specifies the descriptive text to be
 displayed in viewer's status area, which defaults to PNM data type if omitted.
-.PP
-\fBFilter examples using \fIconvert\fP (ImageMagick) and \fIxcf2pmn\fP
-(xcftools):\fP
+.SS Filter Example
+Utilizing ImageMagick to add support for svg, gif and psd files:\fP
 .PP
 .nf
 XImaging.filter.imagemagick: convert %n pam:-
 XImaging.filter.imagemagick.suffixes: svg gif psd
-
-XImaging.filter.gimp: xcf2pnm -c -b #ffffff %n
-XImaging.filter.gimp.suffixes: xcf
-XImaging.filter.gimp.description: GIMP Image
 .fi
 .SH AUTHORS
 .PP
