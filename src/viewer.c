@@ -935,6 +935,8 @@ static void* dir_reader_thread(void *arg)
 	int ret_code=0;
 	char **files=NULL;
 	unsigned long nfiles=0;
+	char *tmp_name = NULL;
+	size_t tmp_name_len = 0;
 
 	dbg_assert(vd->dir_name);
 	
@@ -957,6 +959,8 @@ static void* dir_reader_thread(void *arg)
 	}
 	
 	while((dir_ent=readdir(dir))){
+		size_t tmp_len;
+		
 		if(vd->state & DSF_CANCEL) {
 			closedir(dir);
 			goto exit_thread;
@@ -977,12 +981,27 @@ static void* dir_reader_thread(void *arg)
 			files=new_buf;
 		}
 		
-		if(!img_ident(dir_ent->d_name, NULL, NULL)){
+		tmp_len = strlen(vd->dir_name) + strlen(dir_ent->d_name) + 2;
+		if(tmp_len > tmp_name_len) {
+			char *new_buf = realloc(tmp_name, tmp_len);
+			if(!new_buf) {
+				ret_code = errno;
+				closedir(dir);
+				free(tmp_name);
+				goto exit_thread;
+			}
+			tmp_name = new_buf;
+			tmp_name_len = tmp_len;
+		}
+		sprintf(tmp_name, "%s/%s", vd->dir_name, dir_ent->d_name);
+
+		if(!img_ident(tmp_name, NULL, NULL)){
 			files[nfiles] = strdup(dir_ent->d_name);
 		} else continue;
 		
 		nfiles++;
 	}
+	free(tmp_name);
 	closedir(dir);
 	
 	if(nfiles){

@@ -10,6 +10,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include <ctype.h>
 #include <errno.h>
 #include "common.h"
@@ -19,6 +20,8 @@
 #include "ldrproto.h"
 #include "extres.h"
 #include "debug.h"
+
+static char* guess_suffix(const char *file_name);
 
 /* Static image file formats */
 struct img_format_info {
@@ -180,10 +183,13 @@ int img_ident(const char *fname, const char *suffix,
 		char *token;
 	
 		token = strrchr(fname,'.');
-		if(!token || token[1] == '\0') return IMG_EUNSUP;
-
-		token++;
-		rec.suffix = token;
+		if(token && token[1] != '\0') {
+			token++;
+			rec.suffix = token;
+		} else {
+			rec.suffix = guess_suffix(fname);
+			if(!rec.suffix) return IMG_EUNSUP;
+		}
 	}
 	res = ht_lookup(type_table, &rec, &rec);
 	if(!res && info_ret) *info_ret = rec;
@@ -244,4 +250,71 @@ static int img_type_rec_compare(const struct img_type_rec *a,
 static hashkey_t type_hash_fnc(struct img_type_rec *rec)
 {
 	return hash_string_nocase(rec->suffix);
+}
+
+/*
+ * Tries to identify a file by reading its header.
+ * Returns a corresponding suffix if match is found.
+ */
+static char* guess_suffix(const char *file_name)
+{
+	int i;
+	FILE * file;
+	size_t rc;
+	char read_buf[12];
+	static Boolean init = True;
+	const char *fn_tail;
+
+	struct magic_rec {
+		char value[12];
+		char *suffix;
+		size_t len;
+	};
+	
+	static struct magic_rec magic[] = {
+		{ "", "xbm" },
+		{ "\xff\xd8\xff\xe0", "jpg"},
+		{ ".PNG", "png" },
+		{ "\x59\xa6\x6a\x95", "ras" },
+		{ "\x4d\x4d\x00\x2a", "tif" },
+		{ "\x49\x49\x2a\x00", "tif" },
+		{ "\x0a\x05", "pcx" },
+		{ "\x01\xda", "rgb" },
+		{ "/* XPM */", "xpm" },
+		{ "GIF8", "gif" },
+		{ "BM", "bmp" }
+	};
+	
+	size_t nmagic = (sizeof(magic) / sizeof(struct magic_rec));
+
+	if(init) {
+		init = False;
+		for( i = 0; i < nmagic; i++)
+			magic[i].len = strlen(magic[i].value);
+	}
+
+	fn_tail = strrchr(file_name, '/');
+	if(fn_tail && fn_tail[1] != '\0')
+		fn_tail++;
+	else
+		fn_tail = file_name;
+	
+	snprintf(magic[0].value, 12, "#define %s", fn_tail);
+	magic[0].len = strlen(magic[0].value);
+
+	file = fopen(file_name, "r");
+	if(!file) return NULL;
+
+	rc = fread(read_buf, 1, 12, file);
+	fclose(file);
+	if(!rc) return NULL;
+
+	read_buf[rc] = '\0';
+	
+	for(i = 0; i < nmagic; i++) {
+		if(!strncmp(magic[i].value, read_buf, magic[i].len))
+			return magic[i].suffix;
+	}
+	
+	return NULL;
 }
