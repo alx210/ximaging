@@ -13,7 +13,7 @@
 
 /* Release info */
 #define APP_VERSION 1
-#define APP_REVISION 8
+#define APP_REVISION 9
 
 #define BASE_NAME "ximaging"	/* X application name */
 #define APP_CLASS "XImaging"	/* X application class */
