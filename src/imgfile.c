@@ -34,7 +34,7 @@ static struct img_format_info file_formats[]={
 	{ "Sun Raster Image", "ras sun", LDRPROC(ras) },
 	{ "X Bitmap", "xbm bm", LDRPROC(xbm) },
 	{ "X Pixmap", "xpm pm", LDRPROC(xpm) },
-	{ "Netpbm Image", "pbm pgm ppm pam", LDRPROC(pam) },
+	{ "Netpbm Image", "pbm pgm ppm pam pnm", LDRPROC(pam) },
 	{ "MS-Windows Bitmap", "bmp", LDRPROC(bmp) },
 	#ifdef ENABLE_JPEG
 	{ "JPEG Image", "jpg jpeg jpe jif jfif jfi", LDRPROC(jpeg) },
