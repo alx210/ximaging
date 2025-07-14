@@ -142,8 +142,6 @@ static struct viewer_data* create_viewer(const struct app_resources *res)
 	int width=0, height=0;
 	XGCValues gc_values;
 	struct viewer_data *vd=viewers;
-	Colormap cmap;
-	Pixel bg_pixel, tmp_pixel;
 	static Pixmap wmicon=0;
 	static Pixmap wmicon_mask=0;
 	
@@ -185,11 +183,8 @@ static struct viewer_data* create_viewer(const struct app_resources *res)
 	create_viewer_menubar(vd);
 	create_viewer_toolbar(vd);
 
-	XtVaGetValues(vd->wmain,XmNcolormap,&cmap,XmNbackground,&tmp_pixel,NULL);
-	XmGetColors(XtScreen(vd->wshell),cmap,
-		tmp_pixel,&tmp_pixel,&tmp_pixel,&tmp_pixel,&bg_pixel);
-	vd->wview=XmVaCreateManagedDrawingArea(
-		vd->wmain,"view",XmNbackground,bg_pixel,XmNuserData,vd,NULL);
+	vd->wview=XmVaCreateManagedDrawingArea(vd->wmain,
+		"view", XmNuserData, vd, NULL);
 
 	/* create mouse translations for continguous panning and 
 	 * add keyboard interaction actions if not done yet */

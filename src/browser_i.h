@@ -118,6 +118,7 @@ struct browser_data {
 	XtIntervalId update_timer; /* modification check timer */
 	char *last_dest_dir; /* last move/copy to directory */
 	Boolean show_dot_files;
+	Boolean has_bg_pixmap;
 	
 	/* tile aspect ratio and size */
 	short tile_asr[2];

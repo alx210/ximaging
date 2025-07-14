@@ -15,24 +15,32 @@ XImaging*upsamplingFilter: False
 XImaging*fastPanning: False
 XImaging*showDotFiles: True
 XImaging*showDirectories: True
-
-XImaging*tileSizeList: 80,120,160
-XImaging*tileSize: small
-XImaging*tileAspectRatio: 4:3
 XImaging*refreshInterval: 6
-
 XImaging*lockRotation: False
 XImaging*zoomFit: True
+XImaging*tileSize: small
 
-XImagingBrowser.title:XImaging
-XImagingBrowser.iconName:XImaging
-XImagingBrowser.width:550
-XImagingBrowser.height:400
+!! Small, medium and large thumbnail size in pixels.
+!! Final size will be determined by the aspect ratio specified.
+XImaging*tileSizeList: 80,120,160
+XImaging*tileAspectRatio: 4:3
 
-XImagingViewer.title:XImaging
-XImagingViewer.iconName:XImaging
-XImagingViewer.width:550
-XImagingViewer.height:400
+
+!! Uncomment to customize viewer and browser view background colors
+! XImagingViewer*view.background: darkgray
+! XImagingViewer*view.backgroundPixmap: wide_weave
+! XImagingBrowser*view.background: lightgray
+
+XImagingBrowser.title: XImaging
+XImagingBrowser.iconName: XImaging
+XImagingBrowser.width: 550
+XImagingBrowser.height: 400
+
+XImagingViewer.title: XImaging
+XImagingViewer.iconName: XImaging
+XImagingViewer.width: 550
+XImagingViewer.height: 400
+
 
 *XmFileSelectionBox.pathMode: PATH_MODE_RELATIVE
 *XmFileSelectionBox.fileFilterStyle: FILTER_HIDDEN_FILES

@@ -152,6 +152,7 @@ static struct browser_data* create_browser(const struct app_resources *res)
 	XGCValues gc_values;
 	static Pixmap wmicon=0;
 	static Pixmap wmicon_mask=0;
+	Pixmap bg_pixmap;
 	XtCallbackRec path_change_cbr[] = {
 		{ path_change_cb, NULL }, { NULL, NULL }
 	};
@@ -183,11 +184,6 @@ static struct browser_data* create_browser(const struct app_resources *res)
 	bd->wmain=XmVaCreateMainWindow(bd->wshell,"main",NULL);
 	create_browser_menubar(bd);
 
-	XtVaGetValues(bd->wmain,XmNcolormap,&colormap,
-		XmNbackground,&bd->bg_pixel,NULL);
-	XmGetColors(XtScreen(bd->wshell),colormap,bd->bg_pixel,
-		&bd->fg_pixel,&bd->ts_pixel,&bd->bs_pixel,&bd->sbg_pixel);
-			
 	XtVaGetValues(XmGetXmDisplay(app_inst.display),
 		XmNenableThinThickness,&line_width,NULL);
 	line_width=(line_width ? 1:2);
@@ -228,8 +224,8 @@ static struct browser_data* create_browser(const struct app_resources *res)
 	XtAddCallback(bd->wvscroll,XmNvalueChangedCallback,
 		scroll_cb,(XtPointer)bd);
 	
-	bd->wview=XmVaCreateManagedDrawingArea(wview_scrl,"view",
-		XmNbackground,bd->bg_pixel,XmNuserData,(XtPointer)bd,NULL);
+	bd->wview=XmVaCreateManagedDrawingArea(wview_scrl,
+		"view", XmNuserData, (XtPointer)bd, NULL);
 	XtAddEventHandler(bd->wview,StructureNotifyMask,
 		False,view_map_cb,(XtPointer)bd);
 	if(!view_tt){
@@ -249,7 +245,17 @@ static struct browser_data* create_browser(const struct app_resources *res)
 	XtOverrideTranslations(bd->wview,view_tt);
 	XtVaSetValues(wview_scrl,XmNverticalScrollBar,bd->wvscroll,
 		XmNworkWindow,bd->wview,NULL);
-		
+
+	XtVaGetValues(bd->wview, XmNcolormap, &colormap,
+		XmNbackgroundPixmap, &bg_pixmap,
+		XmNbackground, &bd->bg_pixel, NULL);
+	XmGetColors(XtScreen(bd->wshell), colormap, bd->bg_pixel,
+		&bd->fg_pixel, &bd->ts_pixel, &bd->bs_pixel, &bd->sbg_pixel);
+
+	/* see if the user has specified a background pixmap, in which
+	 * case we can't do optimized scrolling */
+	if(bg_pixmap != XmUNSPECIFIED_PIXMAP) bd->has_bg_pixmap = True;
+			
 	wmsgbar=XmVaCreateManagedFrame(bd->wmain,"messageArea",
 		XmNshadowType,XmSHADOW_OUT,
 		XmNshadowThickness, 1,NULL);
@@ -2020,7 +2026,7 @@ static void set_vscroll(struct browser_data *bd, int new_offset)
 
 	bd->yoffset = new_offset;
 	
-	if(abs(delta) >= bd->view_height) {
+	if((abs(delta) >= bd->view_height) || bd->has_bg_pixmap) {
 		XClearArea(app_inst.display, view, 0, 0,
 			bd->view_width, bd->view_height, True);
 		return;
