@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 alx@fastestcode.org
+ * Copyright (C) 2022-2025 alx@fastestcode.org
  * This software is distributed under the terms of the X/MIT license.
  * See the included COPYING file for further information.
  */
@@ -233,7 +233,7 @@ static void input_unfocus_cb(Widget w, XtPointer pclient, XtPointer pcall)
 	Arg args[2];
 	struct path_field_part *wp = PART(pclient);
 	Cardinal i;
-	
+
 	if(wp->tmp_path) {
 		char *cur_path = XmTextFieldGetString(w);
 
@@ -245,8 +245,10 @@ static void input_unfocus_cb(Widget w, XtPointer pclient, XtPointer pcall)
 
 	wp->editing = False;
 
-	for(i = 0; i < wp->ncomp; i++)
+	for(i = 0; i < wp->ncomp; i++) {
+		((XmDrawnButtonRec*)wp->wcomp[i])->drawnbutton.armed = False;
 		XtMapWidget(wp->wcomp[i]);
+	}
 	
 	draw_outline((Widget)pclient);
 	
