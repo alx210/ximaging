@@ -54,4 +54,10 @@ size_t mb_strlen(const char *sz);
 #define SIZE_CS_MAX 32
 char* get_size_string(unsigned long size, char buffer[SIZE_CS_MAX]);
 
+/*
+ * Sets shell's title and icon name using EWMH if available, or normal hints
+ * otherwise. Either title or icon_name may be NULL, if no change desired.
+ */
+void set_shell_title(Widget wshell, const char *title, const char *icon_name);
+
 #endif /* GUIUTIL_H */

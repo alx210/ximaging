@@ -2116,17 +2116,19 @@ static void update_shell_title(struct browser_data *bd)
 	if(bd->path){
 		char *buffer;
 		char *dir;
-		dir=strrchr(bd->path,'/');
+		dir = strrchr(bd->path, '/');
+
 		if(!dir)
-			dir=bd->path;
-		else if(dir[1]!='\0') dir++;
-		buffer=malloc(strlen(bd->title)+strlen(dir)+4);
-		sprintf(buffer,"%s - %s",dir,bd->title);
-		XtVaSetValues(bd->wshell,XmNtitle,buffer,XmNiconName,buffer,NULL);
+			dir = bd->path;
+		else if(dir[1] != '\0') dir++;
+
+		buffer = malloc(strlen(bd->title) + strlen(dir) + 4);
+		sprintf(buffer, "%s - %s", dir, bd->title);
+
+		set_shell_title(bd->wshell, buffer, buffer);
 		free(buffer);
-	}else{
-		XtVaSetValues(bd->wshell,XmNtitle,bd->title,
-			XmNiconName,bd->title,NULL);
+	} else {
+		set_shell_title(bd->wshell, bd->title, bd->title);
 	}
 }
 

@@ -1182,21 +1182,24 @@ static void compute_image_dimensions(struct viewer_data *vd,
  */
 static void update_shell_title(struct viewer_data *vd)
 {
-	if(vd->state&ISF_OPENED){
+	if(vd->state & ISF_OPENED){
 		char *buffer;
 		char *ftitle;
-		ftitle=strrchr(vd->file_name,'/');
+		ftitle = strrchr(vd->file_name,'/');
+		
 		if(!ftitle)
-			ftitle=vd->file_name;
+			ftitle = vd->file_name;
 		else
 			ftitle++;
-		buffer=malloc(strlen(vd->title)+strlen(ftitle)+4);
-		sprintf(buffer,"%s - %s",ftitle,vd->title);
-		XtVaSetValues(vd->wshell,XmNtitle,buffer,XmNiconName,buffer,NULL);
+		
+		buffer = malloc(strlen(vd->title) + strlen(ftitle) + 4);
+		sprintf(buffer,"%s - %s", ftitle, vd->title);
+		
+		set_shell_title(vd->wshell, buffer, buffer);
+		
 		free(buffer);
 	}else{
-		XtVaSetValues(vd->wshell,XmNtitle,vd->title,
-			XmNiconName,vd->title,NULL);
+		set_shell_title(vd->wshell, vd->title, vd->title);
 	}
 }
 
