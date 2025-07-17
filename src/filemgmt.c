@@ -275,13 +275,14 @@ static int copy_file(struct proc_data *pd, const char *src, const char *dest)
 	ssize_t rw;
 	int res=0;
 
-	if(!stat(dest,&st) && (pd->proc!=FPROC_MOVE)){
+	if(!stat(dest ,&st) && (pd->proc != FPROC_MOVE)){
 		enum response_code rc;
-		rc=ask_replace(pd,dest);
-		if(rc!=RC_CONTINUE){
-			if(rc==RC_QUIT) pd->cancelled=True;
+		rc = ask_replace(pd,dest);
+		if(rc != RC_CONTINUE){
+			if(rc == RC_QUIT) pd->cancelled = True;
 			return 0;
 		}
+		if(unlink(dest)) return errno;
 	}
 	if(stat(src,&st)) return errno;
 	fin=open(src,O_RDONLY);
