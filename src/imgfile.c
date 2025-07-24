@@ -281,6 +281,10 @@ static char* guess_suffix(const char *file_name)
 		{ "\x0a\x05", "pcx" },
 		{ "\x01\xda", "rgb" },
 		{ "/* XPM */", "xpm" },
+		{ "P4", "pnm" },
+		{ "P5", "pnm" },
+		{ "P6", "pnm" },
+		{ "P7", "pam" },
 		{ "GIF8", "gif" },
 		{ "BM", "bmp" }
 	};
