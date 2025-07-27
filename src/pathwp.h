@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 alx@fastestcode.org
+ * Copyright (C) 2022-2025 alx@fastestcode.org
  * This software is distributed under the terms of the X/MIT license.
  * See the included COPYING file for further information.
  */
@@ -17,6 +17,9 @@
 /* Pixels */
 #define DEF_THIN_SHADOW 1
 #define DEF_THICK_SHADOW 2
+
+/* Directory Up button width relative to current font height */
+#define DIRUP_WIDTH_FACTOR 1.3
 
 /* Motif class instance data */
 struct path_field_class_part {
@@ -38,6 +41,7 @@ struct path_field_part {
 	
 	Dimension font_height;
 	Widget winput;
+	Widget wdirup;
 	Widget *wcomp;
 	char **sz_comp;
 	unsigned int *comp_ids;
@@ -57,6 +61,7 @@ struct path_field_part {
 	Dimension margin_height;
 	Dimension btn_height_pc;
 	Boolean compact_path;
+	Boolean show_dirup;
 	
 	Boolean processing_callbacks;
 	XtCallbackList change_cb;

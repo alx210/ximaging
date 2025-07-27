@@ -24,6 +24,8 @@ char *fallback_res[]={
 	"ximagingViewer.title:" BASE_TITLE,
 	"ximagingViewer.iconName:" BASE_TITLE,
 	
+	"XImagingBrowser*pathField.showUpButton:False",
+	
 	/* dialogs */
 	"*XmFileSelectionBox.pathMode: PATH_MODE_RELATIVE",
 	"*XmFileSelectionBox.fileFilterStyle: FILTER_HIDDEN_FILES",
