@@ -41,7 +41,7 @@ XImagingViewer.iconName: XImaging
 XImagingViewer.width: 550
 XImagingViewer.height: 400
 
-XImagingBrowser*pathField.showUpButton: False
+XImagingBrowser*pathField.showUpButton: True
 
 *XmFileSelectionBox.pathMode: PATH_MODE_RELATIVE
 *XmFileSelectionBox.fileFilterStyle: FILTER_HIDDEN_FILES

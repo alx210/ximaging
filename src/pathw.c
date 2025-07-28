@@ -189,12 +189,23 @@ WidgetClass pathFieldWidgetClass = (WidgetClass) &pathFieldWidgetClassRec;
 #define CORE_WIDTH(w) (((struct path_field_rec*)w)->core.width)
 #define CORE_HEIGHT(w) (((struct path_field_rec*)w)->core.height)
 
+/* Up-arrow icon vertices */
+static struct vector2d arrow_verts[] = {
+	{0.0, -0.36}, {0.22, -0.12}, {0.0, -0.12}, {0.0, 0.22},
+	{0.48, 0.22}, {0.48, 0.36}, {0.0, 0.36}, {-0.12, 0.22},
+	{-0.12, -0.12}, {-0.36, -0.12}, {-0.12, -0.36}
+};
+
 static void comp_button_cb(Widget w, XtPointer pclient, XtPointer pcall)
 {
 	unsigned int *id = (unsigned int*)pclient;
 	set_path_from_component(XtParent(w), *id);
 }
 
+/*
+ * Called when path input text field is activated (Return key, usually).
+ * Notifies the client and updates the current path if valid.
+ */
 static void input_activate_cb(Widget w, XtPointer pclient, XtPointer pcall)
 {
 	Widget wparent = XtParent(w);
@@ -218,7 +229,11 @@ static void input_activate_cb(Widget w, XtPointer pclient, XtPointer pcall)
 		
 }
 
-
+/*
+ * Called whenever the path input text field receives focus.
+ * Stores current path string to a temporary buffer, and sets
+ * all other gadgets insensitive.
+ */
 static void input_focus_cb(Widget w, XtPointer pclient, XtPointer pcall)
 {
 	Arg args[1];
@@ -243,6 +258,11 @@ static void input_focus_cb(Widget w, XtPointer pclient, XtPointer pcall)
 	XtFree(cur_path);
 }
 
+/*
+ * Called whenever the path input text field is unfocused.
+ * Restores path string saved in input_focus_cb, and sets
+ * other gadgets sensitive.
+ */
 static void input_unfocus_cb(Widget w, XtPointer pclient, XtPointer pcall)
 {
 	Arg args[2];
@@ -274,39 +294,61 @@ static void input_unfocus_cb(Widget w, XtPointer pclient, XtPointer pcall)
 	XtSetValues(w, args, 1);
 }
 
+/*
+ * Renders the up-arrow graphic in the directory up button
+ */
 static void up_button_expose_cb(Widget w, XtPointer closure, XtPointer cdata)
 {
 	XmDrawnButtonCallbackStruct *cbs = (XmDrawnButtonCallbackStruct*)cdata;
 	CorePart *core = &((XmDrawnButtonRec*)w)->core;
 	XmPrimitivePart *prim = &((XmDrawnButtonRec*)w)->primitive;
 	XmLabelPart *label = &((XmDrawnButtonRec*)w)->label;
-	Position off = (prim->highlight_thickness > prim->shadow_thickness) ?
+	struct path_field_part *wp = PART(closure);
+	
+	Position shadow = (prim->highlight_thickness > prim->shadow_thickness) ?
 		prim->highlight_thickness : prim->shadow_thickness;
-	Dimension width = core->width;
-	Dimension height = core->height;
-	XPoint pts[4];
+	Position margin = (label->margin_width > label->margin_height) ?
+		label->margin_width : label->margin_height;
+	size_t npts = XtNumber(arrow_verts) + 1;
 
 	if((cbs->reason != XmCR_EXPOSE) ||	
-		(width <= (off + label->margin_width + 1)) ||
-		(height <= (off + label->margin_height + 1)) ) return;
+			(core->width <= (shadow + margin) * 2) ||
+			(core->height <= (shadow + margin) * 2) ) return;
 	
-	if(width % 2) width--;
-	if(height % 2) height--;
-	
-	pts[0].x = width / 2;
-	pts[0].y = (off + label->margin_height);
-	pts[1].x = width - (off + label->margin_width);
-	pts[1].y = height - (off + label->margin_width);
-	pts[2].x = (off + label->margin_width);
-	pts[2].y = pts[1].y;
-	pts[3] = pts[0];
+	/* Allocate a buffer and transform arrow vertices into button's
+	 * coordinate space, if not done yet; arrow_trpts will be freed
+	 * and set to NULL on resize. */
+	if(!wp->arrow_trpts) {
+		float scale;
+		float xorg;
+		float yorg;
+		int i;
 
+		wp->arrow_trpts = (XPoint*)XtMalloc(sizeof(XPoint) * npts);
+		if(!wp->arrow_trpts) {
+			WARNING((Widget)closure, "Memory allocation error!\n");
+			return;
+		}
+		scale = ((core->width < core->height) ?
+			core->width : core->height) - (shadow + margin) * 2;
+
+		xorg = core->width / 2;
+		yorg = core->height / 2;
+
+		for(i = 0; i < XtNumber(arrow_verts); i++) {
+			wp->arrow_trpts[i].x = arrow_verts[i].x * scale + xorg;
+			wp->arrow_trpts[i].y = arrow_verts[i].y * scale + yorg;
+		}
+		wp->arrow_trpts[npts - 1] = wp->arrow_trpts[0];
+	}
+	
 	XFillPolygon(XtDisplay(w), cbs->window,
 		(core->sensitive ? label->normal_GC : label->insensitive_GC),
-		pts, 4, Convex, CoordModeOrigin);
-
+		wp->arrow_trpts, npts, Convex, CoordModeOrigin);
 }
 
+
+/* Called when directory up button is pressed */
 static void up_button_cb(Widget w, XtPointer pclient, XtPointer cdata)
 {
 	struct path_field_part *wp = PART(pclient);
@@ -338,6 +380,7 @@ static void up_button_cb(Widget w, XtPointer pclient, XtPointer cdata)
 	}
 }
 
+/* Returns path widget height */
 static Dimension compute_height(Widget w)
 {
 	struct path_field_part *wp = PART(w);
@@ -349,6 +392,7 @@ static Dimension compute_height(Widget w)
 	return wanted_height;
 }
 
+/* Returns path widget's usable area */
 static void compute_client_area(Widget w, Position *x, Position *y,
 	Dimension *width, Dimension *height)
 {
@@ -403,6 +447,7 @@ static void initialize(Widget wreq, Widget wnew,
 	wp->wcomp = NULL;
 	wp->comp_ids = NULL;
 	wp->home = NULL;
+	wp->arrow_trpts = NULL;
 	
 	home = getenv("HOME");
 	if(home) {
@@ -467,6 +512,12 @@ static void resize(Widget w)
 	
 	if(wp->show_dirup) {
 		Dimension ub_x;
+		
+		if(wp->arrow_trpts) {
+			/* so it will be recomputed in up_button_exposure_cb */
+			XtFree((char*)wp->arrow_trpts);
+			wp->arrow_trpts = NULL;
+		}
 		
 		ub_width =((float)wp->font_height * DIRUP_WIDTH_FACTOR);
 		ub_x = ((cx + cw) > ub_width) ? (cx + cw) - ub_width : 0;
@@ -561,6 +612,7 @@ static void destroy(Widget w)
 	if(wp->comp_ids) XtFree((char*)wp->comp_ids);
 	if(wp->tmp_path) XtFree(wp->tmp_path);
 	if(wp->home) XtFree(wp->home);
+	if(wp->arrow_trpts) XtFree((char*)wp->arrow_trpts);
 
 	wp->ncomp = 0;
 	wp->ncomp_max = 0;
