@@ -2030,8 +2030,8 @@ static void rotate_reset_cb(Widget w, XtPointer client, XtPointer call)
 		XtVaGetValues(vd->wview, XmNwidth, &vw, XmNheight, &vh, NULL);
 		compute_image_dimensions(vd, vd->zoom, vd->tform, &iw, &ih);
 		
-		if(vw < iw) hpc = (float)fabs(vd->xoff) / (iw - vw);
-		if(vh < ih) vpc = (float)fabs(vd->yoff) / (ih - vh);
+		if(vw < iw) hpc = (float)abs(vd->xoff) / (iw - vw);
+		if(vh < ih) vpc = (float)abs(vd->yoff) / (ih - vh);
 	
 		compute_image_dimensions(vd, vd->zoom, 0, &iw, &ih);
 		

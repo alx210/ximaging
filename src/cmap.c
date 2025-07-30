@@ -111,7 +111,7 @@ int cm_match_rgb(int r,int g,int b)
 static int try_alloc_shared_entries(Colormap cm,
 	XColor *colors, int num_colors)
 {
-	int i, j, failed=0;
+	int i, j;
 
 	if(g_ncolors){
 		XFreeColors(app_inst.display,cm,g_pixels,g_ncolors,0);
@@ -120,9 +120,7 @@ static int try_alloc_shared_entries(Colormap cm,
 
 	for(i=0, j=0; i<num_colors; i++){
 		g_colors[i].flags=DoRed|DoGreen|DoBlue;
-		if(!XAllocColor(app_inst.display,cm,&g_colors[i])){
-			failed++;;
-		}else{
+		if(XAllocColor(app_inst.display,cm,&g_colors[i]) == Success){
 			g_colors[j]=g_colors[i];
 			g_pixels[j]=g_colors[i].pixel;
 			j++;

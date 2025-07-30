@@ -50,8 +50,8 @@ XImagingBrowser*pathField.showUpButton: True
 
 !! By default, the directories pane will resize itself according to contents.
 !! Following resources may be set to specify constant width in pixels:
-! XImagingBrowser*directoriesList.listSizePolicy: CONSTANT
-! XImagingBrowser*directoriesList.width: 100
+XImagingBrowser*directoriesList.listSizePolicy: CONSTANT
+XImagingBrowser*directoriesList.width: 100
 
 !##############################################################################
 !# Accelerators
