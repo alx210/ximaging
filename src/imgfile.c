@@ -180,10 +180,14 @@ int img_ident(const char *fname, const char *suffix,
 	if(suffix) {
 		rec.suffix = (char*)suffix;
 	} else if(fname) {
+		char *ftitle;
 		char *token;
 	
+		ftitle = strrchr(fname, '/');
+		if(!ftitle) ftitle = (char*)fname;
+	
 		token = strrchr(fname,'.');
-		if(token && token[1] != '\0') {
+		if(token && token[1] != '\0' && token > ftitle) {
 			token++;
 			rec.suffix = token;
 		} else {
