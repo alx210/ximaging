@@ -1646,14 +1646,19 @@ static void resize_cb(Widget w, XtPointer client_data, XtPointer call_data)
 {
 	struct viewer_data *vd=(struct viewer_data*)client_data;
 	Dimension vw=0, vh=0;
-	Arg arg[]={{XmNwidth,(XtArgVal)&vw},{XmNheight,(XtArgVal)&vh}};
+	Arg arg[]={
+		{ XmNwidth, (XtArgVal)&vw },
+		{ XmNheight, (XtArgVal)&vh }
+	};
 	size_t size;
 	
-	if(!(vd->state&(ISF_LOADING|ISF_READY))) return;
+	if(!vd->bkbuf) return;
+	
 	/* grow the back buffer if necessary */
-	XtGetValues(vd->wview,arg,2);
-	size=(vw*vh)*(vd->bkbuf->bitmap_pad/8);
-	if(vd->bkbuf_size<size){
+	XtGetValues(vd->wview, arg, 2);
+	size = (vw * vh) * (vd->bkbuf->bitmap_pad / 8);
+	
+	if(vd->bkbuf_size < size){
 		void *new_mem;
 		new_mem=realloc(vd->bkbuf->data,size);
 		if(!new_mem){
@@ -1663,16 +1668,18 @@ static void resize_cb(Widget w, XtPointer client_data, XtPointer call_data)
 			destroy_viewer(vd);
 			return;
 		}
-		vd->bkbuf->data=new_mem;
-		vd->bkbuf_size=size;
+		vd->bkbuf->data = new_mem;
+		vd->bkbuf_size = size;
 	}
 	
 	/* update and re-initialize the back-buffer XImage parameters */
-	vd->bkbuf->width=vw;
-	vd->bkbuf->height=vh;
-	vd->bkbuf->bytes_per_line=0;
+	vd->bkbuf->width = vw;
+	vd->bkbuf->height = vh;
+	vd->bkbuf->bytes_per_line = 0;
 	XInitImage(vd->bkbuf);
-	img_fill_rect(vd->bkbuf,0,0,vw,vh,vd->bg_pixel);
+	img_fill_rect(vd->bkbuf, 0, 0, vw, vh, vd->bg_pixel);
+
+	if( !(vd->state & (ISF_LOADING|ISF_READY)) ) return;
 
 	/* recompute the zoom and clamp offsets */
 	if(vd->zoom_fit) vd->zoom=compute_fit_zoom(vd);
@@ -1688,6 +1695,7 @@ static void resize_cb(Widget w, XtPointer client_data, XtPointer call_data)
 		if(abs(vd->yoff)>dy) vd->yoff-=(vd->yoff+dy);
 		if(vd->yoff>0) vd->yoff=0;
 	}
+
 	update_page_msg(vd);
 	update_pointer_shape(vd);
 	update_back_buffer(vd);
