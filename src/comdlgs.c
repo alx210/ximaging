@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2025 alx@fastestcode.org
+ * Copyright (C) 2012-2026 alx@fastestcode.org
  * This software is distributed under the terms of the MIT license.
  * See the included LICENSE file for further information.
  */
@@ -483,9 +483,10 @@ static void input_dlg_cb(Widget w, XtPointer client, XtPointer call)
 	XmFileSelectionBoxCallbackStruct *fscb=
 		(XmFileSelectionBoxCallbackStruct*)call;
 	char **ret_name=(char**)client;
+	static const char sz_empty[] = "\0";
 
 	if(fscb->reason==XmCR_CANCEL || fscb->reason==XmCR_NO_MATCH){
-		*ret_name="\0";
+		*ret_name = sz_empty;
 	}else{
 		*ret_name=(char*)XmStringUnparse(fscb->value,NULL,0,
 			XmCHARSET_TEXT,NULL,0,XmOUTPUT_ALL);
@@ -538,13 +539,13 @@ void display_about_dlgbox(Widget wparent)
 	#include "bitmaps/appicon_m.xbm"
 	
 	text_len = snprintf(NULL, 0,
-		"%s\nVersion %d.%d (%s; Motif %d.%d.%d)\n\n%s",
-		DESCRIPTION_CS, APP_VERSION, APP_REVISION, APP_BUILD,
+		"%s\nVersion %d.%d.%d (%s; Motif %d.%d.%d)\n\n%s",
+		DESCRIPTION_CS, APP_VERSION, APP_REVISION, APP_UPDATE, APP_BUILD,
 		XmVERSION, XmREVISION, XmUPDATE_LEVEL, COPYRIGHT_CS) + 1;
 	about_text = malloc(text_len);
 	snprintf(about_text, text_len,
-		"%s\nVersion %d.%d (%s; Motif %d.%d.%d)\n\n%s",
-		DESCRIPTION_CS, APP_VERSION, APP_REVISION, APP_BUILD,
+		"%s\nVersion %d.%d.%d (%s; Motif %d.%d.%d)\n\n%s",
+		DESCRIPTION_CS, APP_VERSION, APP_REVISION, APP_UPDATE, APP_BUILD,
 		XmVERSION, XmREVISION, XmUPDATE_LEVEL, COPYRIGHT_CS);
 	
 	n = 0;
