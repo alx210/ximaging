@@ -289,6 +289,9 @@ static struct browser_data* create_browser(const struct app_resources *res)
 	XtAddCallback(bd->wview,XmNexposeCallback,expose_cb,(XtPointer)bd);
 	XtAddCallback(bd->wview,XmNresizeCallback,resize_cb,(XtPointer)bd);
 
+	XSetCommand(app_inst.display, XtWindow(bd->wshell),
+		app_inst.saved_args, app_inst.nsaved_args);
+
 	if(!wmicon){
 		load_icon(wmiconb_bits,wmiconb_m_bits,
 			wmiconb_width,wmiconb_height,&wmicon,&wmicon_mask);

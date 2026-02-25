@@ -50,6 +50,8 @@ struct app_inst_data {
 	XtAppContext context;
 	Display *display;
 	Widget session_shell;
+	char **saved_args;
+	int nsaved_args;
 	char *bin_name;	/* binary name the application was invoked with */
 	unsigned int active_shells; /* number of windows in this instance */
 	XVisualInfo visual_info; /* common visual */

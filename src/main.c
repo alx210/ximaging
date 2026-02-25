@@ -247,7 +247,10 @@ int main(int argc, char **argv)
 	extern char *fallback_res[];
 	int i;
 
-	app_inst.bin_name=argv[0];
+	app_inst.bin_name = argv[0];
+	app_inst.saved_args = calloc(sizeof(char*), argc + 1);
+	memcpy(app_inst.saved_args, argv, sizeof(char*) * argc);
+	app_inst.nsaved_args = argc;	
 	
 	if(rsignal(SIGCHLD, sigchld_handler) == SIG_ERR ||
 		rsignal(SIGPIPE, sigpipe_handler) == SIG_ERR ||

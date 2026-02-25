@@ -242,6 +242,9 @@ static struct viewer_data* create_viewer(const struct app_resources *res)
 	XtAddCallback(vd->wview,XmNresizeCallback,resize_cb,(XtPointer)vd);
 	XtRealizeWidget(vd->wshell);
 	
+	XSetCommand(app_inst.display, XtWindow(vd->wshell),
+		app_inst.saved_args, app_inst.nsaved_args);
+	
 	if(!wmicon){
 		load_icon(wmiconv_bits,wmiconv_m_bits,
 		wmiconv_width,wmiconv_height,&wmicon,&wmicon_mask);
