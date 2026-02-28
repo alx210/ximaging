@@ -22,6 +22,11 @@ Pixmap load_bitmap(const unsigned char *bits, unsigned int width,
  */
 void map_shell_unpositioned(Widget wshell);
 
+/*
+ * Adds the WM_DELETE_WINDOW window manager protocol callback to a shell
+ */
+Boolean add_delete_window_handler(Widget, XtCallbackProc, XtPointer);
+
 /* Build a masked icon pixmap from xbm data */
 void load_icon(const void *bits, const void *mask_bits,
 	unsigned int width, unsigned int height, Pixmap *icon, Pixmap *mask);

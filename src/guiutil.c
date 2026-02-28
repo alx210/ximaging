@@ -15,6 +15,8 @@
 #include <ctype.h>
 #include <math.h>
 #include <Xm/Xm.h>
+#include <Xm/Protocols.h>
+#include <Xm/MwmUtil.h>
 #ifdef ENABLE_XINERAMA
 #include <X11/extensions/Xinerama.h>
 #endif
@@ -94,6 +96,22 @@ void map_shell_unpositioned(Widget wshell)
 		XSetWMNormalHints(XtDisplay(wshell),XtWindow(wshell),&size_hints);
 	}
 	XtMapWidget(wshell);
+}
+
+/*
+ * Adds the WM_DELETE_WINDOW window manager protocol callback to a shell
+ */
+Boolean add_delete_window_handler(Widget w,
+	XtCallbackProc proc, XtPointer closure)
+{
+	static Atom xa_delete = None;
+	
+	if(xa_delete == None) {
+		xa_delete = XInternAtom(XtDisplay(w), "WM_DELETE_WINDOW", False);
+		if(xa_delete == None) return False;
+	}
+	XmAddWMProtocolCallback(w, xa_delete, proc, closure);
+	return True;
 }
 
 /* Build a masked icon pixmap from the xbm data */
