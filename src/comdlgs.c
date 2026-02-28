@@ -37,6 +37,17 @@ static void msgbox_cb(Widget w, XtPointer client, XtPointer call);
 static void msgbox_delete_cb(Widget w, XtPointer, XtPointer);
 static void input_dlg_delete_cb(Widget w, XtPointer, XtPointer);
 
+/* The selection box widget overrides its text field's translations binding
+ * Home/End keys to control the list above, which is rather unexpected and not
+ * very useful either (especially if the list isn't even managed),
+ * this translation table is to undo this */
+static char textf_tt_src[] = 
+	":s <Key>osfEndLine: end-of-line(extend)\n"
+	":s <Key>osfBeginLine: beginning-of-line(extend)\n"
+	":<Key>osfEndLine: end-of-line()\n"
+	":<Key>osfBeginLine: beginning-of-line()\n";
+static XtTranslations textf_tt = NULL;
+
 /*
  * Display a modal message dialog.
  */
@@ -259,6 +270,9 @@ char* rename_file_dlg(Widget wparent, char *file_title)
 
 	wlabel = XmSelectionBoxGetChild(wdlg, XmDIALOG_SELECTION_LABEL);
 	wtext = XmSelectionBoxGetChild(wdlg, XmDIALOG_TEXT);
+	
+	if(!textf_tt) textf_tt = XtParseTranslationTable(textf_tt_src);
+	if(textf_tt) XtOverrideTranslations(wtext, textf_tt);
 
 	XtAddCallback(wtext, XmNmodifyVerifyCallback, &rename_modify_cb, NULL);
 
@@ -287,7 +301,7 @@ char* rename_file_dlg(Widget wparent, char *file_title)
 	/* preselect file title sans extension */
 	token=strrchr(file_title,'.');
 	if(token){
-		XmTextFieldSetSelection(wtext,0,
+		XmTextFieldSetSelection(wtext, 0,
 			strlen(file_title)-strlen(token),
 			XtLastTimestampProcessed(XtDisplay(wtext)));
 	}
@@ -331,6 +345,9 @@ char* pass_to_input_dlg(Widget wparent)
 
 	wlabel = XmSelectionBoxGetChild(wdlg, XmDIALOG_SELECTION_LABEL);
 	wtext = XmSelectionBoxGetChild(wdlg, XmDIALOG_TEXT);
+
+	if(!textf_tt) textf_tt = XtParseTranslationTable(textf_tt_src);
+	if(textf_tt) XtOverrideTranslations(wtext, textf_tt);
 
 	xm_label_string = XmStringCreateLocalized(
 		nlstr(DLG_MSGSET, SID_INPUTCMD,
@@ -404,6 +421,9 @@ char* select_pattern_input_dlg(Widget wparent)
 
 	wlabel = XmSelectionBoxGetChild(wdlg, XmDIALOG_SELECTION_LABEL);
 	wtext = XmSelectionBoxGetChild(wdlg, XmDIALOG_TEXT);
+
+	if(!textf_tt) textf_tt = XtParseTranslationTable(textf_tt_src);
+	if(textf_tt) XtOverrideTranslations(wtext, textf_tt);
 
 	xm_label_string = XmStringCreateLocalized(
 		nlstr(DLG_MSGSET, SID_INPPATTERN,
