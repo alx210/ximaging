@@ -188,6 +188,7 @@ enum mb_result message_box(Widget wparent, enum mb_type type,
 		while(result == _MBR_NVALUES)
 			XtAppProcessEvent(app_inst.context,XtIMAll);
 		
+		XtUnmanageChild(wbox);
 		XtDestroyWidget(wbox);
 		XSync(XtDisplay(wparent), False);
 		XmUpdateDisplay(wparent);
@@ -234,6 +235,7 @@ static void msgbox_delete_cb(Widget w, XtPointer client, XtPointer call)
 /* Non-blocking dialog response handler; just destroys the widget */
 static void msgbox_cb(Widget w, XtPointer client, XtPointer call)
 {
+	XtUnmanageChild(w);
 	XtDestroyWidget(w);
 }
 
@@ -309,7 +311,7 @@ char* rename_file_dlg(Widget wparent, char *file_title)
 	while(!ret_string){
 		XtAppProcessEvent(app_inst.context,XtIMAll);
 	}
-
+	XtUnmanageChild(wdlg);
 	XtDestroyWidget(wdlg);
 	XSync(XtDisplay(wparent), False);
 	XmUpdateDisplay(wparent);
@@ -379,6 +381,7 @@ char* pass_to_input_dlg(Widget wparent)
 		XtAppProcessEvent(app_inst.context,XtIMAll);
 	}
 	
+	XtUnmanageChild(wdlg);
 	XtDestroyWidget(wdlg);
 	XSync(XtDisplay(wparent), False);
 	XmUpdateDisplay(wparent);
@@ -455,6 +458,7 @@ char* select_pattern_input_dlg(Widget wparent)
 		XtAppProcessEvent(app_inst.context,XtIMAll);
 	}
 	
+	XtUnmanageChild(wdlg);
 	XtDestroyWidget(wdlg);
 	XSync(XtDisplay(wparent), False);
 	XmUpdateDisplay(wparent);
@@ -522,6 +526,7 @@ char* dir_select_dlg(Widget wparent, const char *title,
 		XtAppProcessEvent(app_inst.context,XtIMAll);
 	}
 
+	XtUnmanageChild(wdlg);
 	XtDestroyWidget(wdlg);
 	XSync(XtDisplay(wparent), False);
 	XmUpdateDisplay(wparent);
