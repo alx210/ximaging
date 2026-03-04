@@ -1,8 +1,8 @@
 /****************************************************************************** 
- * This is a template static PTYPE definition file for XImaging.
- * It describes which data types XImaging will handle through ToolTalk requests.
- * A static PTYPE must be registered so other ToolTalk aware applications like
- * dtfile(1) can communicate with XImaging.
+ * This is a template static PTYPE definition file for XImaging. It describes
+ * which data types XImaging will handle through ToolTalk requests. A static
+ * PTYPE must be registered so other ToolTalk aware applications like dtfile(1)
+ * can communicate with XImaging.
  *
  * Data types specified here must correspond with those in CDE's file type
  * database. CDE's data type for a particular file can be determined using the
