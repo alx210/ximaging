@@ -13,9 +13,11 @@ be installed also - e.g. xorg-dev, motif-dev, etc.
 
 2. BUILDING AND INSTALLING
 -----------------------------
-If necessary, tweak the target platform specific makefile, Makefile.$(uname),
-in the mf sub-directory (to change the installation prefix, perhaps). If no
-appropriate Makefile exists, try Makefile.generic.
+Make sure to review the target platform makefile (mf/Makefile.<platform>).
+Adjust the installation prefix and X resources installation path if necessary.
+Read comments in the makefile for additional compile time options available.
+The target platform is picked by the master Makefile from uname(1). If no
+platform specific Makefile exists, try "Makefile.generic".
 
 Run 'make' in the top-level directory of the source distribution and follow
 instructions. When build process finishes, run 'make install' as root.
@@ -26,4 +28,4 @@ OpenMP (multiprocessor optimizations) are enabled by default for Linux and
 FreeBSD targets. This may cause the build to fail with OMP related errors
 on architectures that don't support it. If this is the case, comment out
 or delete the "ENABLE_OMP = 1" line in the platform specific makefile:
-mf/Makefile.<platform name>
+mf/Makefile.<platform>
