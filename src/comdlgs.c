@@ -36,6 +36,7 @@ static void blocking_msgbox_cb(Widget w, XtPointer client, XtPointer call);
 static void msgbox_cb(Widget w, XtPointer client, XtPointer call);
 static void msgbox_delete_cb(Widget w, XtPointer, XtPointer);
 static void input_dlg_delete_cb(Widget w, XtPointer, XtPointer);
+static void about_destroy_cb(Widget w, XtPointer client, XtPointer call);
 
 /* The selection box widget overrides its text field's translations binding
  * Home/End keys to control the list above, which is rather unexpected and not
@@ -601,6 +602,9 @@ void display_about_dlgbox(Widget wparent)
 	char *about_text;
 	size_t text_len;
 	XmString xms;
+	XtCallbackRec cb[2] = {
+		{ about_destroy_cb, NULL }, { NULL, NULL }
+	};
 	
 	#include "bitmaps/appicon.xbm"
 	#include "bitmaps/appicon_m.xbm"
@@ -663,6 +667,7 @@ void display_about_dlgbox(Widget wparent)
 	wsep = XmCreateSeparator(wform, "separator", args, n);
 
 	n = 0;
+	cb[0].closure = (XtPointer)wdlg;
 	xms = XmStringCreateLocalized(nlstr(DLG_MSGSET, SID_CLOSE, "Close"));
 	XtSetArg(args[n], XmNlabelString, xms); n++;
 	XtSetArg(args[n], XmNshowAsDefault, True); n++;
@@ -671,6 +676,7 @@ void display_about_dlgbox(Widget wparent)
 	XtSetArg(args[n], XmNtopAttachment, XmATTACH_WIDGET); n++;
 	XtSetArg(args[n], XmNtopWidget, wsep); n++;
 	XtSetArg(args[n], XmNbottomAttachment, XmATTACH_FORM); n++;
+	XtSetArg(args[n], XmNactivateCallback, cb); n++;
 	wclose = XmCreatePushButton(wform, "closeButton", args, n);
 	XmStringFree(xms);
 
@@ -688,4 +694,10 @@ void display_about_dlgbox(Widget wparent)
 	XtRealizeWidget(wdlg);
 	
 	free(about_text);
+}
+
+static void about_destroy_cb(Widget w, XtPointer client, XtPointer call)
+{
+	Widget wdlg = (Widget)client;
+	XtDestroyWidget(wdlg);
 }
