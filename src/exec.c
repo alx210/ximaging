@@ -74,7 +74,7 @@ int exec_file(const char *cmd_spec,
 				 * we assume it is a mistake and fix it */
 				if(isblank(p[1])) p++; else *p = ' ';
 				
-				/* replace token; skip parameter it no match */
+				/* replace token; skip parameter if no match */
 				if(!(t = match)) continue;
 			} else {
 				/* quotation marks; remove them, ignoring blanks within */
