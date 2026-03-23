@@ -284,24 +284,24 @@ static int copy_file(struct proc_data *pd, const char *src, const char *dest)
 		}
 		if(unlink(dest)) return errno;
 	}
-	if(stat(src,&st)) return errno;
-	fin=open(src,O_RDONLY);
-	if(fin== -1) return errno;
-	fout=open(dest,O_CREAT|O_WRONLY,(S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP));
-	if(fout== -1) return errno;
+	if(stat(src, &st)) return errno;
+	fin=open(src, O_RDONLY);
+	if(fin == -1) return errno;
+	fout = open(dest, O_CREAT|O_WRONLY, (S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP));
+	if(fout == -1) return errno;
 	
 	if(st.st_size>COPY_BUFFER_SIZE){
-		nchunks=st.st_size/COPY_BUFFER_SIZE;
-		rest=st.st_size-(COPY_BUFFER_SIZE*nchunks);
+		nchunks = st.st_size / COPY_BUFFER_SIZE;
+		rest = st.st_size-(COPY_BUFFER_SIZE * nchunks);
 	}else{
 		nchunks=0;
-		rest=st.st_size;
+		rest = st.st_size;
 	}
-	for(ichunk=0; ichunk<nchunks; ichunk++){
-		rw=read(fin,pd->cp_buf,COPY_BUFFER_SIZE);
-		if(rw!=COPY_BUFFER_SIZE) break;
-		rw=write(fout,pd->cp_buf,COPY_BUFFER_SIZE);
-		if(rw!=COPY_BUFFER_SIZE) break;
+	for(ichunk=0; ichunk < nchunks; ichunk++){
+		rw = read(fin, pd->cp_buf, COPY_BUFFER_SIZE);
+		if(rw != COPY_BUFFER_SIZE) break;
+		rw = write(fout, pd->cp_buf, COPY_BUFFER_SIZE);
+		if(rw != COPY_BUFFER_SIZE) break;
 		if(pd->cancelled){
 			close(fin);
 			close(fout);
@@ -309,18 +309,18 @@ static int copy_file(struct proc_data *pd, const char *src, const char *dest)
 			return 0;
 		}
 	}
-	if(ichunk==nchunks && rest){
-		if(read(fin,pd->cp_buf,rest)==rest){
-			rw=write(fout,pd->cp_buf,rest);
+	if(ichunk == nchunks && rest){
+		if( (rw = read(fin, pd->cp_buf, rest)) == rest ) {
+			rw = write(fout, pd->cp_buf, rest);
 		}
-		if(rw!=rest) res=errno;
+		if(rw != rest) res = errno;
 	}
 
 	close(fin);
 	close(fout);
 	if(res){
 		unlink(dest);
-	}else if(pd->proc==FPROC_MOVE){
+	}else if(pd->proc == FPROC_MOVE){
 		unlink(src);
 	}
 	return res;	
