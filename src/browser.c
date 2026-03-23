@@ -84,7 +84,7 @@ static void clear_selection(struct browser_data *bd);
 static void set_selection(struct browser_data*,long,long,Boolean);
 static void toggle_selection(struct browser_data*,long);
 static void set_focus(struct browser_data*,long);
-static Boolean select_tile_at(struct browser_data*,int,int,int);
+static Boolean select_tile_at(struct browser_data*, int, int, int, int);
 static void scroll_to(struct browser_data*,long);
 static void dblclk_timer_cb(XtPointer,XtIntervalId*);
 static void set_vscroll(struct browser_data*,int);
@@ -1457,7 +1457,7 @@ static void input_cb(Widget w, XtPointer client_data, XtPointer call_data)
 			if(e->button == Button1 || e->button == Button3) {
 				if( (e->button == Button1 || !bd->nsel_files) ||
 					(e->button == Button3 && bd->nsel_files <= 1) )
-					select_tile_at(bd, e->x, e->y, smode);
+					select_tile_at(bd, e->x, e->y, smode, e->button);
 				
 				
 				if(bd->nsel_files && e->button==Button3){
@@ -1677,7 +1677,7 @@ static void set_focus(struct browser_data *bd, long i)
  * Returns true if a tile exists at the given position, False otherwise.
  */
 static Boolean select_tile_at(struct browser_data *bd,
-	int x, int y, int mode)
+	int x, int y, int mode, int button)
 {
 	int tx, ty;
 	unsigned int tw, th, tih;
@@ -1687,19 +1687,25 @@ static Boolean select_tile_at(struct browser_data *bd,
 	
 	compute_tile_dimensions(bd,&tiles_per_row,NULL,NULL,&tih,&tw,&th);
 
-	for(i=(bd->yoffset/th)*tiles_per_row; i<bd->nfiles; i++){
-		compute_tile_position(bd,i,&tx,&ty,&tw,&th,NULL);
-		if(x>tx && y>ty && x<tx+tw && y <ty+th){
-			if(bd->dblclk_timer && mode==SM_SINGLE){
+	for(i = (bd->yoffset / th) * tiles_per_row; i < bd->nfiles; i++){
+		compute_tile_position(bd, i, &tx, &ty, &tw, &th, NULL);
+		if(x > tx && y > ty && x < (tx + tw) && y < (ty + th)){
+			static int last_button = -1;
+			
+			if(bd->dblclk_timer && mode==SM_SINGLE && button == last_button){
 				XtRemoveTimeOut(bd->dblclk_timer);
-				bd->dblclk_timer=None;
-				if(y-ty>tih){
-					rename_cb(None,(XtPointer)bd,NULL);
+				bd->dblclk_timer = None;
+				if(y-ty > tih){
+					rename_cb(None, (XtPointer)bd, NULL);
 				}else{
-					invoke_default_action(bd,bd->ifocus);
+					invoke_default_action(bd, bd->ifocus);
 				}
+				last_button = -1;
 			}else{
-				if(bd->dblclk_timer) XtRemoveTimeOut(bd->dblclk_timer);
+				if(bd->dblclk_timer) {
+					XtRemoveTimeOut(bd->dblclk_timer);
+					bd->dblclk_timer = None;
+				}
 				if(bd->files[i].selected){
 					switch(mode){
 						case SM_SINGLE:
@@ -1723,13 +1729,15 @@ static Boolean select_tile_at(struct browser_data *bd,
 					}
 				}
 				if(mode==SM_SINGLE){
-					bd->dblclk_timer=XtAppAddTimeOut(app_inst.context,
+					bd->dblclk_timer = XtAppAddTimeOut(app_inst.context,
 						XtGetMultiClickTime(app_inst.display),
-						dblclk_timer_cb,(XtPointer)bd);
+						dblclk_timer_cb, (XtPointer)bd);
+					
+					last_button = button;
 				}
 				set_focus(bd,i);
 			}
-			hit=True;
+			hit = True;
 			break;
 		}
 	}
