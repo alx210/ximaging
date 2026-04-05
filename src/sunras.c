@@ -392,7 +392,7 @@ int img_open_ras(const char *file_name, struct img_file *img, int flags)
 		img->blue_mask=bswap_dword(img->blue_mask);
 		img->alpha_mask=bswap_dword(img->alpha_mask);
 	}
-	dbg_assert(ld->scl_size);
+	dassert(ld->scl_size);
 	ld->buffer=malloc(ld->scl_size);
 	if(!ld->buffer){
 		free(ld);

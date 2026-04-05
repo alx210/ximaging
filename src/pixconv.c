@@ -438,7 +438,7 @@ static void* read_pixel8(const struct pixel_format *pf,
 static void* write_pf_unsup(const struct pixel_format *pf,
 	void *ptr, uint32_t r, uint32_t g, uint32_t b, uint32_t a)
 {
-	dbg_trap("unsupported pixel format for \'write_pixel\': "
+	dtrap("unsupported pixel format for \'write_pixel\': "
 		"%d bpp, R %X, G %X, B %X, A %X\n",
 		pf->depth,pf->red_mask,pf->green_mask,pf->blue_mask,pf->alpha_mask);
 	return ptr;

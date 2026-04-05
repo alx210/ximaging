@@ -905,7 +905,7 @@ static Boolean notify_client(Widget w, const char *path)
 	} else {
 		cbd.value = (char*)path;
 	}
-	dbg_trace("new path: %s\n", cbd.value);
+	dtrace("new path: %s\n", cbd.value);
 	cbd.accept = True;
 	wp->processing_callbacks = True;
 	XtCallCallbackList(w, wp->change_cb, (XtPointer)&cbd);

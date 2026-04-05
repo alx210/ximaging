@@ -3,10 +3,6 @@
  * This software is distributed under the terms of the MIT license.
  * See the included LICENSE file for further information.
  */
- 
-/*
- * Debugging helpers
- */
 
 #include <stdlib.h>
 #include <stdio.h>

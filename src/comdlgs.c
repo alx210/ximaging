@@ -68,7 +68,7 @@ enum mb_result message_box(Widget wparent, enum mb_type type,
 	char *dlg_type_name = NULL;
 	
 	if(wparent == None) wparent = app_inst.session_shell;
-	dbg_assert(wparent);
+	dassert(wparent);
 	
 	if(!msg_title){
 		char *sz = NULL;

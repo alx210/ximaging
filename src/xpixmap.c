@@ -77,7 +77,7 @@ static int build_rgb_table(void)
 	int i;
 	struct sym_rec rec;
 
-	dbg_assert(rgb_table==NULL);
+	dassert(rgb_table==NULL);
 	rgb_table=ht_alloc(NUM_XCOLORS,0,sizeof(struct sym_rec),
 		(ht_hash_ft)sym_hash_nocase,(ht_cmp_ft)sym_compare_nocase);
 	if(!rgb_table) return IMG_ENOMEM;
@@ -145,7 +145,7 @@ static int parse_color(struct color *c, int ctype, char *cval)
 		}else if(len==12){
 			csize=4;
 		}else{
-			dbg_trace("illegal color value for %c: %s",ctype,cval);
+			dtrace("illegal color value for %c: %s",ctype,cval);
 			return IMG_EFILE;
 		}
 		strncpy(r,cval,csize); r[csize]='\0';
@@ -166,7 +166,7 @@ static int parse_color(struct color *c, int ctype, char *cval)
 		res=get_named_rgb(c,cval);
 		if(res) return res;
 	}else{
-		dbg_trace("illegal color specifier: %c: %s\n",ctype,cval);
+		dtrace("illegal color specifier: %c: %s\n",ctype,cval);
 		return IMG_EFILE;
 	}
 	return 0;
@@ -290,7 +290,7 @@ static uint32_t lookup_pixel(struct loader_data *ld, const char *sym)
 		}
 		#ifdef DEBUG
 		else{
-			dbg_trace("no entry for sym: %s\n",rec.sym);
+			dtrace("no entry for sym: %s\n",rec.sym);
 		}
 		#endif
 	}

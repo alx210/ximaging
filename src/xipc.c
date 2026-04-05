@@ -125,7 +125,7 @@ Boolean init_x_ipc(const char *open_spec, const char *force_suffix)
 
 	XFlush(app_inst.display);
 	
-	dbg_trace("%d is %s\n",(int)getpid(),is_server?"server":"client");
+	dtrace("%d is %s\n",(int)getpid(),is_server?"server":"client");
 	
 	return is_server;
 }
@@ -171,7 +171,7 @@ static Boolean ipcs_convert_cb(Widget w, Atom *sel, Atom *tgt,
 	*len_ret = msg_len;
 	*fmt_ret = 8;
 
-	dbg_trace("reqest sent: %s\n",msg_data);
+	dtrace("reqest sent: %s\n",msg_data);
 	
 	return True;	
 }
@@ -183,7 +183,7 @@ static void ipcs_lose_cb(Widget w, Atom *sel)
 {
 	if(!is_server) return;
 	
-	dbg_trace("selection grabbed by %d\n",(int)getpid());
+	dtrace("selection grabbed by %d\n",(int)getpid());
 	XtGetSelectionValue(w,app_inst.XaSERVER,app_inst.XaSERVER_REQ,
 		ipsc_value_ready_cb,NULL,CurrentTime);
 	
@@ -211,7 +211,7 @@ static void ipsc_value_ready_cb(Widget w, XtPointer client_data,
 	/* This should never happen^TM */
 	if(*type != app_inst.XaSERVER_REQ) return;
 
-	dbg_trace("request received: %s\n",(char*)value);
+	dtrace("request received: %s\n",(char*)value);
 
 	sscanf((char*)value,
 		"geometry=%*s pin_window=%*d browse=%*d %n"
@@ -282,7 +282,7 @@ static void ipcs_done_cb(Widget w, Atom *sel, Atom *tgt)
 {
 	free(msg_data);
 	msg_data = NULL;
-	dbg_trace("%d done sending data\n",(int)getpid());
+	dtrace("%d done sending data\n",(int)getpid());
 	set_exit_flag(EXIT_SUCCESS);
 }
 

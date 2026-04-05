@@ -133,7 +133,7 @@ static void make_button_pixmaps(Widget w, const unsigned char *bits,
 	static int depth;
 	static int armed_offset;
 	
-	dbg_assert(width && height);
+	dassert(width && height);
 		
 	if(!dpy){
 		Dimension thin_borders;
@@ -217,6 +217,6 @@ Widget get_toolbar_item(Widget toolbar, const char *name)
 	XtGetValues(toolbar,arg,1);
 	
 	w=XtNameToWidget(tbd->wrowcol,name);
-	dbg_assertmsg(w!=None,"toolbar item %s doesn't exist\n",name);
+	dassertmsg(w!=None,"toolbar item %s doesn't exist\n",name);
 	return w;
 }

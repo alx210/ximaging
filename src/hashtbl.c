@@ -184,7 +184,7 @@ hashtbl_t* ht_alloc(size_t tbl_size, size_t grow_by,
 	/* adjust size according to the fullness threshold */
 	tbl_size+=((float)(120-(FULL_THRESHOLD))/100)*tbl_size;
 	while(!test_prime(tbl_size)) tbl_size++;
-	dbg_assert(tbl_size>0);
+	dassert(tbl_size>0);
 
 	tbl=malloc(sizeof(hashtbl_t));
 	if(!tbl) return NULL;

@@ -223,7 +223,7 @@ int img_open_xbm(const char *file_name, struct img_file *img, int flags)
 	if(res){
 		fclose(img_file);
 		if(mask_file) fclose(mask_file);
-		dbg_trace("failed to parse xbm header\n");
+		dtrace("failed to parse xbm header\n");
 		return res;
 	}
 	if(mask_file){
@@ -244,7 +244,7 @@ int img_open_xbm(const char *file_name, struct img_file *img, int flags)
 	if(res){
 		fclose(img_file);
 		if(mask_file) fclose(mask_file);
-		dbg_trace("failed to locale xbm data offset\n");
+		dtrace("failed to locale xbm data offset\n");
 		return res;
 	}
 	

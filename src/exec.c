@@ -105,7 +105,7 @@ int exec_file(const char *cmd_spec,
 			
 			argv[argc] = t;
 			
-			dbg_trace("argv[%d]: %s\n", argc, argv[argc]);
+			dtrace("argv[%d]: %s\n", argc, argv[argc]);
 			
 			t = NULL;
 			argc++;

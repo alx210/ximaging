@@ -181,7 +181,7 @@ static int read_header(FILE *fin, struct pam_info *inf)
 		res = read_pam_header(fin, inf);
 	} else res = IMG_EUNSUP;
 
-	dbg_trace("(%d): %dx%d depth=%d(max %d), tupl=%d\n", inf->type,
+	dtrace("(%d): %dx%d depth=%d(max %d), tupl=%d\n", inf->type,
 		inf->width, inf->height, inf->depth, inf->maxval, inf->tupltype);
 
 	return res;

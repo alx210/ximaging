@@ -40,7 +40,7 @@
 #include <Dt/Action.h>
 #endif /* ENABLE_CDE */
 #include "common.h"
-#include "browser_i.h"
+#include "browserp.h"
 #include "menu.h"
 #include "strings.h"
 #include "comdlgs.h"
@@ -53,6 +53,7 @@
 #include "browser.h"
 #include "pathw.h"
 #include "bswap.h"
+#include "ioutil.h"
 #include "debug.h"
 #include "bitmaps/wmiconb.bm"
 #include "bitmaps/wmiconb_m.bm"
@@ -369,7 +370,7 @@ static void load_path(struct browser_data *bd, const char *path)
 		reset_browser(bd);
 	}
 	
-	dbg_assert(path);
+	dassert(path);
 	
 	if(access(path,R_OK|X_OK)){
 		errno_message_box(bd->wshell,errno,nlstr(APP_MSGSET,SID_EFAILED,
@@ -413,7 +414,7 @@ static int scanline_read_cb(unsigned long iscl,
 	uint8_t *ptr=(uint8_t*)&cbd->buf_image->data[iscl*
 		cbd->buf_image->bytes_per_line];
 
-	dbg_assert(iscl < cbd->img_file.height);
+	dassert(iscl < cbd->img_file.height);
 	
 	if(app_inst.visual_info.class==PseudoColor){
 		if(cbd->img_file.format==IMG_PSEUDO){
@@ -538,13 +539,13 @@ static void* loader_thread(void *data)
 		result = img_open(path_buf, NULL, &cbd.img_file, 0);
 
 		if(result){
-			dbg_trace("%s: img_open failed with %d\n",path_buf,result);
+			dtrace("%s: img_open failed with %d\n",path_buf,result);
 			bd->files[i].loader_result=result;
 			if(result==IMG_ENOMEM)
 				bd->files[i].state=FS_ERROR;
 			else
 				bd->files[i].state=FS_BROKEN;
-			write(bd->tnfd[TNFD_OUT],&tmsg,sizeof(struct thread_msg));
+			writen(bd->tnfd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
 			continue;
 		}
 
@@ -553,10 +554,10 @@ static void* loader_thread(void *data)
 			cbd.img_file.blue_mask,cbd.img_file.alpha_mask,
 			cbd.img_file.bg_pixel,cbd.img_file.flags))){
 			img_close(&cbd.img_file);
-			dbg_trace("%s: init_pixel_format failed with %d\n",
+			dtrace("%s: init_pixel_format failed with %d\n",
 				path_buf,result);
 			bd->files[i].state=FS_ERROR;
-			write(bd->tnfd[TNFD_OUT],&tmsg,sizeof(struct thread_msg));
+			writen(bd->tnfd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
 			continue;
 		}
 			
@@ -586,11 +587,11 @@ static void* loader_thread(void *data)
 		
 		if(cbd.img_file.format==IMG_PSEUDO){
 			if((result=img_read_cmap(&cbd.img_file,cbd.clut))){
-				dbg_trace("%s: read_cmap failed with %d\n",
+				dtrace("%s: read_cmap failed with %d\n",
 					path_buf,result);
 				img_close(&cbd.img_file);
 				bd->files[i].state=FS_BROKEN;
-				write(bd->tnfd[TNFD_OUT],&tmsg,sizeof(struct thread_msg));
+				writen(bd->tnfd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
 				continue;
 			}
 		}
@@ -613,7 +614,7 @@ static void* loader_thread(void *data)
 				scale,transform,BLTF_INTERPOLATE);
 			bd->files[i].state=FS_VIEWABLE;
 		}else{
-			dbg_trace("%s: read_scanlines failed with %d\n",
+			dtrace("%s: read_scanlines failed with %d\n",
 				path_buf,result);
 			if(result==IMG_ENOMEM){
 				result=ENOMEM;
@@ -623,7 +624,7 @@ static void* loader_thread(void *data)
 			}
 		}
 		bd->files[i].loader_result=result;
-		write(bd->tnfd[TNFD_OUT],&tmsg,sizeof(struct thread_msg));
+		writen(bd->tnfd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
 	}
 	
 	/* always go there to finish the thread */
@@ -644,7 +645,7 @@ static void* loader_thread(void *data)
 	pthread_cond_signal(&bd->ldr_cond);
 	pthread_mutex_unlock(&bd->ldr_cond_mutex);
 	
-	write(bd->tnfd[TNFD_OUT],&tmsg,sizeof(struct thread_msg));
+	writen(bd->tnfd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
 	return NULL;
 }
 
@@ -794,7 +795,7 @@ static int read_directory(struct browser_data *bd)
 		pthread_mutex_unlock(&bd->data_mutex);
 
 		/* message data is freed by the handler */
-		write(bd->tnfd[TNFD_OUT],&tmsg,sizeof(struct thread_msg));
+		writen(bd->tnfd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
 	}
 	return 0;
 }
@@ -855,7 +856,7 @@ static void *reader_thread(void *data)
 
 				tmsg.code=TMSG_UPDATE;
 				tmsg.update_data.index=i;
-				write(bd->tnfd[TNFD_OUT],&tmsg,sizeof(struct thread_msg));
+				writen(bd->tnfd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
 				modified=True;
 			}
 		}
@@ -896,7 +897,7 @@ static void *reader_thread(void *data)
 				tmsg.change_data.dirs = rem_dirs;
 				tmsg.change_data.ndirs = nrem_dirs;
 				/* message data storage is freed by the handler */
-				write(bd->tnfd[TNFD_OUT],&tmsg,sizeof(struct thread_msg));
+				writen(bd->tnfd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
 			}
 			if(!stat(bd->path,&st) && difftime(st.st_mtime,bd->dir_modtime)){
 				result = read_directory(bd);
@@ -906,7 +907,7 @@ static void *reader_thread(void *data)
 				tmsg.code = TMSG_RELOAD;
 				tmsg.notify_data.reason = 0;
 				tmsg.notify_data.status = 0;
-				write(bd->tnfd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
+				writen(bd->tnfd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
 			}
 		} else {
 			if(rem_files) {
@@ -938,7 +939,7 @@ static void *reader_thread(void *data)
 	bd->state&=(~(BSF_READING|BSF_RCANCEL));
 	pthread_cond_signal(&bd->rdr_cond);
 	pthread_mutex_unlock(&bd->rdr_cond_mutex);
-	write(bd->tnfd[TNFD_OUT],&tmsg,sizeof(struct thread_msg));
+	writen(bd->tnfd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
 	return NULL;
 }
 
@@ -950,7 +951,8 @@ static void thread_callback_proc(XtPointer data, int *pfd, XtInputId *iid)
 	struct browser_data *bd=(struct browser_data*)data;
 	struct thread_msg msg = {0};
 
-	if(read(bd->tnfd[TNFD_IN],&msg,sizeof(struct thread_msg))<1) return;
+	if(readn(bd->tnfd[TNFD_IN], &msg, sizeof(struct thread_msg))
+		< sizeof(struct thread_msg)) return;
 
 	/* if cancelled state, discard stale message and return */
 	if(bd->state&BSF_RESET){
@@ -1067,7 +1069,7 @@ static void thread_callback_proc(XtPointer data, int *pfd, XtInputId *iid)
 			pthread_mutex_lock(&bd->data_mutex);
 			
 			for(i=0; i<msg.change_data.nfiles; i++){
-				dbg_assert(bd->nfiles);
+				dassert(bd->nfiles);
 				j=find_file_entry(bd,msg.change_data.files[i]);
 				if(j<0) continue;
 				if(bd->files[j].selected) bd->nsel_files--;
@@ -1464,7 +1466,7 @@ static void input_cb(Widget w, XtPointer client_data, XtPointer call_data)
 					Widget wrename = XtNameToWidget(bd->wpopup, "*rename");
 					Widget wedit = XtNameToWidget(bd->wpopup, "*edit");
 					Widget wpass = XtNameToWidget(bd->wpopup, "*passTo");
-					dbg_assert(wrename && wedit && wpass);
+					dassert(wrename && wedit && wpass);
 					XtSetSensitive(wrename,(bd->nsel_files == 1) ? True:False);
 					XtSetSensitive(wedit, (bd->nsel_files == 1) ? True:False);
 					XtSetSensitive(wpass, (bd->nsel_files == 1) ? True:False);
@@ -2411,7 +2413,7 @@ static Pixmap get_state_pixmap(struct browser_data *bd,
 			break;
 			case FS_VIEWABLE:
 			case _NUM_FS_VALUES:
-			dbg_trap("illegal file_state value");
+			dtrap("illegal file_state value");
 			break;
 		}
 	}
@@ -2432,7 +2434,7 @@ static int exec_file_proc(struct browser_data *bd, int proc)
 	long nfiles;
 	char *path;
 	
-	dbg_assert(bd->nsel_files>0);
+	dassert(bd->nsel_files>0);
 	names=calloc(bd->nsel_files,sizeof(char*));
 	if(!names){
 		reset_browser(bd);
@@ -2562,7 +2564,7 @@ static void update_interval_cb(XtPointer client, XtIntervalId *iid)
 	struct browser_data *bd=(struct browser_data*)client;
 	bd->update_timer=None;
 	
-	dbg_assert(bd->path);
+	dassert(bd->path);
 
 	if(XtAppPending(app_inst.context)&XtIMAlternateInput){
 		bd->update_timer=XtAppAddTimeOut(
@@ -2597,7 +2599,7 @@ static void close_cb(Widget w, XtPointer client_data, XtPointer call_data)
 	
 	destroy_browser(bd);
 	if(!app_inst.active_shells){
-		dbg_printf("exit flag set in %s: %s()\n",__FILE__,__FUNCTION__);
+		dprintf("exit flag set in %s: %s()\n",__FILE__,__FUNCTION__);
 		set_exit_flag(EXIT_SUCCESS);
 	}
 }
@@ -2644,8 +2646,8 @@ static void edit_cb(Widget w, XtPointer client, XtPointer call)
 	pid_t pid;
 	volatile int errv = 0;
 	
-	dbg_assert(init_app_res.edit_cmd);
-	dbg_assert(bd->ifocus>(-1));
+	dassert(init_app_res.edit_cmd);
+	dassert(bd->ifocus>(-1));
 
 	pthread_mutex_lock(&bd->data_mutex);	
 	path=malloc(bd->path_max+2);
@@ -2683,7 +2685,7 @@ static void pass_to_cb(Widget w, XtPointer client, XtPointer call)
 	pid_t pid;
 	volatile int errv = 0;
 	
-	dbg_assert(bd->ifocus > (-1));
+	dassert(bd->ifocus > (-1));
 
 	cmd = pass_to_input_dlg(bd->wshell);
 	if(!cmd) return;
@@ -2777,7 +2779,7 @@ static void rename_cb(Widget w, XtPointer client, XtPointer call)
 	struct stat st;
 	Boolean pinned_state=bd->pinned;
 	
-	dbg_assert(bd->nsel_files==1);
+	dassert(bd->nsel_files==1);
 	
 	for(ifile=0; !bd->files[ifile].selected; ifile++);
 	file_title=strdup(bd->files[ifile].name);
@@ -3095,7 +3097,7 @@ static Widget get_menu_item(struct browser_data *bd, const char *name)
 {
 	Widget w;
 	w=XtNameToWidget(bd->wmenubar,name);
-	dbg_assertmsg(w!=None,"menu item %s doesn't exist\n",name);
+	dassertmsg(w!=None,"menu item %s doesn't exist\n",name);
 	return w;
 }
 
@@ -3264,7 +3266,7 @@ Boolean browse_path(Widget wshell, const char *path, Tt_message req_msg)
 	struct browser_data *bd;
 	
 	bd=get_browser_inst_data(wshell);
-	dbg_assert(bd);
+	dassert(bd);
 	
 	#ifdef ENABLE_CDE
 	if(req_msg) bd->tt_disp_req=req_msg;
@@ -3285,7 +3287,7 @@ Boolean handle_browser_ttquit(Tt_message req_msg)
 	char *orig_req_id;
 	char *disp_req_id;
 		
-	dbg_assert(req_msg);
+	dassert(req_msg);
 	disp_req_id=tt_message_id(req_msg);
 	orig_req_id=tt_message_arg_val(req_msg,2);
 	if(!strlen(orig_req_id)){

@@ -121,7 +121,7 @@ static int read_cmap(struct img_file *img, void *buffer)
 	int i;
 	
 	if(ld->hdr.cm_esize!=24){
-		dbg_trace("color map size: %d\n",ld->hdr.cm_esize);
+		dtrace("color map size: %d\n",ld->hdr.cm_esize);
 		return IMG_EUNSUP;
 	}
 

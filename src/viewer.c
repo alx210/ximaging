@@ -34,7 +34,7 @@
 #include <unistd.h>
 #include <math.h>
 #include "common.h"
-#include "viewer_i.h"
+#include "viewerp.h"
 #include "menu.h"
 #include "cursor.h"
 #include "strings.h"
@@ -46,6 +46,7 @@
 #include "const.h"
 #include "browser.h"
 #include "bswap.h"
+#include "ioutil.h"
 #include "debug.h"
 #include "bitmaps/wmiconv.bm"
 #include "bitmaps/wmiconv_m.bm"
@@ -548,7 +549,7 @@ static void load_next_page(struct viewer_data *vd, Bool forward)
 	int img_errno;
 	struct stat st;
 	
-	dbg_assert(vd->img_file.npages);
+	dassert(vd->img_file.npages);
 	
 	/* make sure the file is still there */
 	if(stat(vd->file_name,&st) == -1){
@@ -780,7 +781,7 @@ static void* loader_thread(void *arg)
 	tmsg.proc=TP_IMG_LOAD;
 	tmsg.result=img_errno;
 	pthread_mutex_lock(&vd->thread_notify_mutex);
-	write(vd->tnfd[TNFD_OUT],&tmsg,sizeof(struct proc_thread_msg));
+	writen(vd->tnfd[TNFD_OUT], &tmsg, sizeof(struct proc_thread_msg));
 	pthread_mutex_unlock(&vd->thread_notify_mutex);
 	return NULL;
 }
@@ -795,7 +796,7 @@ static int scanline_read_cb(unsigned long iscl,
 	uint8_t *ptr=(uint8_t*)&cbd->vd->image->data
 		[iscl*cbd->vd->image->bytes_per_line];
 
-	dbg_assert(iscl < cbd->vd->img_file.height);
+	dassert(iscl < cbd->vd->img_file.height);
 	
 	if(app_inst.visual_info.class==PseudoColor){
 		if(cbd->vd->img_file.format==IMG_PSEUDO){
@@ -830,8 +831,8 @@ static void thread_callback_proc(XtPointer client, int *pfd, XtInputId *iid)
 	struct viewer_data *vd=(struct viewer_data*)client;
 	struct proc_thread_msg tmsg;
 	
-	if(read(vd->tnfd[TNFD_IN],&tmsg,sizeof(struct proc_thread_msg))<1)
-		return;
+	if(readn(vd->tnfd[TNFD_IN], &tmsg, sizeof(struct proc_thread_msg))
+		< sizeof(struct proc_thread_msg)) return;
 
 	if(tmsg.proc==TP_IMG_LOAD){	
 		if(tmsg.result){
@@ -941,7 +942,7 @@ static void* dir_reader_thread(void *arg)
 	char *tmp_name = NULL;
 	size_t tmp_name_len = 0;
 
-	dbg_assert(vd->dir_name);
+	dassert(vd->dir_name);
 	
 	if(vd->dir_nfiles){
 		while(vd->dir_nfiles--)
@@ -1145,7 +1146,7 @@ static float compute_fit_zoom(struct viewer_data *vd)
 	float zoom;
 	XtVaGetValues(vd->wview,XmNwidth,&vw,XmNheight,&vh,NULL);
 	
-	dbg_assert(vd->image->width && vd->image->height);
+	dassert(vd->image->width && vd->image->height);
 	
 	img_width=(vd->tform&IMGT_ROTATE)?vd->image->height:vd->image->width;
 	img_height=(vd->tform&IMGT_ROTATE)?vd->image->width:vd->image->height;
@@ -1899,7 +1900,7 @@ static void close_cb(Widget w, XtPointer client_data, XtPointer call_data)
 
 	destroy_viewer(vd);
 	if(!app_inst.active_shells){
-		dbg_printf("exit flag set in %s: %s()\n",__FILE__,__FUNCTION__);
+		dprintf("exit flag set in %s: %s()\n",__FILE__,__FUNCTION__);
 		set_exit_flag(EXIT_SUCCESS);
 	}
 }
@@ -2642,7 +2643,7 @@ static Widget get_menu_item(struct viewer_data *vd, const char *name)
 {
 	Widget w;
 	w=XtNameToWidget(vd->wmenubar,name);
-	dbg_assertmsg(w!=None,"menu item %s doesn't exist\n",name);
+	dassertmsg(w!=None,"menu item %s doesn't exist\n",name);
 	return w;
 }
 
@@ -2696,10 +2697,10 @@ Boolean display_image(Widget wshell, const char *fname,
 	struct viewer_data *vd=viewers;
 	Boolean res;
 
-	dbg_assert(fname);
+	dassert(fname);
 
 	vd=get_viewer_inst_data(wshell);
-	dbg_assert(vd);
+	dassert(vd);
 	res = load_image(vd, fname, force_suffix);
 
 	#ifdef ENABLE_CDE
@@ -2724,7 +2725,7 @@ Boolean handle_viewer_ttquit(Tt_message req_msg)
 	char *orig_req_id;
 	char *disp_req_id;
 
-	dbg_assert(req_msg);
+	dassert(req_msg);
 	
 	orig_req_id=tt_message_arg_val(req_msg,2);
 	disp_req_id=tt_message_id(vd->tt_disp_req);

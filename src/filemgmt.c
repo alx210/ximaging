@@ -30,7 +30,8 @@
 #include "filemgmt.h"
 #include "const.h"
 #include "guiutil.h"
-#include "filemgmt_i.h"
+#include "filemgmtp.h"
+#include "ioutil.h"
 #include "debug.h"
 
 #include "bitmaps/wmfmgmt.bm"
@@ -70,7 +71,8 @@ static void* proc_thread_entry(void *data)
 		pd->cur_file=i;
 		tmsg.code=TM_PRE_NOTE;
 		tmsg.status=0;
-		write(pd->thread_notify_fd[TNFD_OUT],&tmsg,sizeof(struct thread_msg));
+		writen(pd->thread_notify_fd[TNFD_OUT],
+			&tmsg, sizeof(struct thread_msg));
 		pthread_cond_wait(&pd->got_response,&pd->state_mutex);
 		pthread_mutex_unlock(&pd->state_mutex);
 		
@@ -88,7 +90,7 @@ static void* proc_thread_entry(void *data)
 			unlink(pd->src[i]);
 			res=errno;
 			break;
-			default: dbg_trap("illegal proc id\n"); break;
+			default: dtrap("illegal proc id\n"); break;
 		}
 		if(dest)free(dest);
 		/* on error, notify the user and ask to continue or cancel */
@@ -106,7 +108,7 @@ static void* proc_thread_entry(void *data)
 			pd->proc_msg=msg_buf;
 			tmsg.code=TM_WAIT_ACK;
 			tmsg.status=0;
-			write(pd->thread_notify_fd[TNFD_OUT],&tmsg,
+			writen(pd->thread_notify_fd[TNFD_OUT], &tmsg,
 				sizeof(struct thread_msg));
 			pthread_cond_wait(&pd->got_response,&pd->state_mutex);
 			pd->proc_msg=NULL;
@@ -116,14 +118,15 @@ static void* proc_thread_entry(void *data)
 		pthread_mutex_lock(&pd->state_mutex);
 		tmsg.code=TM_POST_NOTE;
 		tmsg.status=res;
-		write(pd->thread_notify_fd[TNFD_OUT],&tmsg,sizeof(struct thread_msg));
+		writen(pd->thread_notify_fd[TNFD_OUT],
+			&tmsg, sizeof(struct thread_msg));
 		pthread_cond_wait(&pd->got_response,&pd->state_mutex);
 		pthread_mutex_unlock(&pd->state_mutex);
 	}
 
 	tmsg.code=TM_FINISHED;
 	tmsg.status=0;
-	write(pd->thread_notify_fd[TNFD_OUT],&tmsg,sizeof(struct thread_msg));
+	writen(pd->thread_notify_fd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
 
 	return NULL;
 }
@@ -157,8 +160,8 @@ static void thread_callback_proc(XtPointer client,int *pfd, XtInputId *iid)
 	struct proc_data *pd=(struct proc_data*)client;
 	struct thread_msg tmsg;
 	
-	if(read(pd->thread_notify_fd[TNFD_IN],&tmsg,sizeof(struct thread_msg))<1)
-		return;
+	if(readn(pd->thread_notify_fd[TNFD_IN], &tmsg,
+		sizeof(struct thread_msg)) < sizeof(struct thread_msg)) return;
 	
 	switch(tmsg.code){
 		enum mb_result res;
@@ -226,7 +229,7 @@ static void thread_callback_proc(XtPointer client,int *pfd, XtInputId *iid)
 		free_pdata(pd);
 		app_inst.active_shells--;
 		if(!app_inst.active_shells){
-			dbg_printf("exit flag set in %s: %s()\n",__FILE__,__FUNCTION__);
+			dprintf("exit flag set in %s: %s()\n",__FILE__,__FUNCTION__);
 			set_exit_flag(EXIT_SUCCESS);
 		}
 	}
@@ -343,7 +346,7 @@ static enum response_code ask_replace(struct proc_data *pd, const char *fname)
 	pd->proc_msg=msg_buf;
 	tmsg.code=TM_WAIT_CONFIRM;
 	tmsg.status=0;
-	write(pd->thread_notify_fd[TNFD_OUT],&tmsg,sizeof(struct thread_msg));
+	writen(pd->thread_notify_fd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
 	pthread_cond_wait(&pd->got_response,&pd->state_mutex);
 	pd->proc_msg=NULL;
 	pthread_mutex_unlock(&pd->state_mutex);
@@ -548,7 +551,7 @@ static void create_progress_widget(struct proc_data *pd)
 		case FPROC_DELETE:
 		title=nlstr(DLG_MSGSET,SID_DELETING,"Deleting");
 		break;
-		default: dbg_trap("illegal proc id\n");	break;
+		default: dtrap("illegal proc id\n");	break;
 	}
 	pd->proc_title=title;
 	#ifndef NO_DEFAULT_WM_ICON

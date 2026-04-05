@@ -100,7 +100,7 @@ int generate_palette(XColor *buf, unsigned int count, unsigned short irange)
  */
 int cm_match_rgb(int r,int g,int b)
 {
-	dbg_assertmsg(g_ncolors,"no colormap allocated");
+	dassertmsg(g_ncolors,"no colormap allocated");
 	return match_rgb(g_colors,g_ncolors,r,g,b);
 }
 

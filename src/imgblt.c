@@ -202,7 +202,7 @@ void img_fill_rect(XImage *img, unsigned int x, unsigned int y,
 	unsigned int cx, cy;
 	set_pixel_fnc_t set_pixel_fnc;
 	
-	dbg_assert(x+width<=img->width && y+height<=img->height);
+	dassert(x+width<=img->width && y+height<=img->height);
 	#ifdef USE_XIMAGE_PIXFNC
 	set_pixel_fnc=img->f.put_pixel;
 	#else
@@ -246,7 +246,7 @@ static void select_pixel_func(int bpp, set_pixel_fnc_t *set_fnc,
 		set=set_pixel32;
 		break;
 		default:
-		dbg_trap("unsupported bit-depth %d",bpp);
+		dtrap("unsupported bit-depth %d",bpp);
 		break;
 	}
 	if(set_fnc) *set_fnc=set;
@@ -258,54 +258,54 @@ static void select_pixel_func(int bpp, set_pixel_fnc_t *set_fnc,
  */
 static unsigned long get_pixel8(XImage *img, int x, int y)
 {
-	dbg_assert(x<img->width && y<img->height);
+	dassert(x<img->width && y<img->height);
 	return img->data[img->width*y+x];
 }
 
 static unsigned long get_pixel16(XImage *img, int x, int y)
 {
-	dbg_assert(x<img->width && y<img->height);
+	dassert(x<img->width && y<img->height);
 	return ((uint16_t*)img->data)[img->width*y+x];
 }
 
 static unsigned long get_pixel32(XImage *img, int x, int y)
 {
-	dbg_assert(x<img->width && y<img->height);
+	dassert(x<img->width && y<img->height);
 	return ((uint32_t*)img->data)[img->width*y+x];
 }
 
 static unsigned long get_pixel24(XImage *img, int x, int y)
 {
 	uint32_t pixel=0;
-	dbg_assert(x<img->width && y<img->height);
+	dassert(x<img->width && y<img->height);
 	memcpy(&pixel,&img->data[img->bytes_per_line*y+x*3],3);
 	return pixel;
 }
 
 static int set_pixel8(XImage *img, int x, int y, unsigned long pixel)
 {
-	dbg_assert(x<img->width && y<img->height);
+	dassert(x<img->width && y<img->height);
 	img->data[img->width*y+x]=(uint8_t)pixel;
 	return 0;
 }
 
 static int set_pixel16(XImage *img, int x, int y, unsigned long pixel)
 {
-	dbg_assert(x<img->width && y<img->height);
+	dassert(x<img->width && y<img->height);
 	((uint16_t*)img->data)[img->width*y+x]=(uint16_t)pixel;
 	return 0;
 }
 
 static int set_pixel24(XImage *img, int x, int y, unsigned long pixel)
 {
-	dbg_assert(x<img->width && y<img->height);
+	dassert(x<img->width && y<img->height);
 	memcpy(&img->data[img->bytes_per_line*y+x*3],&pixel,3);
 	return 0;
 }
 
 static int set_pixel32(XImage *img, int x, int y, unsigned long pixel)
 {
-	dbg_assert(x<img->width && y<img->height);
+	dassert(x<img->width && y<img->height);
 	((uint32_t*)img->data)[img->width*y+x]=pixel;
 	return 0;
 }

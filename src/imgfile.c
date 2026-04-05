@@ -91,7 +91,7 @@ static void build_type_table(void)
 		cur = strdup(file_formats[i].suffixes);
 		token = strtok_r(cur, sep, &last);
 		
-		dbg_assert(token);
+		dassert(token);
 		
 		do {
 			rec.suffix = strdup(token);
@@ -119,7 +119,7 @@ static void build_type_table(void)
 		cur = strdup(filters[i].suffixes);
 		token = strtok_r(cur, sep, &last);
 		
-		dbg_assert(token);
+		dassert(token);
 		
 		do {
 			rec.suffix = strdup(token);
@@ -159,7 +159,7 @@ int img_open(const char *file_name, const char *type_suffix,
 	}
 	
 	
-	dbg_assert(img->close_fnc);
+	dassert(img->close_fnc);
 	
 	return res;
 }
