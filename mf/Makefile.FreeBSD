@@ -1,11 +1,13 @@
 # -----------------------------------------------------------------------------
-# Copyright (C) 2012-2024 alx@fastestcode.org
+# Copyright (C) 2012-2026 alx@fastestcode.org
 # This software is distributed under the terms of the MIT license.
 # See the included LICENSE file for further information.
 # -----------------------------------------------------------------------------
 # XImaging FreeBSD Makefile
 
+# OpenMP loop optimizations
 ENABLE_OMP = 1
+ENABLE_CDE = 0
 
 PREFIX ?= /usr/local
 MANDIR = $(PREFIX)/man
@@ -17,14 +19,12 @@ LIBDIRS = -L/usr/local/lib
 CFLAGS += -Wall $(INCDIRS)
 LDFLAGS += -pthread
 
-# OpenMP loop optimizations
-.ifdef ENABLE_OMP
+.if $(ENABLE_OMP) == 1
 CFLAGS += -fopenmp -DENABLE_OMP
 LDFLAGS += -fopenmp
 .endif
 
-# Common Desktop Environment support
-.ifdef ENABLE_CDE
+.if $(ENABLE_CDE) == 1
 CFLAGS += -DENABLE_CDE
 IPC_OBJS = tooltalk.o
 CDE_LIBS = -lDtHelp -lDtSvc -ltt
