@@ -45,7 +45,7 @@ int exec_file(const char *cmd_spec,
 	/* split the command string into separate arguments */
 	while(!done){
 		if(!t){
-			while(*p && isblank(*p)) p++;
+			while(*p && isblank((int)*p)) p++;
 			if(*p == '\0') break;
 			t = p;
 		}
@@ -72,7 +72,7 @@ int exec_file(const char *cmd_spec,
 				
 				/* next char must be blank, but in case it's not,
 				 * we assume it is a mistake and fix it */
-				if(isblank(p[1])) p++; else *p = ' ';
+				if(isblank((int)p[1])) p++; else *p = ' ';
 				
 				/* replace token; skip parameter if no match */
 				if(!(t = match)) continue;
@@ -89,7 +89,7 @@ int exec_file(const char *cmd_spec,
 				memmove(p, p + 1, strlen(p));
 			}
 		}
-		if(isblank(*p) || *p == '\0'){
+		if(isblank((int)*p) || *p == '\0'){
 			if(*p == '\0') done = 1;
 			if(argv_size < (argc + 1)){
 				char **new_ptr;

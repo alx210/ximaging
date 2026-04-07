@@ -273,7 +273,7 @@ double str_to_double(const char *str)
 	char *ptr;
 	int sign=0;
 
-	while(isspace(*str)) str++;
+	while(isspace((int)*str)) str++;
 
 	if(str[0]=='-'){
 		sign=1;

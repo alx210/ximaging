@@ -194,7 +194,7 @@ static int read_pam_header(FILE *fin, struct pam_info *inf)
 	while(fgets(rb, PAM_HDR_BUFSIZ, fin)) {
 		char *p = rb;
 
-		while(isspace(*p)) p++;
+		while(isspace((int)*p)) p++;
 
 		if(!strncmp("ENDHDR", p, 6)) {
 			break;
@@ -213,7 +213,7 @@ static int read_pam_header(FILE *fin, struct pam_info *inf)
 		} else if(!strncmp("TUPLTYPE", p, 8)) {
 
 			p += 8;
-			while(isspace(*p)) p++;
+			while(isspace((int)*p)) p++;
 
 			if(!strncmp("BLACKANDWHITE_ALPHA", p, 19))
 				inf->tupltype = PAM_BWA;

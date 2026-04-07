@@ -283,7 +283,7 @@ hashkey_t hash_string_nocase(const char *str)
 	unsigned int i=0;
 	
 	for(i=0; str[i]; i++)
-		h=((h<<5)^((h&0xf8L)>>27))^((unsigned)tolower(str[i]));
+		h=((h<<5)^((h&0xf8L)>>27))^((unsigned)tolower((int)str[i]));
 
 	return h;
 }
