@@ -2520,9 +2520,13 @@ static void file_proc_cb(enum file_proc_id fpid, char *file_name,
 					pthread_mutex_unlock(&bd->data_mutex);
 					break;
 				}
-				if(bd->files[i].selected) bd->nsel_files--;
-				if(bd->ifocus==i)
+				if(bd->files[i].selected) {
+					bd->nsel_files--;
+					if(!bd->nsel_files) update_controls(bd);
+				}
+				if(bd->ifocus == i) {
 					set_focus(bd,(i<bd->nfiles-1)?i:(bd->nfiles-2));
+				}
 				XmStringFree(bd->files[i].label);
 				XDestroyImage(bd->files[i].image);
 				if(i<bd->nfiles-1) memmove(&bd->files[i],&bd->files[i+1],
