@@ -2749,8 +2749,12 @@ static void copy_to_cb(Widget w, XtPointer client, XtPointer call)
 {
 	struct browser_data *bd=(struct browser_data*)client;
 	int res;
-	res=exec_file_proc(bd,FPROC_COPY);
-	if(res){
+	
+	if(!bd->nsel_files) return;
+	
+	res = exec_file_proc(bd,FPROC_COPY);
+
+	if(res) {
 		errno_message_box(bd->wshell,res,nlstr(APP_MSGSET,SID_EFAILED,
 			"The action couldn't be completed."),False);
 	}
@@ -2760,7 +2764,10 @@ static void move_to_cb(Widget w, XtPointer client, XtPointer call)
 {
 	struct browser_data *bd=(struct browser_data*)client;
 	int res;
-	res=exec_file_proc(bd,FPROC_MOVE);
+	
+	if(!bd->nsel_files) return;
+	
+	res = exec_file_proc(bd, FPROC_MOVE);
 	if(res){
 		errno_message_box(bd->wshell,res,nlstr(APP_MSGSET,SID_EFAILED,
 			"The action couldn't be completed."),False);
@@ -2779,7 +2786,7 @@ static void rename_cb(Widget w, XtPointer client, XtPointer call)
 	struct stat st;
 	Boolean pinned_state=bd->pinned;
 	
-	dassert(bd->nsel_files==1);
+	if(bd->nsel_files != 1) return;
 	
 	for(ifile=0; !bd->files[ifile].selected; ifile++);
 	file_title=strdup(bd->files[ifile].name);
@@ -2842,7 +2849,10 @@ static void delete_cb(Widget w, XtPointer client, XtPointer call)
 {
 	struct browser_data *bd=(struct browser_data*)client;
 	int res;
-	res=exec_file_proc(bd,FPROC_DELETE);
+	
+	if(!bd->nsel_files) return;
+	
+	res = exec_file_proc(bd, FPROC_DELETE);
 	if(res){
 		errno_message_box(bd->wshell,res,nlstr(APP_MSGSET,SID_EFAILED,
 			"The action couldn't be completed."),False);
