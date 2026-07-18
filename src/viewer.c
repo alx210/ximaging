@@ -1900,7 +1900,9 @@ static void close_cb(Widget w, XtPointer client_data, XtPointer call_data)
 
 	destroy_viewer(vd);
 	if(!app_inst.active_shells){
-		dprintf("exit flag set in %s: %s()\n",__FILE__,__FUNCTION__);
+		#ifdef DEBUG
+		printf("exit flag set in %s: %s()\n",__FILE__,__FUNCTION__);
+		#endif
 		set_exit_flag(EXIT_SUCCESS);
 	}
 }

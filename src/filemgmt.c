@@ -229,7 +229,9 @@ static void thread_callback_proc(XtPointer client,int *pfd, XtInputId *iid)
 		free_pdata(pd);
 		app_inst.active_shells--;
 		if(!app_inst.active_shells){
-			dprintf("exit flag set in %s: %s()\n",__FILE__,__FUNCTION__);
+			#ifdef DEBUG
+			printf("exit flag set in %s: %s()\n",__FILE__,__FUNCTION__);
+			#endif
 			set_exit_flag(EXIT_SUCCESS);
 		}
 	}
