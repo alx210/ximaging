@@ -119,6 +119,7 @@ struct browser_data {
 	char *last_dest_dir; /* last move/copy to directory */
 	Boolean show_dot_files;
 	Boolean has_bg_pixmap;
+	int visibility;
 	
 	/* tile aspect ratio and size */
 	short tile_asr[2];

@@ -133,6 +133,7 @@ static Boolean convert_selection_proc(Widget w,
 	Atom*, Atom*, Atom*, XtPointer*, unsigned long*, int*);
 static void lose_selection_proc(Widget, Atom*);
 static void redraw_tile(struct browser_data*, long);
+static void visibility_change_cb(Widget, XtPointer, XEvent*, Boolean*);
 #ifdef ENABLE_CDE
 static void help_topics_cb(Widget,XtPointer,XtPointer);
 #endif /* ENABLE_CDE */
@@ -289,6 +290,9 @@ static struct browser_data* create_browser(const struct app_resources *res)
 	XtAddCallback(bd->wview,XmNinputCallback,input_cb,(XtPointer)bd);
 	XtAddCallback(bd->wview,XmNexposeCallback,expose_cb,(XtPointer)bd);
 	XtAddCallback(bd->wview,XmNresizeCallback,resize_cb,(XtPointer)bd);
+
+	XtAddEventHandler(bd->wview, VisibilityChangeMask,
+		False, visibility_change_cb, (XtPointer)bd);
 
 	XSetCommand(app_inst.display, XtWindow(bd->wshell),
 		app_inst.saved_args, app_inst.nsaved_args);
@@ -2039,7 +2043,8 @@ static void set_vscroll(struct browser_data *bd, int new_offset)
 
 	bd->yoffset = new_offset;
 	
-	if((abs(delta) >= bd->view_height) || bd->has_bg_pixmap) {
+	if((abs(delta) >= bd->view_height) ||
+		bd->has_bg_pixmap || bd->visibility != VisibilityUnobscured) {
 		XClearArea(app_inst.display, view, 0, 0,
 			bd->view_width, bd->view_height, True);
 		return;
@@ -3238,6 +3243,18 @@ static void lose_selection_proc(Widget wshell, Atom *sel)
 
 	bd->owns_primary = False;
 	redraw_tile(bd, bd->ifocus);
+}
+
+/* XVisibilityEvent handler for the view widget */
+static void visibility_change_cb(Widget w,
+	XtPointer cd, XEvent *evt, Boolean *cont)
+{
+	struct browser_data *bd = (struct browser_data*)cd;
+	
+	if(evt->type == VisibilityNotify)
+		bd->visibility = evt->xvisibility.state;
+
+	*cont = True;
 }
 
 /*
