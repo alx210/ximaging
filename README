@@ -11,6 +11,8 @@ libtiff
 On most GNU/Linux distributions appropriate 'development' packages need to
 be installed also - e.g. xorg-dev, motif-dev, etc.
 
+C99 compliant C compiler, POSIX compliant make
+
 2. BUILDING AND INSTALLING
 -----------------------------
 Make sure to review the target platform makefile (mf/Makefile.<platform>).
