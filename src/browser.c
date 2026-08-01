@@ -134,9 +134,13 @@ static Boolean convert_selection_proc(Widget w,
 static void lose_selection_proc(Widget, Atom*);
 static void redraw_tile(struct browser_data*, long);
 static void visibility_change_cb(Widget, XtPointer, XEvent*, Boolean*);
+static struct browser_data* data_from_widget(Widget);
 #ifdef ENABLE_CDE
 static void help_topics_cb(Widget,XtPointer,XtPointer);
 #endif /* ENABLE_CDE */
+
+/* For XFile interoperability */
+#define XFILE_ATOM_NAME "XFile_FileList1"
 
 /* Linked list of browser instances */
 struct browser_data *browsers=NULL;
@@ -3190,42 +3194,142 @@ static void select_pattern_cb(Widget w, XtPointer client, XtPointer call)
 
 /*
  * Primary selection converter.
- * Returns full path to the focused file, if any, to the requestor.
+ * Returns a list of selected files, if any, to the requestor.
  */
-static Boolean convert_selection_proc(Widget w,
+Boolean convert_selection_proc(Widget w,
 	Atom *sel, Atom *tgt, Atom *type_ret, XtPointer *val_ret,
 	unsigned long *len_ret, int *fmt_ret)
 {
-	struct browser_data *bd = browsers;
+	static Boolean initial = True;
+	static Atom XA_TEXT = None;
+	static Atom XA_UTF8_STRING = None;
+	static Atom XA_TARGETS = None;
+	static Atom XA_FILE_LIST = None;
+	unsigned int i, j;
+	unsigned int *sel_pos;
+	struct browser_data *bd = data_from_widget(w);
 	
-	while(bd) {
-		if(bd->wshell == w) break;
-		bd = bd->next;
+	if(initial) {
+		initial = False;
+		
+		XA_TEXT = XInternAtom(app_inst.display, "TEXT", False);
+		XA_UTF8_STRING = XInternAtom(app_inst.display, "UTF8_STRING", False);
+		XA_TARGETS = XInternAtom(app_inst.display, "TARGETS", False);
+		XA_FILE_LIST = XInternAtom(app_inst.display, XFILE_ATOM_NAME, False);
 	}
-	if(!bd || !bd->nfiles || (bd->ifocus < 0)) return False;
-	
-	if(*tgt == app_inst.XaTEXT || *tgt == XA_STRING) {
-		unsigned long len;
+
+	if(*tgt == XA_TARGETS) {
+		Atom targets[] = {
+			XA_STRING, XA_TEXT,
+			XA_UTF8_STRING, XA_FILE_LIST
+		};
+		
 		char *data;
 		
-		len = strlen(bd->path) + strlen(bd->files[bd->ifocus].name) + 2;
+		data = XtMalloc(sizeof(targets)); /* Xt will XtFree this when done */
+		if(!data) return False;
+
+		memcpy(data, targets, sizeof(targets));
+		*type_ret = *tgt;
+		*fmt_ret = 32;
+		*len_ret = sizeof(targets) / sizeof(Atom);
+		*val_ret = data;
+
+		return True;
+	}
+
+	if(!bd || !bd->nfiles || !bd->nsel_files) return False;
+	
+	sel_pos = malloc(sizeof(unsigned int*) * bd->nsel_files);
+	if(!sel_pos) {
+		warning_msg("Memory allocation error\n");
+		return False;
+	}
+
+	for(i = 0, j = 0; i < bd->nfiles; i++) {
+		if(bd->files[i].selected) {
+			sel_pos[j] = i;
+			j++;
+		}
+	}
+	
+	if(*tgt == XA_TEXT || *tgt == XA_STRING || *tgt == XA_UTF8_STRING) {
+		unsigned long len = 0;
+		size_t path_len = strlen(bd->path);
+		char *data;
 		
-		data = XtMalloc(len); /* Xt will XtFree it when done */
+		for(i = 0; i < bd->nsel_files; i++) {
+			len += path_len + strlen(bd->files[sel_pos[i]].name) + 2;
+		}
+		
+		data = XtMalloc(len + 1); /* Xt will XtFree this when done */
 		if(!data) {
-			warning_msg("Failed to allocate selection data buffer");
+			warning_msg("Memory allocation error\n");
+			free(sel_pos);
 			return False;
 		}
+		
+		data[0] = '\0';
+		
+		for(i = 0; i < bd->nsel_files; i++) {
+			strcat(data, bd->path);
+			strcat(data, "/");
+			strcat(data, bd->files[sel_pos[i]].name);
+			strcat(data, " ");
+		}
+		data[len - 1] = '\0';
+		
+		if(*tgt == XA_TEXT || *tgt == XA_STRING)
+			mbs_to_latin1(data, data);
 
-		sprintf(data, "%s/%s", bd->path, bd->files[bd->ifocus].name);
+		*type_ret = *tgt;
+		*fmt_ret = 8;
+		*len_ret = strlen(data);
+		*val_ret = data;
+		
+	} else if(*tgt == XA_FILE_LIST) {
+		unsigned int i;
+		unsigned long len = 0;
+		char *data;
+		char *pos;
+
+		len = strlen(bd->path) + 2;
+		for(i = 0; i < bd->nsel_files; i++) {
+			len += strlen(bd->files[sel_pos[i]].name) + 2;
+		}
+		
+		data = XtMalloc(len + 2); /* Xt will XtFree this when done */
+		if(!data) {
+			warning_msg("Memory allocation error\n");
+			free(sel_pos);
+			return False;
+		}
+		
+		/* Generate a zero separated name list, which itself is
+		 * terminated by a double-zero. The first entry in the list
+		 * must specify the path the rest of the list descends from */
+		strcpy(data, bd->path);
+		pos = data + strlen(bd->path) + 1;
+
+		for(i = 0; i < bd->nsel_files; i++) {
+			strcpy(pos, bd->files[sel_pos[i]].name);
+			pos += strlen(bd->files[sel_pos[i]].name) + 1;
+		}
+		*pos = '\0';
 		
 		*type_ret = *tgt;
 		*fmt_ret = 8;
-		*len_ret = len - 1;
+		*len_ret = len;
 		*val_ret = data;
-		return True;		
+	} else {
+		free(sel_pos);
+		return False;
 	}
-	return False;
+
+	free(sel_pos);
+	return True;
 }
+
 
 /*
  * Called on selection ownership change.
@@ -3256,6 +3360,22 @@ static void visibility_change_cb(Widget w,
 
 	*cont = True;
 }
+
+
+/*
+ * Returns browser data instance that belongs to the shell widget specified
+ */
+static struct browser_data* data_from_widget(Widget wshell)
+{
+	struct browser_data *bd = browsers;
+
+	while(bd) {
+		if(bd->wshell == wshell) break;
+		bd = bd->next;
+	}
+	return bd;		
+}
+
 
 /*
  * Retrieve a browser instance, create one if necessary.

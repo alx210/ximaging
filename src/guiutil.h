@@ -56,6 +56,13 @@ char* shorten_mb_string(const char *sz, size_t max_chrs, Boolean ltor);
 /* Returns number of characters in a multibyte string */
 size_t mb_strlen(const char *sz);
 
+/*
+ * Converts a multibyte string to iso8859-1, substituting out of
+ * code page characters with a question mark. The resulting string
+ * is placed in dest, which may point to the same buffer as src.
+ */
+void mbs_to_latin1(const char*, char*);
+
 #define SIZE_CS_MAX 32
 char* get_size_string(unsigned long size, char buffer[SIZE_CS_MAX]);
 
