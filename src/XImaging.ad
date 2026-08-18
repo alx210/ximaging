@@ -87,10 +87,10 @@ XImagingViewer*fileMenu.browse.acceleratorText: Ctrl+B
 *viewMenu.refresh.accelerator: <Key>F5
 *viewMenu.refresh.acceleratorText: F5
 
-*windowMenu.openNew.accelerator: Ctrl<Key>n
-*windowMenu.openNew.acceleratorText: Ctrl+N
-*windowMenu.pinThis.accelerator: <Key>F2
-*windowMenu.pinThis.acceleratorText: F2
+*windowMenu.openNew.accelerator: <Key>F6
+*windowMenu.openNew.acceleratorText: F6
+*windowMenu.pinThis.accelerator: <Key>F8
+*windowMenu.pinThis.acceleratorText: F8
 
 XImagingBrowser*viewMenu.smallTiles.accelerator: <Key>KP_Subtract
 XImagingBrowser*viewMenu.smallTiles.acceleratorText: Kp: -
@@ -127,14 +127,12 @@ XImagingBrowser*viewMenu.goUp.acceleratorText: Backspace
 *rotateMenu.rotateReset.accelerator: <Key>KP_Delete
 *rotateMenu.rotateReset.acceleratorText: Kp: Del
 
-*editMenu.copy.accelerator: Ctrl<Key>y
-*editMenu.copy.acceleratorText: Ctrl+Y
-*editMenu.rename.accelerator: Ctrl<Key>r
-*editMenu.rename.acceleratorText: Ctrl+R
-*editMenu.copyTo.accelerator: Ctrl<Key>C
-*editMenu.copyTo.acceleratorText: Ctrl+C
-*editMenu.moveTo.accelerator: Ctrl<Key>M
-*editMenu.moveTo.acceleratorText: Ctrl+M
+*editMenu.rename.accelerator: <Key>F2
+*editMenu.rename.acceleratorText: F2
+*editMenu.copyTo.accelerator: <Key>F4
+*editMenu.copyTo.acceleratorText: F4
+*editMenu.moveTo.accelerator: <Key>F3
+*editMenu.moveTo.acceleratorText: F3
 *editMenu.delete.accelerator: Ctrl<Key>Delete
 *editMenu.delete.acceleratorText: Ctrl+Del
 *editMenu.selectAll.accelerator: Ctrl<Key>a
