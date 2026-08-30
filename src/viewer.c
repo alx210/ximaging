@@ -46,7 +46,6 @@
 #include "const.h"
 #include "browser.h"
 #include "bswap.h"
-#include "ioutil.h"
 #include "debug.h"
 #include "bitmaps/wmiconv.bm"
 #include "bitmaps/wmiconv_m.bm"
@@ -781,7 +780,7 @@ static void* loader_thread(void *arg)
 	tmsg.proc=TP_IMG_LOAD;
 	tmsg.result=img_errno;
 	pthread_mutex_lock(&vd->thread_notify_mutex);
-	writen(vd->tnfd[TNFD_OUT], &tmsg, sizeof(struct proc_thread_msg));
+	write(vd->tnfd[TNFD_OUT], &tmsg, sizeof(struct proc_thread_msg));
 	pthread_mutex_unlock(&vd->thread_notify_mutex);
 	return NULL;
 }
@@ -831,7 +830,7 @@ static void thread_callback_proc(XtPointer client, int *pfd, XtInputId *iid)
 	struct viewer_data *vd=(struct viewer_data*)client;
 	struct proc_thread_msg tmsg;
 	
-	if(readn(vd->tnfd[TNFD_IN], &tmsg, sizeof(struct proc_thread_msg))
+	if(read(vd->tnfd[TNFD_IN], &tmsg, sizeof(struct proc_thread_msg))
 		< sizeof(struct proc_thread_msg)) return;
 
 	if(tmsg.proc==TP_IMG_LOAD){	

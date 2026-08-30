@@ -53,7 +53,6 @@
 #include "browser.h"
 #include "pathw.h"
 #include "bswap.h"
-#include "ioutil.h"
 #include "debug.h"
 #include "bitmaps/wmiconb.bm"
 #include "bitmaps/wmiconb_m.bm"
@@ -553,7 +552,7 @@ static void* loader_thread(void *data)
 				bd->files[i].state=FS_ERROR;
 			else
 				bd->files[i].state=FS_BROKEN;
-			writen(bd->tnfd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
+			write(bd->tnfd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
 			continue;
 		}
 
@@ -565,7 +564,7 @@ static void* loader_thread(void *data)
 			dtrace("%s: init_pixel_format failed with %d\n",
 				path_buf,result);
 			bd->files[i].state=FS_ERROR;
-			writen(bd->tnfd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
+			write(bd->tnfd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
 			continue;
 		}
 			
@@ -599,7 +598,7 @@ static void* loader_thread(void *data)
 					path_buf,result);
 				img_close(&cbd.img_file);
 				bd->files[i].state=FS_BROKEN;
-				writen(bd->tnfd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
+				write(bd->tnfd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
 				continue;
 			}
 		}
@@ -632,7 +631,7 @@ static void* loader_thread(void *data)
 			}
 		}
 		bd->files[i].loader_result=result;
-		writen(bd->tnfd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
+		write(bd->tnfd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
 	}
 	
 	/* always go there to finish the thread */
@@ -653,7 +652,7 @@ static void* loader_thread(void *data)
 	pthread_cond_signal(&bd->ldr_cond);
 	pthread_mutex_unlock(&bd->ldr_cond_mutex);
 	
-	writen(bd->tnfd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
+	write(bd->tnfd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
 	return NULL;
 }
 
@@ -803,7 +802,7 @@ static int read_directory(struct browser_data *bd)
 		pthread_mutex_unlock(&bd->data_mutex);
 
 		/* message data is freed by the handler */
-		writen(bd->tnfd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
+		write(bd->tnfd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
 	}
 	return 0;
 }
@@ -864,7 +863,7 @@ static void *reader_thread(void *data)
 
 				tmsg.code=TMSG_UPDATE;
 				tmsg.update_data.index=i;
-				writen(bd->tnfd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
+				write(bd->tnfd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
 				modified=True;
 			}
 		}
@@ -905,7 +904,7 @@ static void *reader_thread(void *data)
 				tmsg.change_data.dirs = rem_dirs;
 				tmsg.change_data.ndirs = nrem_dirs;
 				/* message data storage is freed by the handler */
-				writen(bd->tnfd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
+				write(bd->tnfd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
 			}
 			if(!stat(bd->path,&st) && difftime(st.st_mtime,bd->dir_modtime)){
 				result = read_directory(bd);
@@ -915,7 +914,7 @@ static void *reader_thread(void *data)
 				tmsg.code = TMSG_RELOAD;
 				tmsg.notify_data.reason = 0;
 				tmsg.notify_data.status = 0;
-				writen(bd->tnfd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
+				write(bd->tnfd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
 			}
 		} else {
 			if(rem_files) {
@@ -947,7 +946,7 @@ static void *reader_thread(void *data)
 	bd->state&=(~(BSF_READING|BSF_RCANCEL));
 	pthread_cond_signal(&bd->rdr_cond);
 	pthread_mutex_unlock(&bd->rdr_cond_mutex);
-	writen(bd->tnfd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
+	write(bd->tnfd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
 	return NULL;
 }
 
@@ -959,7 +958,7 @@ static void thread_callback_proc(XtPointer data, int *pfd, XtInputId *iid)
 	struct browser_data *bd=(struct browser_data*)data;
 	struct thread_msg msg = {0};
 
-	if(readn(bd->tnfd[TNFD_IN], &msg, sizeof(struct thread_msg))
+	if(read(bd->tnfd[TNFD_IN], &msg, sizeof(struct thread_msg))
 		< sizeof(struct thread_msg)) return;
 
 	/* if cancelled state, discard stale message and return */

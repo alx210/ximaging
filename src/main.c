@@ -410,15 +410,8 @@ sigfunc_t rsignal(int sig, sigfunc_t handler)
 	
 	set.sa_handler = handler;
 	sigemptyset(&set.sa_mask);
-	set.sa_flags = SA_NOCLDSTOP;
-	
-	if(sig == SIGALRM) {
-		#ifdef SA_INTERRUPT
-		set.sa_flags |= SA_INTERRUPT;
-		#endif
-	} else {
-		set.sa_flags |= SA_RESTART;
-	}
+	set.sa_flags = SA_NOCLDSTOP | SA_RESTART;
+
 	if(sigaction(sig, &set, &ret) < 0)
 		return SIG_ERR;
 	

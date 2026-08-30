@@ -31,7 +31,6 @@
 #include "const.h"
 #include "guiutil.h"
 #include "filemgmtp.h"
-#include "ioutil.h"
 #include "debug.h"
 
 #include "bitmaps/wmfmgmt.bm"
@@ -71,7 +70,7 @@ static void* proc_thread_entry(void *data)
 		pd->cur_file=i;
 		tmsg.code=TM_PRE_NOTE;
 		tmsg.status=0;
-		writen(pd->thread_notify_fd[TNFD_OUT],
+		write(pd->thread_notify_fd[TNFD_OUT],
 			&tmsg, sizeof(struct thread_msg));
 		pthread_cond_wait(&pd->got_response,&pd->state_mutex);
 		pthread_mutex_unlock(&pd->state_mutex);
@@ -108,7 +107,7 @@ static void* proc_thread_entry(void *data)
 			pd->proc_msg=msg_buf;
 			tmsg.code=TM_WAIT_ACK;
 			tmsg.status=0;
-			writen(pd->thread_notify_fd[TNFD_OUT], &tmsg,
+			write(pd->thread_notify_fd[TNFD_OUT], &tmsg,
 				sizeof(struct thread_msg));
 			pthread_cond_wait(&pd->got_response,&pd->state_mutex);
 			pd->proc_msg=NULL;
@@ -118,7 +117,7 @@ static void* proc_thread_entry(void *data)
 		pthread_mutex_lock(&pd->state_mutex);
 		tmsg.code=TM_POST_NOTE;
 		tmsg.status=res;
-		writen(pd->thread_notify_fd[TNFD_OUT],
+		write(pd->thread_notify_fd[TNFD_OUT],
 			&tmsg, sizeof(struct thread_msg));
 		pthread_cond_wait(&pd->got_response,&pd->state_mutex);
 		pthread_mutex_unlock(&pd->state_mutex);
@@ -126,7 +125,7 @@ static void* proc_thread_entry(void *data)
 
 	tmsg.code=TM_FINISHED;
 	tmsg.status=0;
-	writen(pd->thread_notify_fd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
+	write(pd->thread_notify_fd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
 
 	return NULL;
 }
@@ -160,7 +159,7 @@ static void thread_callback_proc(XtPointer client,int *pfd, XtInputId *iid)
 	struct proc_data *pd=(struct proc_data*)client;
 	struct thread_msg tmsg;
 	
-	if(readn(pd->thread_notify_fd[TNFD_IN], &tmsg,
+	if(read(pd->thread_notify_fd[TNFD_IN], &tmsg,
 		sizeof(struct thread_msg)) < sizeof(struct thread_msg)) return;
 	
 	switch(tmsg.code){
@@ -348,7 +347,7 @@ static enum response_code ask_replace(struct proc_data *pd, const char *fname)
 	pd->proc_msg=msg_buf;
 	tmsg.code=TM_WAIT_CONFIRM;
 	tmsg.status=0;
-	writen(pd->thread_notify_fd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
+	write(pd->thread_notify_fd[TNFD_OUT], &tmsg, sizeof(struct thread_msg));
 	pthread_cond_wait(&pd->got_response,&pd->state_mutex);
 	pd->proc_msg=NULL;
 	pthread_mutex_unlock(&pd->state_mutex);
